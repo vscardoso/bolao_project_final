@@ -70,21 +70,11 @@
         </div>
     </nav>
 
-    <!-- Alertas e mensagens -->
-    {% if messages %}
-    <div class="container mt-3">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    
     <!-- BLOCO DE CONTEÚDO PRINCIPAL - ADICIONE ESTA PARTE -->
     <main>
-        {% block content %}{% endblock %}
+        {% block content %}
+            <!-- Conteúdo da página -->
+        {% endblock %}
     </main>
     
     <!-- Footer -->

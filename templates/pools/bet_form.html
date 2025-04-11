@@ -4,15 +4,6 @@
 {% block title %}Apostar em {{ match }} | {{ pool.name }}{% endblock %}
 
 {% block pool_content %}
-<div class="mb-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'pools:list' %}">Meus Bolões</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'pools:detail' pool.slug %}">{{ pool.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Fazer Aposta</li>
-        </ol>
-    </nav>
-</div>
 
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-primary text-white py-3">

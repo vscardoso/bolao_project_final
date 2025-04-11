@@ -156,6 +156,41 @@ python manage.py runserver
 6. **Tabela pools_participation não existindo** - Resolvido recriando as migrações e o banco de dados
 7. **Campo betting_deadline obrigatório** - Modificado para aceitar valores nulos no modelo Pool
 
+## Problemas Resolvidos (Adicionados em 11/04/2025)
+8. **Erro NoReverseMatch para 'home'** - Corrigido removendo referências de breadcrumbs problemáticas e ajustando URLs para usar o namespace correto (core:home)
+9. **Loop de redirecionamento infinito na página inicial** - Resolvido eliminando definições de URL duplicadas para o mesmo caminho raiz no arquivo urls.py principal
+10. **Layout quebrado no header da página de pools** - Redesenhado o header para exibir todas as informações em uma única linha, economizando espaço vertical
+11. **Inconsistência de navegação entre páginas de bolões** - Corrigido estendendo base_pools.html e adicionando menu lateral à página de lista de pools
+
+## Melhorias de UI/UX (Atualizadas em 11/04/2025)
+- [x] Redesign do header de lista de bolões
+  - [x] Formato compacto em linha única com estatísticas
+  - [x] Badges coloridos para diferentes tipos de estatísticas
+  - [x] Efeitos visuais sutis nos elementos interativos
+- [x] Navegação lateral consistente
+  - [x] Mesmo menu lateral em todas as páginas de bolões
+  - [x] Extensão correta do template base_pools.html
+- [x] Padronização visual
+  - [x] Headers de cards com cores consistentes
+  - [x] Badges de contagem nos títulos de seção
+  - [x] Espaçamento otimizado em todo o layout
+- [x] Otimização de espaço
+  - [x] Redução de padding e margins excessivos
+  - [x] Melhor uso do espaço horizontal e vertical
+  - [x] Elementos compactos sem perder legibilidade
+
+## Estrutura de Templates (Adicionada em 11/04/2025)
+- **Hierarquia de Templates Atualizada**
+  - `base/base.html` - Template base do site inteiro
+  - `pools/base_pools.html` - Extensão com menu lateral para módulo de bolões
+  - Templates específicos que estendem os templates base
+
+- **Blocos Principais**
+  - `content` - Conteúdo principal em base.html
+  - `pool_content` - Conteúdo específico em base_pools.html
+  - `extra_css` - Para estilos CSS específicos de página
+  - `title` - Título da página
+
 ## Próximos Passos
 
 ### Curto Prazo
@@ -167,6 +202,11 @@ python manage.py runserver
   - [ ] Notificações de resultados
   - [ ] Lembretes para apostas pendentes
   - [ ] Alertas de movimentação no ranking
+- [ ] Revisar todos os templates para remover referências incorretas a URLs (ex: 'home' → 'core:home')
+- [ ] Testar responsividade do novo header compacto em dispositivos móveis
+- [ ] Verificar se o menu lateral funciona corretamente em todas as páginas relacionadas a bolões
+- [ ] Completar a página de edit_profile.html usando o mesmo padrão visual
+- [ ] Implementar feedback visual após ações importantes (criar/excluir bolão)
 
 ### Médio Prazo
 - [ ] Sistema de gerenciamento de pagamentos
@@ -177,6 +217,10 @@ python manage.py runserver
   - [ ] Convites por email com tokens únicos
   - [ ] Compartilhamento em redes sociais
 - [ ] Estatísticas e gráficos para bolões
+- [ ] Implementar sistema de temas claro/escuro
+- [ ] Melhorar a acessibilidade dos formulários e elementos interativos
+- [ ] Otimizar carregamento de imagens para melhor desempenho
+- [ ] Criar componentes reutilizáveis para badges, cards e outros elementos recorrentes
 
 ### Longo Prazo
 - [ ] Aplicativo móvel (React Native)
@@ -184,7 +228,35 @@ python manage.py runserver
 - [ ] Recursos de gamificação (conquistas, níveis, etc.)
 - [ ] Monetização (planos premium, recursos adicionais)
 
-## Notas de Implementação
+## Decisões de Design (Nova seção)
+
+### Escolhas de Design UI/UX
+1. **Header Compacto** - Optamos por um header em linha única que economiza espaço vertical enquanto mantém todas as informações essenciais visíveis
+2. **Menu Lateral** - Mantido consistente em todas as páginas de bolões para facilitar navegação entre funcionalidades relacionadas
+3. **Badges Coloridos** - Sistema visual de cores para diferentes tipos de informação: 
+   - Azul (primary): elementos principais/criados pelo usuário
+   - Verde (success): participação/elementos ativos
+   - Azul-claro (info): informações adicionais/totais
+
+### Padrões de Codificação
+1. **Extensão de Templates** - Seguimos uma hierarquia clara: template base → template específico do módulo → template da página
+2. **Nomeação de Classes CSS** - Convenções baseadas em função (.stat-badge, .header-content) em vez de aparência
+3. **Blocos de Template** - Uso consistente de blocos nomeados para substituição em templates filhos
+
+## Registro da Sessão de Desenvolvimento
+
+### Sessão 11/04/2025
+- Identificados e corrigidos problemas críticos de URLs e redirecionamentos
+- Redesenhado o header da página de lista de bolões
+- Padronizado o layout dos cards e seções
+- Corrigida a extensão do template base para incluir menu lateral
+- Documentado o progresso e próximos passos
+
+### Plano para Próxima Sessão
+1. Completar a implementação da página de edição de perfil de usuário
+2. Revisar e corrigir problemas de responsividade em dispositivos móveis
+3. Implementar sistema de feedback para ações do usuário
+4. Começar a implementação do sistema de apostas
 
 ### Estrutura do Banco de Dados
 A estrutura principal do banco de dados inclui:

@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from core import views as core_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -42,7 +43,10 @@ urlpatterns = [
     
     # Outras URLs do projeto
     path('users/', include('users.urls')),
-    path('pools/', include('pools.urls', namespace='pools')),  # Adicione esta linha
+    path('pools/', include('pools.urls', namespace='pools')),
+    
+    # Inclui todas as URLs do app core também na raiz
+    path('', core_views.home, name='home'),
     path('', include('core.urls')),
 ]
 
