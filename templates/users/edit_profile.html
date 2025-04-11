@@ -1,0 +1,92 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Editar Perfil | Bolão Online{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Editar Perfil</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">Nome</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">Sobrenome</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Nome de usuário</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                        {% endif %}
+                        {% if form.username.help_text %}
+                            <div class="form-text small text-muted">{{ form.username.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.phone.id_for_label }}" class="form-label">Telefone</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
+                        {% endif %}
+                        <div class="form-text small text-muted">Formato: (00) 00000-0000</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Foto de perfil</label>
+                        <div class="d-flex align-items-center">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" class="rounded-circle me-3" width="50" height="50" alt="{{ user.username }}">
+                            {% else %}
+                                <div class="bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-user-circle text-secondary" style="font-size: 40px;"></i>
+                                </div>
+                            {% endif %}
+                            {{ form.profile_picture }}
+                        </div>
+                        {% if form.profile_picture.errors %}
+                            <div class="text-danger small mt-1">{{ form.profile_picture.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Salvar alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

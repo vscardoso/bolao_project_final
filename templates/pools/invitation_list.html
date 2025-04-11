@@ -1,0 +1,83 @@
+{% extends 'pools/base_pools.html' %}
+{% load static %}
+
+{% block title %}Convites para Bolões | Bolão Online{% endblock %}
+
+{% block pool_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Convites para Bolões</h1>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" href="#recebidos" data-bs-toggle="tab">Convites Recebidos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#enviados" data-bs-toggle="tab">Convites Enviados</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body p-0">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="recebidos">
+                {% if invitations %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Bolão</th>
+                                <th>De</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invitation in invitations %}
+                            <tr>
+                                <td>{{ invitation.pool.name }}</td>
+                                <td>{{ invitation.sender.username }}</td>
+                                <td>{{ invitation.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="badge bg-info">Pendente</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-success">
+                                            <i class="fas fa-check"></i> Aceitar
+                                        </a>
+                                        <a href="#" class="btn btn-danger">
+                                            <i class="fas fa-times"></i> Recusar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <img src="{% static 'img/empty-mail.svg' %}" alt="Nenhum convite" class="img-fluid mb-3" style="max-width: 150px;">
+                    <h4>Nenhum convite recebido</h4>
+                    <p class="text-muted">Você não tem convites pendentes para bolões.</p>
+                    <a href="{% url 'pools:discover' %}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i> Descobrir bolões
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="tab-pane fade" id="enviados">
+                <div class="text-center py-5">
+                    <img src="{% static 'img/empty-sent.svg' %}" alt="Nenhum convite enviado" class="img-fluid mb-3" style="max-width: 150px;">
+                    <h4>Nenhum convite enviado</h4>
+                    <p class="text-muted">Você não enviou convites para bolões ainda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

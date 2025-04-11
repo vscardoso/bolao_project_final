@@ -1,0 +1,21 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sair | Bolão Online{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h2 class="mb-4">Encerrar sessão</h2>
+            <p class="mb-4">Tem certeza de que deseja sair?</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-lg btn-danger">Sair</button>
+                    <a href="{% url 'core:home' %}" class="btn btn-lg btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

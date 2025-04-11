@@ -1,0 +1,64 @@
+{% extends 'pools/base_pools.html' %}
+{% load static %}
+
+{% block title %}Excluir {{ pool.name }} | Bolão Online{% endblock %}
+
+{% block pool_content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'pools:list' %}">Meus Bolões</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'pools:detail' pool.slug %}">{{ pool.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Excluir</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-danger text-white py-3">
+        <h1 class="h4 mb-0">Excluir Bolão</h1>
+    </div>
+    <div class="card-body p-4">
+        <div class="alert alert-warning mb-4">
+            <h5 class="alert-heading">
+                <i class="fas fa-exclamation-triangle me-2"></i> Atenção!
+            </h5>
+            <p class="mb-0">Esta ação não pode ser desfeita. Excluir este bolão removerá permanentemente todos os dados relacionados, incluindo:</p>
+            <ul>
+                <li>Todas as apostas dos participantes</li>
+                <li>Todo o histórico de participação</li>
+                <li>Todos os convites ativos</li>
+                <li>Todas as estatísticas do bolão</li>
+            </ul>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ pool.name }}</h5>
+                <p class="card-text text-muted mb-2">{{ pool.competition.name }}</p>
+                <p class="card-text">{{ pool.description|truncatewords:50 }}</p>
+                <div class="d-flex align-items-center mt-2">
+                    <span class="badge bg-secondary me-2">{{ pool.get_visibility_display }}</span>
+                    <span class="badge bg-info">{{ pool.get_status_display }}</span>
+                    <span class="ms-auto">
+                        <i class="fas fa-users me-1"></i> {{ pool.participants.count }} participantes
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <p class="fw-bold text-center mb-4">Tem certeza que deseja excluir definitivamente este bolão?</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-2"></i> Confirmar Exclusão
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

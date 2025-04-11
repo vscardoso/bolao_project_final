@@ -1,0 +1,96 @@
+{% extends 'pools/base_pools.html' %}
+{% load static %}
+
+{% block title %}Minhas Apostas | {{ pool.name }}{% endblock %}
+
+{% block pool_content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'pools:list' %}">Meus Bolões</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'pools:detail' pool.slug %}">{{ pool.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Minhas Apostas</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+        <h1 class="h4 mb-0">Minhas Apostas em {{ pool.name }}</h1>
+        <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-light btn-sm">
+            <i class="fas fa-arrow-left me-2"></i> Voltar ao Bolão
+        </a>
+    </div>
+    <div class="card-body p-0">
+        {% if bets %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data</th>
+                            <th>Partida</th>
+                            <th class="text-center">Sua Aposta</th>
+                            <th class="text-center">Resultado</th>
+                            <th class="text-center">Pontos</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bet in bets %}
+                        <tr>
+                            <td>{{ bet.match.start_time|date:"d/m/Y H:i" }}</td>
+                            <td>{{ bet.match.home_team }} vs {{ bet.match.away_team }}</td>
+                            <td class="text-center fw-bold">{{ bet.home_score_bet }} x {{ bet.away_score_bet }}</td>
+                            <td class="text-center">
+                                {% if bet.match.finished %}
+                                    <span class="fw-bold">{{ bet.match.home_score }} x {{ bet.match.away_score }}</span>
+                                {% else %}
+                                    <span class="text-muted">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if bet.match.finished %}
+                                    <span class="badge bg-success">+{{ bet.points_earned }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if bet.match.finished %}
+                                    <span class="badge bg-secondary">Finalizado</span>
+                                {% elif bet.match.start_time|date:'YmdHi' < now|date:'YmdHi' %}
+                                    <span class="badge bg-warning text-dark">Em andamento</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Aguardando</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not bet.match.finished and bet.match.start_time|date:'YmdHi' > now|date:'YmdHi' %}
+                                    <a href="{% url 'pools:bet_create' pool.slug bet.match.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                                        <i class="fas fa-lock"></i> Bloqueado
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <img src="{% static 'img/empty-bets.svg' %}" alt="Nenhuma aposta" class="img-fluid mb-3" style="max-width: 150px;">
+                <h4>Você ainda não fez nenhuma aposta neste bolão</h4>
+                <p class="text-muted mb-3">Volte ao bolão e faça suas apostas nos próximos jogos.</p>
+                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right me-2"></i> Ver jogos disponíveis
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

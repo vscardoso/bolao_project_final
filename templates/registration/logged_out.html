@@ -1,0 +1,21 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sessão encerrada | Bolão Online{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-check-circle text-success mb-4" style="font-size: 4rem;"></i>
+                    <h2 class="mb-3">Sessão encerrada com sucesso</h2>
+                    <p class="text-muted mb-4">Você saiu do sistema. Obrigado por usar o Bolão Online!</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Entrar novamente</a>
+                    <a href="{% url 'core:home' %}" class="btn btn-outline-secondary btn-lg ms-2">Voltar para a Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

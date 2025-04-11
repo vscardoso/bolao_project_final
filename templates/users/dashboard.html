@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | Bolão Online{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-0">Olá, {{ user.username }}!</h1>
+            <p class="text-muted">Bem-vindo ao seu painel de controle.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="btn-group">
+                <!-- Vinculando à criação de bolão -->
+                <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i> Criar Bolão
+                </a>
+                <!-- Vinculando à descoberta de bolões -->
+                <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-search me-2"></i> Descobrir Bolões
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de informações -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white shadow-sm h-100">
+                <div class="card-body text-center py-4">
+                    <div class="display-4 mb-2">{{ total_pools }}</div>
+                    <h5 class="card-title mb-0">Total de Bolões</h5>
+                </div>
+                <div class="card-footer bg-primary-dark border-0 py-3">
+                    <!-- Vinculando à listagem de bolões -->
+                    <a href="{% url 'pools:list' %}" class="text-white d-block">
+                        Ver todos <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mais cards aqui... -->
+        
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning text-dark shadow-sm h-100">
+                <div class="card-body text-center py-4">
+                    <div class="display-4 mb-2">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h5 class="card-title mb-0">Convites</h5>
+                </div>
+                <div class="card-footer bg-warning-dark border-0 py-3">
+                    <!-- Vinculando à gestão de convites -->
+                    <a href="{% url 'pools:invitations' %}" class="text-dark d-block">
+                        Gerenciar <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gerenciar Bolões -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="card-title m-0">Gerenciar Bolões</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 bg-light border-0 text-center">
+                        <div class="card-body d-flex flex-column">
+                            <div class="icon-circle bg-primary text-white mx-auto mb-3">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <h6>Meus Bolões</h6>
+                            <p class="text-muted small mb-3">Acesse todos os seus bolões</p>
+                            <a href="{% url 'pools:list' %}" class="btn btn-sm btn-primary mt-auto">Acessar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 bg-light border-0 text-center">
+                        <div class="card-body d-flex flex-column">
+                            <div class="icon-circle bg-success text-white mx-auto mb-3">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <h6>Criar Bolão</h6>
+                            <p class="text-muted small mb-3">Monte um novo bolão</p>
+                            <a href="{% url 'pools:create' %}" class="btn btn-sm btn-success mt-auto">Criar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 bg-light border-0 text-center">
+                        <div class="card-body d-flex flex-column">
+                            <div class="icon-circle bg-info text-white mx-auto mb-3">
+                                <i class="fas fa-compass"></i>
+                            </div>
+                            <h6>Descobrir</h6>
+                            <p class="text-muted small mb-3">Encontre bolões para participar</p>
+                            <a href="{% url 'pools:discover' %}" class="btn btn-sm btn-info mt-auto">Explorar</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 bg-light border-0 text-center">
+                        <div class="card-body d-flex flex-column">
+                            <div class="icon-circle bg-warning text-white mx-auto mb-3">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h6>Convites</h6>
+                            <p class="text-muted small mb-3">Gerenciar seus convites</p>
+                            <a href="{% url 'pools:invitations' %}" class="btn btn-sm btn-warning mt-auto">Ver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    </style>
+
+    <!-- Bolões que participa -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Meus Bolões</h2>
+                <!-- Vinculando à lista completa -->
+                <a href="{% url 'pools:list' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if participating_pools %}
+            <div class="list-group list-group-flush">
+                {% for pool in participating_pools %}
+                <div class="list-group-item list-group-item-action p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ pool.name }}</h5>
+                            <p class="text-muted small mb-0">{{ pool.competition.name }}</p>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <!-- Vinculando ao detalhe do bolão -->
+                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary">
+                                <i class="fas fa-eye me-1"></i> Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <img src="{% static 'img/empty-pools.svg' %}" alt="Nenhum bolão" class="img-fluid mb-3" style="max-width: 150px;">
+                <h4>Você ainda não participa de nenhum bolão</h4>
+                <p class="text-muted mb-3">Crie seu próprio bolão ou participe de bolões existentes.</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <!-- Vinculando à criação e descoberta -->
+                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Criar Bolão
+                    </a>
+                    <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-search me-2"></i> Descobrir Bolões
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bolões que você criou -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h2 class="h5 mb-0">Bolões que você criou</h2>
+        </div>
+        <div class="card-body p-0">
+            {% if owned_pools %}
+            <div class="list-group list-group-flush">
+                {% for pool in owned_pools %}
+                <div class="list-group-item list-group-item-action p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ pool.name }}</h5>
+                            <p class="text-muted small mb-0">{{ pool.competition.name }}</p>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <!-- Vinculando ao detalhe do bolão -->
+                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary">
+                                <i class="fas fa-eye me-1"></i> Detalhes
+                            </a>
+                            <!-- Vinculando à edição do bolão -->
+                            <a href="{% url 'pools:update' pool.slug %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i> Editar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="text-muted">Você ainda não criou nenhum bolão.</p>
+                <!-- Vinculando à criação -->
+                <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i> Criar meu primeiro bolão
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

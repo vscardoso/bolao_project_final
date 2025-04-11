@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Entrar | Bolão Online{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h3 class="mb-0">Entrar</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        Usuário ou senha incorretos. Por favor, tente novamente.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Nome de usuário</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            {{ form.username }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Senha</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            {{ form.password }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberCheck">
+                        <label class="form-check-label" for="rememberCheck">Lembrar de mim</label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Entrar</button>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <p><a href="{% url 'password_reset' %}">Esqueceu sua senha?</a></p>
+                        <p>Não tem uma conta? <a href="{% url 'users:register' %}" class="text-primary fw-bold">Cadastre-se</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Adiciona classes Bootstrap aos campos de formulário
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('id_username').classList.add('form-control');
+        document.getElementById('id_password').classList.add('form-control');
+    });
+</script>
+{% endblock %}

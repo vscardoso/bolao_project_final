@@ -1,0 +1,57 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Cadastro | Bolão Online{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h2 class="mb-0">Crie sua conta</h2>
+                <p class="mb-0">Junte-se ao Bolão Online e comece a se divertir!</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in field.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if field.help_text %}
+                            <div class="form-text small text-muted">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                        <label class="form-check-label" for="termsCheck">
+                            Eu concordo com os <a href="#" target="_blank">Termos de Uso</a> e <a href="#" target="_blank">Política de Privacidade</a>
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Cadastrar</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer bg-light text-center py-3">
+                <p class="mb-0">Já tem uma conta? <a href="{% url 'login' %}" class="text-primary">Entrar</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

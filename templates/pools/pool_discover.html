@@ -1,0 +1,155 @@
+{% extends 'pools/base_pools.html' %}
+{% load static %}
+
+{% block title %}Descobrir Bolões | Bolão Online{% endblock %}
+
+{% block pool_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Descobrir Bolões</h1>
+</div>
+
+<!-- Filtros -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Busca</label>
+                <input type="text" class="form-control" id="search" name="search" value="{{ search }}" placeholder="Nome, descrição...">
+            </div>
+            <div class="col-md-3">
+                <label for="sport" class="form-label">Esporte</label>
+                <select class="form-select" id="sport" name="sport">
+                    <option value="">Todos os esportes</option>
+                    {% for sport in sports %}
+                    <option value="{{ sport.id }}" {% if selected_sport == sport.id|stringformat:"i" %}selected{% endif %}>
+                        {{ sport.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="order_by" class="form-label">Ordenar por</label>
+                <select class="form-select" id="order_by" name="order_by">
+                    <option value="-created_at" {% if order_by == '-created_at' %}selected{% endif %}>Mais recentes</option>
+                    <option value="created_at" {% if order_by == 'created_at' %}selected{% endif %}>Mais antigos</option>
+                    <option value="name" {% if order_by == 'name' %}selected{% endif %}>Nome (A-Z)</option>
+                    <option value="-name" {% if order_by == '-name' %}selected{% endif %}>Nome (Z-A)</option>
+                    <option value="entry_fee" {% if order_by == 'entry_fee' %}selected{% endif %}>Valor (menor-maior)</option>
+                    <option value="-entry_fee" {% if order_by == '-entry_fee' %}selected{% endif %}>Valor (maior-menor)</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="d-grid w-100">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Bolões -->
+{% if pools %}
+<div class="row g-4">
+    {% for pool in pools %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">{{ pool.name }}</h5>
+                    <span class="badge bg-{{ pool.visibility|yesno:'info,secondary' }}">
+                        {{ pool.get_visibility_display }}
+                    </span>
+                </div>
+                <p class="text-muted small mb-3">
+                    {{ pool.description|truncatechars:100 }}
+                </p>
+                <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
+                    <div>
+                        <i class="fas fa-trophy me-1"></i> {{ pool.competition.name }}
+                    </div>
+                    <div>
+                        <i class="fas fa-users me-1"></i> {{ pool.participants.count }} participantes
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold {% if pool.entry_fee > 0 %}text-success{% endif %}">
+                            {% if pool.entry_fee > 0 %}
+                            R$ {{ pool.entry_fee|floatformat:2 }}
+                            {% else %}
+                            Grátis
+                            {% endif %}
+                        </span>
+                    </div>
+                    <a href="{% url 'pools:join' pool.slug %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Participar
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top-0 text-muted small">
+                <div class="d-flex justify-content-between">
+                    <span><i class="fas fa-user me-1"></i> {{ pool.owner.username }}</span>
+                    <span><i class="fas fa-clock me-1"></i> criado {{ pool.created_at|timesince }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Paginação" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">&laquo; Primeira</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Anterior</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Próxima</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Última &raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="card shadow-sm border-0">
+    <div class="card-body text-center py-5">
+        <img src="{% static 'img/empty-search.svg' %}" alt="Nenhum bolão encontrado" class="img-fluid mb-4" style="max-width: 200px;">
+        <h3>Nenhum bolão encontrado</h3>
+        <p class="text-muted mb-4">Não encontramos bolões com os critérios de busca informados.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'pools:discover' %}" class="btn btn-primary">
+                <i class="fas fa-sync me-2"></i> Limpar filtros
+            </a>
+            <a href="{% url 'pools:create' %}" class="btn btn-outline-primary">
+                <i class="fas fa-plus-circle me-2"></i> Criar um bolão
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Criar Bolão | Bolão Online{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'pools:list' %}">Meus Bolões</a></li>
+            <li class="breadcrumb-item active">Criar Bolão</li>
+        </ol>
+    </nav>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h3 mb-0">Criar Novo Bolão</h2>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">Preencha os dados abaixo para criar seu bolão. Você poderá convidar participantes depois.</p>
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-8 mb-3 mb-md-0">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Nome do Bolão*</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Escolha um nome único e descritivo para seu bolão.</div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="{{ form.entry_fee.id_for_label }}" class="form-label">Valor da Aposta (R$)*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    {{ form.entry_fee }}
+                                </div>
+                                {% if form.entry_fee.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.entry_fee.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Use 0 para bolões sem apostas em dinheiro.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Descrição</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Uma breve descrição do seu bolão e suas regras.</div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="{{ form.competition.id_for_label }}" class="form-label">Competição*</label>
+                                {{ form.competition }}
+                                {% if form.competition.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.competition.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Selecione a competição para este bolão.</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.betting_deadline.id_for_label }}" class="form-label">Data limite para apostas*</label>
+                                {{ form.betting_deadline }}
+                                {% if form.betting_deadline.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.betting_deadline.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Até quando os participantes poderão fazer apostas.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="{{ form.max_participants.id_for_label }}" class="form-label">Número máximo de participantes</label>
+                                {{ form.max_participants }}
+                                {% if form.max_participants.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.max_participants.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Use 0 para ilimitado.</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label d-block">Visibilidade*</label>
+                                <div class="d-flex">
+                                    {% for radio in form.visibility %}
+                                    <div class="form-check me-3">
+                                        {{ radio.tag }}
+                                        <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                            {{ radio.choice_label }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.visibility.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.visibility.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Bolões privados só podem ser acessados por convite.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'pools:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-1"></i> Criar Bolão
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Dicas para criar um bolão de sucesso</h5>
+                    <ul class="mb-0">
+                        <li class="mb-2">Defina regras claras no campo de descrição.</li>
+                        <li class="mb-2">Estabeleça um valor de aposta que seja acessível para todos os participantes.</li>
+                        <li class="mb-2">Divulgue o link de convite para seus amigos após a criação do bolão.</li>
+                        <li>Mantenha o bolão privado se quiser controlar exatamente quem participa.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

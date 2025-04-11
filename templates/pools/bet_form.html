@@ -1,0 +1,139 @@
+{% extends 'pools/base_pools.html' %}
+{% load static %}
+
+{% block title %}Apostar em {{ match }} | {{ pool.name }}{% endblock %}
+
+{% block pool_content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'pools:list' %}">Meus Bolões</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'pools:detail' pool.slug %}">{{ pool.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Fazer Aposta</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-primary text-white py-3">
+        <h1 class="h4 mb-0">Apostar em {{ match.home_team }} vs {{ match.away_team }}</h1>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="far fa-calendar me-1"></i> Data: {{ match.start_time|date:"d/m/Y" }}<br>
+                        <i class="far fa-clock me-1"></i> Horário: {{ match.start_time|date:"H:i" }}
+                    </div>
+                    
+                    <!-- Adicionar contagem regressiva se desejar -->
+                    {% if match.start_time|date:'YmdHi' > now|date:'YmdHi' %}
+                    <div class="ms-auto badge bg-warning text-dark p-2">
+                        <i class="fas fa-hourglass-half me-1"></i> Fecha em 
+                        <span id="countdown" data-datetime="{{ match.start_time|date:'c' }}">--:--:--</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <form method="post" class="mb-4">
+            {% csrf_token %}
+            
+            <!-- Mensagens de erro -->
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Por favor, corrija os erros abaixo.
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <div class="row justify-content-center py-4">
+                <div class="col-md-10">
+                    <div class="bet-form-container bg-light p-4 rounded-3">
+                        <div class="row align-items-center text-center">
+                            <!-- Time da casa -->
+                            <div class="col-4">
+                                <h4>{{ match.home_team }}</h4>
+                                <img src="https://via.placeholder.com/80" alt="{{ match.home_team }}" class="img-fluid rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            </div>
+                            
+                            <!-- Campos de apostas -->
+                            <div class="col-4">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <div class="me-2">
+                                        {{ form.home_score_bet }}
+                                        {% if form.home_score_bet.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.home_score_bet.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mx-2 h4">x</div>
+                                    <div class="ms-2">
+                                        {{ form.away_score_bet }}
+                                        {% if form.away_score_bet.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.away_score_bet.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Time visitante -->
+                            <div class="col-4">
+                                <h4>{{ match.away_team }}</h4>
+                                <img src="https://via.placeholder.com/80" alt="{{ match.away_team }}" class="img-fluid rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i> Confirmar Aposta
+                </button>
+            </div>
+        </form>
+        
+        <div class="alert alert-info">
+            <h5><i class="fas fa-info-circle me-2"></i>Como funciona a pontuação?</h5>
+            <ul class="mb-0">
+                <li><strong>3 pontos</strong> - Acertar o placar exato</li>
+                <li><strong>1 ponto</strong> - Acertar o vencedor ou empate</li>
+                <li><strong>0 pontos</strong> - Erro</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Contagem regressiva para fechamento das apostas
+        const countdownEl = document.getElementById('countdown');
+        if (countdownEl) {
+            const targetDate = new Date(countdownEl.getAttribute('data-datetime'));
+            
+            function updateCountdown() {
+                const now = new Date();
+                const diff = targetDate - now;
+                
+                if (diff <= 0) {
+                    countdownEl.innerHTML = "Encerrado";
+                    return;
+                }
+                
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                countdownEl.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+    });
+</script>
+{% endblock %}
