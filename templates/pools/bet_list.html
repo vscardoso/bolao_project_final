@@ -58,7 +58,7 @@
                             </td>
                             <td>
                                 {% if not bet.match.finished and bet.match.start_time|date:'YmdHi' > now|date:'YmdHi' %}
-                                    <a href="{% url 'pools:bet_create' pool.slug bet.match.id %}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'pools:bet_match' pool.slug bet.match.id %}" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-edit"></i> Editar
                                     </a>
                                 {% else %}

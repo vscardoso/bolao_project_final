@@ -79,6 +79,7 @@ class Pool(models.Model):
     invitation_key = models.UUIDField(default=uuid.uuid4, editable=False)
     
     def save(self, *args, **kwargs):
+        # Certifique-se de que o slug é gerado a partir do nome
         if not self.slug:
             self.slug = slugify(self.name)
             # Certifica que o slug é único
@@ -123,6 +124,10 @@ class Pool(models.Model):
             pass
         
         return True
+    
+    def get_participant_count(self):
+        """Retorna o número de participantes do bolão"""
+        return self.participants.count()
     
     class Meta:
         ordering = ['-created_at']
@@ -176,9 +181,9 @@ class Bet(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE)
-    home_score_bet = models.IntegerField()
-    away_score_bet = models.IntegerField()
-    points_earned = models.IntegerField(default=0)
+    home_score_bet = models.PositiveSmallIntegerField()
+    away_score_bet = models.PositiveSmallIntegerField()
+    points_earned = models.IntegerField(default=0)  # Pontos ganhos pela aposta
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

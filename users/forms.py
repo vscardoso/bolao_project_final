@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth import get_user_model
+from .models import Profile
 
 User = get_user_model()
 
@@ -65,3 +66,90 @@ class UserProfileForm(forms.ModelForm):
         for field_name in self.fields:
             self.fields[field_name].widget.attrs['class'] = 'form-control'
         self.fields['profile_picture'].widget.attrs['class'] = 'form-control-file'
+
+class ProfileEditForm(forms.ModelForm):
+    """
+    Formulário para edição do perfil de usuário, combinando campos
+    do modelo User e Profile.
+    """
+    # Campos do usuário
+    first_name = forms.CharField(
+        max_length=150, 
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    last_name = forms.CharField(
+        max_length=150, 
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    email = forms.EmailField(
+        max_length=254,
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+    
+    username = forms.CharField(
+        max_length=150,
+        disabled=True,  # Não permitir alteração do nome de usuário
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    # Campos do perfil
+    profile_pic = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control'})
+    )
+    
+    receive_notifications = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
+    public_profile = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
+    class Meta:
+        model = User  # Usar o modelo de usuário obtido
+        fields = ['first_name', 'last_name', 'email', 'username']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            try:
+                user_profile = self.instance.profile
+                self.fields['profile_pic'].initial = user_profile.profile_pic
+                self.fields['receive_notifications'].initial = user_profile.receive_notifications
+                self.fields['public_profile'].initial = user_profile.public_profile
+            except Profile.DoesNotExist:
+                pass
+                
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        
+        if commit:
+            user.save()
+            
+            # Garantir que o perfil existe
+            profile, created = Profile.objects.get_or_create(user=user)
+            
+            # Tratar corretamente a imagem do perfil
+            if 'profile_pic' in self.cleaned_data and self.cleaned_data['profile_pic']:
+                # Só atualiza se houver uma nova imagem
+                profile.profile_pic = self.cleaned_data['profile_pic']
+                print(f"Salvando nova imagem de perfil: {profile.profile_pic.name}")
+            
+            # Não use 'else' aqui para não apagar a imagem existente caso nenhuma nova seja enviada
+            
+            # Atualizar outras configurações do perfil
+            profile.receive_notifications = self.cleaned_data.get('receive_notifications', False)
+            profile.public_profile = self.cleaned_data.get('public_profile', False)
+            
+            # Salvar o perfil
+            profile.save()
+        
+        return user

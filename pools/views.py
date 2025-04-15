@@ -5,12 +5,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView, View
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Sum
 from django.http import HttpResponseRedirect
+from datetime import timedelta
 
 from .models import Pool, Participation, Sport, Competition, Bet, Match
 from .forms import PoolForm, PoolJoinForm, BetForm
-from .mixins import PoolOwnerRequiredMixin, PoolParticipantRequiredMixin
+from .mixins import PoolOwnerRequiredMixin, PoolParticipantRequiredMixin, PoolUserAccessMixin
 
 class PoolListView(LoginRequiredMixin, ListView):
     model = Pool
@@ -243,64 +244,104 @@ class InvitationListView(LoginRequiredMixin, ListView):
         # context['sent_invitations'] = Invitation.objects.filter(sender=self.request.user)
         return context
 
-class BetCreateView(LoginRequiredMixin, CreateView):
+class BetCreateView(LoginRequiredMixin, PoolUserAccessMixin, CreateView):
     model = Bet
     form_class = BetForm
     template_name = 'pools/bet_form.html'
     
-    def get_success_url(self):
-        return reverse('pools:detail', kwargs={'slug': self.kwargs['slug']})
+    def setup(self, request, *args, **kwargs):
+        """Configurar a view com o pool_id correto baseado na slug"""
+        self.pool_object = get_object_or_404(Pool, slug=kwargs.get('slug'))
+        kwargs['pool_id'] = self.pool_object.id
+        super().setup(request, *args, **kwargs)
     
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        self.pool = get_object_or_404(Pool, slug=self.kwargs['slug'])
-        self.match = get_object_or_404(Match, pk=self.kwargs['match_id'])
-        kwargs['match'] = self.match
-        kwargs['pool'] = self.pool
-        kwargs['user'] = self.request.user
+        match = self.get_match()
+        kwargs['match'] = match
+        kwargs['pool'] = self.get_pool()
+        
+        # Verificar se já existe uma aposta e passar como instance para o form
+        existing_bet = self.get_existing_bet()
+        if existing_bet:
+            kwargs['instance'] = existing_bet
+        
         return kwargs
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['pool'] = self.pool
-        context['match'] = self.match
-        return context
+    def get_match(self):
+        match_id = self.kwargs.get('match_id')
+        return get_object_or_404(Match, pk=match_id)
+    
+    def get_pool(self):
+        return self.pool_object
+    
+    def get_existing_bet(self):
+        """Verifica se já existe uma aposta para este usuário/partida/bolão"""
+        return Bet.objects.filter(
+            user=self.request.user,
+            pool=self.get_pool(),
+            match=self.get_match()
+        ).first()
     
     def form_valid(self, form):
         form.instance.user = self.request.user
-        form.instance.match = self.match
-        form.instance.pool = self.pool
+        form.instance.pool = self.get_pool()
+        form.instance.match = self.get_match()
         
-        # Verificar se o usuário participa do bolão
-        if not Participation.objects.filter(user=self.request.user, pool=self.pool).exists():
-            messages.error(self.request, "Você precisa participar deste bolão para fazer uma aposta.")
-            return self.form_invalid(form)
+        # Verificar se já existe uma aposta
+        existing_bet = self.get_existing_bet()
         
-        # Verificar se já existe uma aposta deste usuário para esta partida
-        existing_bet = Bet.objects.filter(user=self.request.user, match=self.match, pool=self.pool).first()
         if existing_bet:
-            # Se existir, atualizar ao invés de criar
+            # Atualizar os campos em vez de criar uma nova aposta
             existing_bet.home_score_bet = form.cleaned_data['home_score_bet']
             existing_bet.away_score_bet = form.cleaned_data['away_score_bet']
             existing_bet.save()
-            messages.success(self.request, "Sua aposta foi atualizada!")
+            messages.success(self.request, "Sua aposta foi atualizada com sucesso!")
             return HttpResponseRedirect(self.get_success_url())
         
-        messages.success(self.request, "Aposta registrada com sucesso!")
+        # Caso contrário, criar uma nova aposta
+        messages.success(self.request, "Sua aposta foi registrada com sucesso!")
         return super().form_valid(form)
+    
+    def get_success_url(self):
+        pool = self.get_pool()
+        return reverse('pools:detail', kwargs={'slug': pool.slug})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pool'] = self.get_pool()
+        context['match'] = self.get_match()
+        context['existing_bet'] = self.get_existing_bet()
+        return context
 
-class BetListView(LoginRequiredMixin, ListView):
+class BetListView(LoginRequiredMixin, PoolUserAccessMixin, ListView):
     model = Bet
     template_name = 'pools/bet_list.html'
     context_object_name = 'bets'
     
+    def setup(self, request, *args, **kwargs):
+        """Configurar a view com o pool_id correto baseado na slug"""
+        self.pool_object = get_object_or_404(Pool, slug=kwargs.get('slug'))
+        kwargs['pool_id'] = self.pool_object.id
+        super().setup(request, *args, **kwargs)
+    
     def get_queryset(self):
-        self.pool = get_object_or_404(Pool, slug=self.kwargs['slug'])
-        return Bet.objects.filter(user=self.request.user, pool=self.pool)
+        return Bet.objects.filter(pool=self.get_pool(), user=self.request.user)
+    
+    def get_pool(self):
+        return self.pool_object
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['pool'] = self.pool
+        context['pool'] = self.get_pool()
+        
+        # Incluir partidas disponíveis para aposta
+        context['available_matches'] = Match.objects.filter(
+            competition=self.get_pool().competition,
+            finished=False,
+            start_time__gt=timezone.now()
+        ).order_by('start_time')
+        
         return context
 
 class MyCreatedPoolsView(LoginRequiredMixin, ListView):
@@ -334,3 +375,140 @@ class DiscoverPoolsView(LoginRequiredMixin, ListView):
         ).exclude(
             Q(owner=self.request.user) | Q(participation__user=self.request.user)
         )
+
+@login_required
+def bet_match(request, pool_id, match_id):
+    """View para criar ou atualizar uma aposta em uma partida"""
+    
+    # Buscar o pool e a partida
+    pool = get_object_or_404(Pool, id=pool_id)
+    match = get_object_or_404(Match, id=match_id)
+    
+    # Verificar se o usuário é participante do pool
+    if request.user not in pool.participants.all() and request.user != pool.owner:
+        messages.error(request, "Você não é participante deste bolão.")
+        return redirect('pools:detail', pool_id=pool_id)
+    
+    # Verificar se a partida já começou
+    if match.start_time <= timezone.now():
+        messages.error(request, "O prazo para apostas nesta partida já encerrou.")
+        return redirect('pools:detail', pool_id=pool_id)
+    
+    # Verificar se existe uma aposta prévia
+    existing_bet = Bet.objects.filter(
+        user=request.user,
+        pool=pool,
+        match=match
+    ).first()
+    
+    # Verificar se o prazo está próximo (menos de 24h)
+    is_deadline_close = match.start_time - timezone.now() < timedelta(hours=24)
+    
+    if request.method == 'POST':
+        form = BetForm(request.POST, instance=existing_bet)
+        if form.is_valid():
+            bet = form.save(commit=False)
+            bet.user = request.user
+            bet.pool = pool
+            bet.match = match
+            bet.save()
+            
+            messages.success(request, "Sua aposta foi registrada com sucesso!")
+            return redirect('pools:detail', pool_id=pool_id)
+    else:
+        form = BetForm(instance=existing_bet)
+    
+    context = {
+        'pool': pool,
+        'match': match,
+        'form': form,
+        'existing_bet': existing_bet,
+        'is_deadline_close': is_deadline_close,
+    }
+    
+    return render(request, 'pools/bet_form.html', context)
+
+def calculate_bet_points(bet):
+    """Calcula os pontos ganhos por uma aposta após o resultado da partida"""
+    
+    match = bet.match
+    
+    # Verificar se a partida foi finalizada e tem resultado
+    if not match.finished or match.home_score is None or match.away_score is None:
+        return 0
+    
+    # Resultados reais
+    real_home_score = match.home_score
+    real_away_score = match.away_score
+    
+    # Apostas do usuário
+    bet_home_score = bet.home_score_bet
+    bet_away_score = bet.away_score_bet
+    
+    # Verificar resultado real (vitória casa, empate ou vitória visitante)
+    if real_home_score > real_away_score:
+        real_result = 'home'
+    elif real_home_score < real_away_score:
+        real_result = 'away'
+    else:
+        real_result = 'draw'
+    
+    # Verificar resultado apostado
+    if bet_home_score > bet_away_score:
+        bet_result = 'home'
+    elif bet_home_score < bet_away_score:
+        bet_result = 'away'
+    else:
+        bet_result = 'draw'
+    
+    # Acertou placar exato (10 pontos)
+    if bet_home_score == real_home_score and bet_away_score == real_away_score:
+        return 10
+    
+    # Acertou o vencedor e o saldo de gols (5 pontos)
+    if bet_result == real_result and (bet_home_score - bet_away_score) == (real_home_score - real_away_score):
+        return 5
+    
+    # Acertou apenas o vencedor (3 pontos)
+    if bet_result == real_result:
+        return 3
+    
+    # Não acertou nada (0 pontos)
+    return 0
+
+def pool_ranking(request, slug):
+    """Exibe a classificação dos participantes de um bolão"""
+    pool = get_object_or_404(Pool, slug=slug)
+    
+    # Verificar se o usuário pode ver o bolão
+    if pool.visibility == 'private' and request.user != pool.owner and not pool.participants.filter(id=request.user.id).exists():
+        messages.error(request, "Você não tem acesso a este bolão.")
+        return redirect('pools:list')
+    
+    # Obter todos os participantes com suas pontuações
+    participants_data = []
+    
+    for participant in pool.participants.all():
+        # Obter todas as apostas do participante neste bolão
+        bets = Bet.objects.filter(user=participant, pool=pool)
+        total_points = bets.aggregate(Sum('points_earned'))['points_earned__sum'] or 0
+        bets_count = bets.count()
+        correct_bets = bets.filter(points_earned__gt=0).count()
+        
+        # Calcular aproveitamento
+        accuracy = 0
+        if bets_count > 0:
+            accuracy = (correct_bets / bets_count) * 100
+        
+        participants_data.append({
+            'user': participant,
+            'points': total_points,
+            'bets_count': bets_count,
+            'correct_bets': correct_bets,
+            'accuracy': accuracy,
+        })
+    
+    # Ordenar por pontos (maior para menor)
+    participants_data.sort(key=lambda x: x['points'], reverse=True)
+    
+    return render(request, 'pools/ranking.html', {'pool': pool, 'participants': participants_data})

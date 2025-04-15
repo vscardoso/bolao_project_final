@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Classificação - {{ pool.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Classificação - {{ pool.name }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'pools:list' %}">Bolões</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'pools:detail' pool.id %}">{{ pool.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Classificação</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if participants %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Participante</th>
+                                <th>Pontos</th>
+                                <th>Apostas</th>
+                                <th>Acertos</th>
+                                <th>Aproveitamento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participant in participants %}
+                            <tr {% if participant.user == request.user %}class="table-primary"{% endif %}>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-placeholder bg-primary text-white rounded-circle me-2">
+                                            {{ participant.user.username|slice:":1"|upper }}
+                                        </div>
+                                        {{ participant.user.username }}
+                                    </div>
+                                </td>
+                                <td><span class="fw-bold">{{ participant.points }}</span></td>
+                                <td>{{ participant.bets_count }}</td>
+                                <td>{{ participant.correct_bets }}</td>
+                                <td>
+                                    {% if participant.bets_count > 0 %}
+                                        {{ participant.accuracy|floatformat:1 }}%
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Este bolão ainda não tem participantes ou apostas registradas.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/rankings.js' %}"></script>
+{% endblock %}

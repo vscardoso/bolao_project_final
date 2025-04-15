@@ -126,7 +126,7 @@
                                 
                                 {% if request.user in pool.participants.all or request.user == pool.owner %}
                                     {% if pool.is_open_for_betting and match.start_time|date:'YmdHi' > now|date:'YmdHi' %}
-                                        <a href="{% url 'pools:bet_create' pool.slug match.id %}" class="btn btn-sm btn-primary ms-2">
+                                        <a href="{% url 'pools:bet_match' pool.slug match.id %}" class="btn btn-sm btn-primary ms-2">
                                             <i class="fas fa-dice me-1"></i> Apostar
                                         </a>
                                     {% else %}
@@ -221,6 +221,9 @@
                             {% if request.user in pool.participants.all or request.user == pool.owner %}
                             <a href="#" class="btn btn-outline-success">
                                 <i class="fas fa-table me-2"></i> Ver tabela completa
+                            </a>
+                            <a href="{% url 'pools:ranking' pool.slug %}" class="btn btn-outline-primary">
+                                <i class="bi bi-trophy"></i> Ver Classificação
                             </a>
                             {% endif %}
                         </div>

@@ -1,19 +1,152 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block title %}Editar Perfil | Bolão Online{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos consistentes com o resto da aplicação */
+    .profile-header {
+        padding: 0.75rem 1rem;
+        background: linear-gradient(120deg, #2b5876 0%, #4e4376 100%);
+        color: white;
+    }
+    
+    .profile-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin-right: 1rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .field-header {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        padding-bottom: 0.5rem;
+        margin-top: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .btn-save {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    
+    /* Melhoria para campos de formulário */
+    .form-control:focus {
+        border-color: #6c63ff;
+        box-shadow: 0 0 0 0.25rem rgba(108, 99, 255, 0.25);
+    }
+
+    /* Componente de upload de imagem melhorado */
+    .profile-upload-container {
+        position: relative;
+        width: 150px;
+        margin: 0 auto;
+    }
+    
+    .profile-preview {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .profile-preview:hover {
+        transform: scale(1.05);
+    }
+    
+    .profile-upload-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: rgba(13, 110, 253, 0.9);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .profile-upload-overlay:hover {
+        background: rgba(13, 110, 253, 1);
+    }
+    
+    /* Feedback toast */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+    }
+    
+    /* Campo com validação */
+    .is-valid {
+        border-color: #198754 !important;
+        padding-right: calc(1.5em + 0.75rem) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right calc(0.375em + 0.1875rem) center !important;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+        padding-right: calc(1.5em + 0.75rem) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right calc(0.375em + 0.1875rem) center !important;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card shadow border-0">
-            <div class="card-header bg-primary text-white">
-                <h3 class="mb-0">Editar Perfil</h3>
+        <div class="card shadow border-0 mb-4">
+            <!-- Header com informações do perfil -->
+            <div class="profile-header d-flex align-items-center">
+                {% if user.profile.profile_pic %}
+                    <img src="{{ user.profile.profile_pic.url }}" class="profile-img" alt="{{ user.username }}">
+                {% else %}
+                    <div class="profile-img bg-primary d-flex align-items-center justify-content-center">
+                        <i class="fas fa-user fa-2x text-white"></i>
+                    </div>
+                {% endif %}
+                <div>
+                    <h3 class="mb-0">Editar Perfil</h3>
+                    <p class="mb-0">Atualize suas informações pessoais</p>
+                </div>
             </div>
+            
             <div class="card-body p-4">
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
                     
-                    <div class="row">
+                    <!-- Dados pessoais -->
+                    <div class="field-header">
+                        <i class="fas fa-user-circle me-2"></i> Dados Pessoais
+                    </div>
+                    
+                    <div class="row mt-3">
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.first_name.id_for_label }}" class="form-label">Nome</label>
                             {{ form.first_name }}
@@ -31,57 +164,93 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Nome de usuário</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
-                        {% endif %}
-                        {% if form.username.help_text %}
-                            <div class="form-text small text-muted">{{ form.username.help_text }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.phone.id_for_label }}" class="form-label">Telefone</label>
-                        {{ form.phone }}
-                        {% if form.phone.errors %}
-                            <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
-                        {% endif %}
-                        <div class="form-text small text-muted">Formato: (00) 00000-0000</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Foto de perfil</label>
-                        <div class="d-flex align-items-center">
-                            {% if user.profile_picture %}
-                                <img src="{{ user.profile_picture.url }}" class="rounded-circle me-3" width="50" height="50" alt="{{ user.username }}">
-                            {% else %}
-                                <div class="bg-light rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                    <i class="fas fa-user-circle text-secondary" style="font-size: 40px;"></i>
-                                </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">E-mail</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors }}</div>
                             {% endif %}
-                            {{ form.profile_picture }}
                         </div>
-                        {% if form.profile_picture.errors %}
-                            <div class="text-danger small mt-1">{{ form.profile_picture.errors }}</div>
-                        {% endif %}
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Nome de usuário</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Este nome será exibido nos rankings e bolões</small>
+                        </div>
                     </div>
                     
-                    <div class="d-flex justify-content-between">
+                    <!-- Foto de perfil -->
+                    <div class="field-header">
+                        <i class="fas fa-camera me-2"></i> Foto de Perfil
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12 mb-3">
+                            <div class="text-center mb-3">
+                                <div class="profile-upload-container">
+                                    {% if user.profile.profile_pic %}
+                                        <img src="{{ user.profile.profile_pic.url }}" class="profile-preview" id="profile-preview" alt="{{ user.username }}">
+                                    {% else %}
+                                        <div class="profile-preview d-flex align-items-center justify-content-center bg-light" id="profile-preview-placeholder">
+                                            <i class="fas fa-user fa-3x text-secondary"></i>
+                                        </div>
+                                    {% endif %}
+                                    <label for="{{ form.profile_pic.id_for_label }}" class="profile-upload-overlay">
+                                        <i class="fas fa-camera"></i>
+                                    </label>
+                                    <div class="d-none">
+                                        {{ form.profile_pic }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if form.profile_pic.errors %}
+                                <div class="text-danger small mt-1 text-center">{{ form.profile_pic.errors }}</div>
+                            {% endif %}
+                            <p class="text-muted small text-center">Clique na imagem para alterar sua foto de perfil</p>
+                            <p class="text-muted small text-center">Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Preferências -->
+                    <div class="field-header">
+                        <i class="fas fa-cog me-2"></i> Preferências
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.receive_notifications.id_for_label }}" class="form-label">Notificações</label>
+                            <div class="form-check">
+                                {{ form.receive_notifications }}
+                                <label class="form-check-label" for="{{ form.receive_notifications.id_for_label }}">
+                                    Receber notificações por e-mail
+                                </label>
+                            </div>
+                            <small class="text-muted">Notificações sobre bolões, apostas e resultados</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.public_profile.id_for_label }}" class="form-label">Visibilidade</label>
+                            <div class="form-check">
+                                {{ form.public_profile }}
+                                <label class="form-check-label" for="{{ form.public_profile.id_for_label }}">
+                                    Perfil público
+                                </label>
+                            </div>
+                            <small class="text-muted">Permitir que outros usuários vejam seu perfil e histórico</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões de ação -->
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
                         <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Voltar
+                            <i class="fas fa-arrow-left me-1"></i> Cancelar
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i> Salvar alterações
+                        <button type="submit" class="btn btn-primary btn-save">
+                            <i class="fas fa-save me-1"></i> Salvar Alterações
                         </button>
                     </div>
                 </form>
@@ -89,4 +258,119 @@
         </div>
     </div>
 </div>
+
+<!-- No final do arquivo, adicione este HTML para o toast de feedback -->
+<div class="toast-container">
+    <div class="toast align-items-center text-white bg-success border-0" id="success-toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check-circle me-2"></i> Perfil atualizado com sucesso!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Função para pré-visualizar a imagem selecionada
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // Se tiver um placeholder, remover e substituir por uma imagem
+                const placeholder = document.getElementById('profile-preview-placeholder');
+                if (placeholder) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.id = 'profile-preview';
+                    img.className = 'profile-preview';
+                    img.alt = 'Preview';
+                    placeholder.parentNode.replaceChild(img, placeholder);
+                } else {
+                    // Se já tiver uma imagem, apenas atualizar a fonte
+                    $('#profile-preview').attr('src', e.target.result);
+                }
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    // Validação dos campos do formulário
+    function validateForm() {
+        let isValid = true;
+        
+        // Validar nome
+        const firstName = document.getElementById('{{ form.first_name.id_for_label }}');
+        if (!firstName.value.trim()) {
+            firstName.classList.add('is-invalid');
+            firstName.classList.remove('is-valid');
+            isValid = false;
+        } else {
+            firstName.classList.add('is-valid');
+            firstName.classList.remove('is-invalid');
+        }
+        
+        // Validar email
+        const email = document.getElementById('{{ form.email.id_for_label }}');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.value.trim() || !emailRegex.test(email.value)) {
+            email.classList.add('is-invalid');
+            email.classList.remove('is-valid');
+            isValid = false;
+        } else {
+            email.classList.add('is-valid');
+            email.classList.remove('is-invalid');
+        }
+        
+        // Validar username
+        const username = document.getElementById('{{ form.username.id_for_label }}');
+        if (!username.value.trim() || username.value.length < 3) {
+            username.classList.add('is-invalid');
+            username.classList.remove('is-valid');
+            isValid = false;
+        } else {
+            username.classList.add('is-valid');
+            username.classList.remove('is-invalid');
+        }
+        
+        return isValid;
+    }
+    
+    $(document).ready(function() {
+        // Mostrar o toast se o formulário foi salvo com sucesso (via GET param)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            const toast = new bootstrap.Toast(document.getElementById('success-toast'));
+            toast.show();
+            
+            // Remover o parâmetro da URL sem recarregar a página
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        // Configurar o upload de imagem
+        $("#{{ form.profile_pic.id_for_label }}").change(function() {
+            readURL(this);
+        });
+        
+        // Validação ao enviar formulário
+        $("form").submit(function(event) {
+            if (!validateForm()) {
+                event.preventDefault();
+                $('html, body').animate({
+                    scrollTop: $(".is-invalid").first().offset().top - 100
+                }, 200);
+            }
+        });
+        
+        // Validação em tempo real
+        $("input, select").on('blur', function() {
+            validateForm();
+        });
+    });
+</script>
 {% endblock %}

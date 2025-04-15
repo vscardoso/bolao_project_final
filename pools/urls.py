@@ -24,10 +24,13 @@ urlpatterns = [
     
     # Apostas
     path('<slug:slug>/apostas/', views.BetListView.as_view(), name='bet_list'),
-    path('<slug:slug>/apostar/<int:match_id>/', views.BetCreateView.as_view(), name='bet_create'),
+    path('<slug:slug>/apostar/<int:match_id>/', views.BetCreateView.as_view(), name='bet_match'),
 
     # Meus bolões criados e participados
     path('my-created/', views.MyCreatedPoolsView.as_view(), name='my_created'),
     path('my-joined/', views.MyJoinedPoolsView.as_view(), name='my_joined'),
     path('discover/', views.DiscoverPoolsView.as_view(), name='discover'),
+
+    # Ranking
+    path('<slug:slug>/ranking/', views.pool_ranking, name='ranking'),
 ]

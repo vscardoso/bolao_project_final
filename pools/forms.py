@@ -149,23 +149,34 @@ class InvitationForm(forms.Form):
         return emails
 
 class BetForm(forms.ModelForm):
+    """Formulário para apostas"""
+    
     class Meta:
         model = Bet
         fields = ['home_score_bet', 'away_score_bet']
-        labels = {
-            'home_score_bet': 'Gols do Time da Casa',
-            'away_score_bet': 'Gols do Time Visitante',
-        }
         widgets = {
-            'home_score_bet': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
-            'away_score_bet': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'home_score_bet': forms.NumberInput(attrs={
+                'class': 'form-control score-input',
+                'min': '0',
+                'placeholder': '0'
+            }),
+            'away_score_bet': forms.NumberInput(attrs={
+                'class': 'form-control score-input',
+                'min': '0',
+                'placeholder': '0'
+            })
         }
     
     def __init__(self, *args, **kwargs):
+        # Extrair match e pool do kwargs
         self.match = kwargs.pop('match', None)
-        self.pool = kwargs.pop('pool', None)
-        self.user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
+        self.pool = kwargs.pop('pool', None)  # Adicionar esta linha
+        super(BetForm, self).__init__(*args, **kwargs)
+        
+        # Personalizar os labels se o match estiver disponível
+        if self.match:
+            self.fields['home_score_bet'].label = f"{self.match.home_team}"
+            self.fields['away_score_bet'].label = f"{self.match.away_team}"
     
     def clean(self):
         cleaned_data = super().clean()

@@ -1,130 +1,141 @@
-{% extends 'pools/base_pools.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Apostar em {{ match }} | {{ pool.name }}{% endblock %}
+{% block title %}Fazer Aposta - {{ match.home_team }} x {{ match.away_team }}{% endblock %}
 
-{% block pool_content %}
-
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-primary text-white py-3">
-        <h1 class="h4 mb-0">Apostar em {{ match.home_team }} vs {{ match.away_team }}</h1>
-    </div>
-    <div class="card-body">
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <i class="far fa-calendar me-1"></i> Data: {{ match.start_time|date:"d/m/Y" }}<br>
-                        <i class="far fa-clock me-1"></i> Horário: {{ match.start_time|date:"H:i" }}
-                    </div>
-                    
-                    <!-- Adicionar contagem regressiva se desejar -->
-                    {% if match.start_time|date:'YmdHi' > now|date:'YmdHi' %}
-                    <div class="ms-auto badge bg-warning text-dark p-2">
-                        <i class="fas fa-hourglass-half me-1"></i> Fecha em 
-                        <span id="countdown" data-datetime="{{ match.start_time|date:'c' }}">--:--:--</span>
-                    </div>
-                    {% endif %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg bet-card">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-futbol me-2"></i> Registrar Aposta
+                    </h4>
                 </div>
-            </div>
-        </div>
-        
-        <form method="post" class="mb-4">
-            {% csrf_token %}
-            
-            <!-- Mensagens de erro -->
-            {% if form.errors %}
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                Por favor, corrija os erros abaixo.
-                {{ form.non_field_errors }}
-            </div>
-            {% endif %}
-            
-            <div class="row justify-content-center py-4">
-                <div class="col-md-10">
-                    <div class="bet-form-container bg-light p-4 rounded-3">
-                        <div class="row align-items-center text-center">
-                            <!-- Time da casa -->
-                            <div class="col-4">
-                                <h4>{{ match.home_team }}</h4>
-                                <img src="https://via.placeholder.com/80" alt="{{ match.home_team }}" class="img-fluid rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                
+                <div class="card-body p-4">
+                    <!-- Informações da partida -->
+                    <div class="match-info mb-4">
+                        <div class="text-center small mb-2">
+                            <span class="badge bg-light text-dark">
+                                {{ match.competition.name }}
+                            </span>
+                            <span class="text-muted ms-2">{{ match.start_time|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        
+                        <div class="row align-items-center justify-content-center match-teams">
+                            <div class="col-4 text-end">
+                                <h5 class="team-name home">{{ match.home_team }}</h5>
                             </div>
-                            
-                            <!-- Campos de apostas -->
-                            <div class="col-4">
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <div class="me-2">
-                                        {{ form.home_score_bet }}
-                                        {% if form.home_score_bet.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.home_score_bet.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="mx-2 h4">x</div>
-                                    <div class="ms-2">
-                                        {{ form.away_score_bet }}
-                                        {% if form.away_score_bet.errors %}
-                                        <div class="invalid-feedback d-block">{{ form.away_score_bet.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                            <div class="col-4 text-center">
+                                <div class="vs-badge">VS</div>
                             </div>
-                            
-                            <!-- Time visitante -->
-                            <div class="col-4">
-                                <h4>{{ match.away_team }}</h4>
-                                <img src="https://via.placeholder.com/80" alt="{{ match.away_team }}" class="img-fluid rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                            <div class="col-4 text-start">
+                                <h5 class="team-name away">{{ match.away_team }}</h5>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Formulário de apostas -->
+                    <form method="post" class="bet-form">
+                        {% csrf_token %}
+                        <div class="row justify-content-center">
+                            <div class="col-5 text-center">
+                                <div class="score-container">
+                                    <label for="{{ form.home_score_bet.id_for_label }}" class="d-block mb-2">
+                                        {{ form.home_score_bet.label }}
+                                    </label>
+                                    {{ form.home_score_bet }}
+                                    {{ form.home_score_bet.errors }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-2 d-flex align-items-center justify-content-center p-0">
+                                <div class="score-divider">x</div>
+                            </div>
+                            
+                            <div class="col-5 text-center">
+                                <div class="score-container">
+                                    <label for="{{ form.away_score_bet.id_for_label }}" class="d-block mb-2">
+                                        {{ form.away_score_bet.label }}
+                                    </label>
+                                    {{ form.away_score_bet }}
+                                    {{ form.away_score_bet.errors }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-check me-2"></i> Confirmar Aposta
+                            </button>
+                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-secondary btn-lg ms-3">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light p-3">
+                    <div class="text-center">
+                        <p class="mb-2">
+                            <i class="fas fa-clock me-1"></i>
+                            <small>Tempo restante para apostar:</small>
+                        </p>
+                        
+                        <div class="countdown-timer mb-2" data-match-time="{{ match.start_time|date:'Y-m-d H:i:s' }}">
+                            <span class="countdown-value days">00</span>d
+                            <span class="countdown-value hours">00</span>h
+                            <span class="countdown-value minutes">00</span>m
+                            <span class="countdown-value seconds">00</span>s
+                        </div>
+                        
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Você pode alterar sua aposta até o início da partida.
+                        </small>
+                    </div>
                 </div>
             </div>
             
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i> Confirmar Aposta
-                </button>
+            <div class="bet-rules mt-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-trophy text-warning me-2"></i> Sistema de Pontuação</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    Acertar o placar exato
+                                </span>
+                                <span class="badge bg-primary rounded-pill">10 pontos</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    Acertar o vencedor e diferença de gols
+                                </span>
+                                <span class="badge bg-primary rounded-pill">5 pontos</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    Acertar apenas o vencedor
+                                </span>
+                                <span class="badge bg-primary rounded-pill">3 pontos</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </form>
-        
-        <div class="alert alert-info">
-            <h5><i class="fas fa-info-circle me-2"></i>Como funciona a pontuação?</h5>
-            <ul class="mb-0">
-                <li><strong>3 pontos</strong> - Acertar o placar exato</li>
-                <li><strong>1 ponto</strong> - Acertar o vencedor ou empate</li>
-                <li><strong>0 pontos</strong> - Erro</li>
-            </ul>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Contagem regressiva para fechamento das apostas
-        const countdownEl = document.getElementById('countdown');
-        if (countdownEl) {
-            const targetDate = new Date(countdownEl.getAttribute('data-datetime'));
-            
-            function updateCountdown() {
-                const now = new Date();
-                const diff = targetDate - now;
-                
-                if (diff <= 0) {
-                    countdownEl.innerHTML = "Encerrado";
-                    return;
-                }
-                
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                countdownEl.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
-            
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
-        }
-    });
-</script>
+{% block extra_js %}
+<script src="{% static 'js/bet_form.js' %}"></script>
 {% endblock %}

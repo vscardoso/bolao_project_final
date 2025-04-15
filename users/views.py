@@ -1,9 +1,23 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, UserProfileForm
+from django.urls import reverse
+from django.db.models import Sum
+from .forms import CustomUserCreationForm, UserProfileForm, ProfileEditForm
 from .models import CustomUser
-from pools.models import Pool, Participation
+from pools.models import Pool, Participation, Bet
+
+# Adicione esta função auxiliar
+def cleanup_profile_pictures(user):
+    """Verifica e limpa referências de imagens inválidas"""
+    try:
+        profile = user.profile
+        if profile.profile_pic and not profile.profile_pic.storage.exists(profile.profile_pic.name):
+            # Referência inválida, limpar campo
+            profile.profile_pic = None
+            profile.save(update_fields=['profile_pic'])
+    except Exception as e:
+        print(f"Erro ao verificar imagem do perfil: {e}")
 
 def register(request):
     if request.method == 'POST':
@@ -19,19 +33,58 @@ def register(request):
 
 @login_required
 def profile(request):
+    # Chame a função no início da view
+    cleanup_profile_pictures(request.user)
+    
     user = request.user
-    return render(request, 'users/profile.html', {'user': user})
+    
+    # Buscar bolões criados pelo usuário - Já corrigido
+    owned_pools = Pool.objects.filter(owner=user)
+    owned_pools_count = owned_pools.count()
+    
+    # Buscar bolões que o usuário participa - Já corrigido
+    joined_pools = Pool.objects.filter(
+        participants=user
+    ).exclude(owner=user)  # Excluir os que ele criou
+    joined_pools_count = joined_pools.count()
+    
+    # CORRIGIR: O modelo Bet não tem o campo is_correct
+    # Vamos verificar os campos disponíveis e usar points_earned > 0 
+    # para identificar apostas corretas
+    bets_count = Bet.objects.filter(user=user).count()
+    total_points = Bet.objects.filter(user=user).filter(
+        points_earned__gt=0  # Apostas com pontos > 0 (corretas)
+    ).aggregate(
+        Sum('points_earned')
+    )['points_earned__sum'] or 0
+    
+    owned_pools_display = owned_pools[:3]
+    joined_pools_display = joined_pools[:3]
+    
+    recent_activities = []
+    
+    context = {
+        'owned_pools': owned_pools_display,
+        'owned_pools_count': owned_pools_count,
+        'joined_pools': joined_pools_display,
+        'joined_pools_count': joined_pools_count,
+        'bets_count': bets_count,
+        'total_points': total_points,
+        'recent_activities': recent_activities
+    }
+    
+    return render(request, 'users/profile.html', context)
 
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+        form = ProfileEditForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Seu perfil foi atualizado com sucesso!')
-            return redirect('users:profile')
+            # Redirecionar com parâmetro de sucesso para ativar o toast
+            return redirect(reverse('users:edit_profile') + '?success=true')
     else:
-        form = UserProfileForm(instance=request.user)
+        form = ProfileEditForm(instance=request.user)
     
     return render(request, 'users/edit_profile.html', {'form': form})
 
