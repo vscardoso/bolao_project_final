@@ -53,7 +53,7 @@
                 </div>
                 <div class="card-footer bg-warning-dark border-0 py-3">
                     <!-- Vinculando à gestão de convites -->
-                    <a href="{% url 'pools:invitations' %}" class="text-dark d-block">
+                    <a href="{% url 'pools:all_invitations' %}" class="text-dark d-block">
                         Gerenciar <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>
@@ -112,7 +112,7 @@
                             </div>
                             <h6>Convites</h6>
                             <p class="text-muted small mb-3">Gerenciar seus convites</p>
-                            <a href="{% url 'pools:invitations' %}" class="btn btn-sm btn-warning mt-auto">Ver</a>
+                            <a href="{% url 'pools:all_invitations' %}" class="btn btn-sm btn-warning mt-auto">Ver</a>
                         </div>
                     </div>
                 </div>
@@ -183,42 +183,187 @@
     <!-- Bolões que você criou -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">
-            <h2 class="h5 mb-0">Bolões que você criou</h2>
-        </div>
-        <div class="card-body p-0">
-            {% if owned_pools %}
-            <div class="list-group list-group-flush">
-                {% for pool in owned_pools %}
-                <div class="list-group-item list-group-item-action p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-1">{{ pool.name }}</h5>
-                            <p class="text-muted small mb-0">{{ pool.competition.name }}</p>
-                        </div>
-                        <div class="btn-group btn-group-sm">
-                            <!-- Vinculando ao detalhe do bolão -->
-                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary">
-                                <i class="fas fa-eye me-1"></i> Detalhes
-                            </a>
-                            <!-- Vinculando à edição do bolão -->
-                            <a href="{% url 'pools:update' pool.slug %}" class="btn btn-outline-primary">
-                                <i class="fas fa-edit me-1"></i> Editar
-                            </a>
-                        </div>
+            <div class="d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+                <!-- Título à esquerda -->
+                <h2 class="h5 mb-md-0">Bolões que você criou</h2>
+                
+                <!-- Barra de pesquisa no centro -->
+                <div class="position-relative flex-grow-1 mx-md-3" style="max-width: 400px;">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="poolSearchInput" class="form-control border-start-0" 
+                               placeholder="Pesquisar bolão...">
+                        <button type="button" id="clearSearchBtn" class="btn btn-outline-secondary" 
+                                style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="text-center py-5">
-                <p class="text-muted">Você ainda não criou nenhum bolão.</p>
-                <!-- Vinculando à criação -->
-                <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-2"></i> Criar meu primeiro bolão
+                
+                <!-- Botão à direita -->
+                <a href="{% url 'pools:create' %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus me-1"></i> Novo bolão
                 </a>
             </div>
+        </div>
+        
+        <div class="card-body p-3">
+            {% if owned_pools %}
+                
+                <!-- Área com rolagem interna -->
+                <div class="scrollable-pools-container">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2" id="poolsContainer">
+                        {% for pool in owned_pools %}
+                        <div class="col pool-item" data-pool-name="{{ pool.name|lower }}" data-competition="{{ pool.competition.name|lower }}">
+                            <div class="card h-100 border-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="card-title mb-1 text-truncate">{{ pool.name }}</h6>
+                                        <span class="badge bg-{% if pool.is_public %}success{% else %}secondary{% endif %} rounded-pill">
+                                            {% if pool.is_public %}Público{% else %}Privado{% endif %}
+                                        </span>
+                                    </div>
+                                    <p class="text-muted small mb-2">{{ pool.competition.name }}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-muted"><i class="fas fa-users me-1"></i> {{ pool.participants.count }}</small>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i> Ver
+                                            </a>
+                                            <a href="{% url 'pools:update' pool.slug %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-edit me-1"></i> Editar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Mensagem quando não há resultados -->
+                    <div id="noResultsMessage" class="text-center py-4" style="display: none;">
+                        <p class="text-muted">Nenhum bolão encontrado com esse nome.</p>
+                        <button id="resetSearchBtn" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-sync-alt me-1"></i> Mostrar todos
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Contador de bolões no rodapé -->
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                    <small class="text-muted">
+                        <span id="visiblePoolsCount">{{ owned_pools.count }}</span> de {{ owned_pools.count }} bolão(ões)
+                    </small>
+                    {% if owned_pools.count > 6 %}
+                    <a href="{% url 'pools:list' %}?filter=created" class="btn btn-sm btn-link">Ver todos</a>
+                    {% endif %}
+                </div>
+                
+                <!-- JavaScript para filtrar bolões -->
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Declaração de variável aqui é válida
+                        const totalPools = parseInt('{{ owned_pools.count|default:0 }}') || 0;
+                        
+                        const searchInput = document.getElementById('poolSearchInput');
+                        const clearBtn = document.getElementById('clearSearchBtn');
+                        const resetBtn = document.getElementById('resetSearchBtn');
+                        const poolItems = document.querySelectorAll('.pool-item');
+                        const noResultsMsg = document.getElementById('noResultsMessage');
+                        const visiblePoolsCount = document.getElementById('visiblePoolsCount');
+                        
+                        // Função para filtrar os bolões
+                        function filterPools() {
+                            const searchTerm = searchInput.value.toLowerCase().trim();
+                            let visibleCount = 0;
+                            
+                            // Mostrar/esconder o botão de limpar
+                            clearBtn.style.display = searchTerm ? 'block' : 'none';
+                            
+                            // Filtrar cada item
+                            poolItems.forEach(item => {
+                                const poolName = item.dataset.poolName;
+                                const competition = item.dataset.competition;
+                                const matchesSearch = poolName.includes(searchTerm) || 
+                                                    competition.includes(searchTerm);
+                                
+                                item.style.display = matchesSearch ? '' : 'none';
+                                
+                                if (matchesSearch) {
+                                    visibleCount++;
+                                }
+                            });
+                            
+                            // Atualizar contador
+                            visiblePoolsCount.textContent = visibleCount;
+                            
+                            // Mostrar mensagem de "nenhum resultado" se necessário
+                            noResultsMsg.style.display = (visibleCount === 0 && searchTerm) ? 'block' : 'none';
+                        }
+                        
+                        // Event listeners
+                        searchInput.addEventListener('input', filterPools);
+                        
+                        clearBtn.addEventListener('click', function() {
+                            searchInput.value = '';
+                            filterPools();
+                            searchInput.focus();
+                        });
+                        
+                        resetBtn.addEventListener('click', function() {
+                            searchInput.value = '';
+                            filterPools();
+                        });
+                    });
+                </script>
+                
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">Você ainda não criou nenhum bolão.</p>
+                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i> Criar meu primeiro bolão
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>
+
+    <!-- Estilos adicionais -->
+    <style>
+    .scrollable-pools-container {
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden; /* Impedir rolagem horizontal */
+        padding-right: 5px; /* Espaço para a barra de rolagem */
+    }
+
+    /* Estilizando a barra de rolagem */
+    .scrollable-pools-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scrollable-pools-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .scrollable-pools-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+
+    .scrollable-pools-container::-webkit-scrollbar-thumb:hover {
+        background: #a0a0a0;
+    }
+
+    /* Estilo para o campo de pesquisa */
+    #poolSearchInput:focus {
+        box-shadow: none;
+        border-color: var(--bs-primary);
+    }
+    </style>
 </div>
 {% endblock %}

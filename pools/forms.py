@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import Pool, Participation, Sport, Competition, Bet, Match
+from .models import Pool, Participation, Sport, Competition, Bet, Match, Invitation
 
 class PoolForm(forms.ModelForm):
     """Formulário para criação e edição de bolões"""
@@ -111,6 +111,26 @@ class PoolJoinForm(forms.Form):
             self.fields['payment_method'].required = False
             self.fields['payment_method'].widget = forms.HiddenInput()
 
+class InvitationForm(forms.ModelForm):
+    """Formulário para enviar convites para o bolão"""
+    recipient_email = forms.EmailField(
+        label='Email do convidado',
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@exemplo.com'})
+    )
+    message = forms.CharField(
+        label='Mensagem (opcional)',
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control', 
+            'rows': 3,
+            'placeholder': 'Venha participar do meu bolão!'
+        })
+    )
+    
+    class Meta:
+        model = Invitation
+        fields = ['recipient_email', 'message']
+
 class InvitationForm(forms.Form):
     """Formulário para convidar usuários para um bolão"""
     emails = forms.CharField(
@@ -157,12 +177,12 @@ class BetForm(forms.ModelForm):
         widgets = {
             'home_score_bet': forms.NumberInput(attrs={
                 'class': 'form-control score-input',
-                'min': '0',
+                'min': '0',  # String em vez de número
                 'placeholder': '0'
             }),
             'away_score_bet': forms.NumberInput(attrs={
                 'class': 'form-control score-input',
-                'min': '0',
+                'min': '0',  # String em vez de número
                 'placeholder': '0'
             })
         }
@@ -170,13 +190,17 @@ class BetForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # Extrair match e pool do kwargs
         self.match = kwargs.pop('match', None)
-        self.pool = kwargs.pop('pool', None)  # Adicionar esta linha
+        self.pool = kwargs.pop('pool', None)
         super(BetForm, self).__init__(*args, **kwargs)
         
         # Personalizar os labels se o match estiver disponível
         if self.match:
             self.fields['home_score_bet'].label = f"{self.match.home_team}"
             self.fields['away_score_bet'].label = f"{self.match.away_team}"
+        
+        # Garantir que os atributos 'min' são strings
+        self.fields['home_score_bet'].widget.attrs['min'] = '0'
+        self.fields['away_score_bet'].widget.attrs['min'] = '0'
     
     def clean(self):
         cleaned_data = super().clean()
@@ -191,3 +215,15 @@ class BetForm(forms.ModelForm):
             raise forms.ValidationError("Este bolão não está mais aberto para apostas.")
             
         return cleaned_data
+    
+    def clean_home_score_bet(self):
+        home_score = self.cleaned_data.get('home_score_bet')
+        if home_score is not None and home_score > 20:
+            raise forms.ValidationError("O placar não pode ser maior que 20 gols.")
+        return home_score
+    
+    def clean_away_score_bet(self):
+        away_score = self.cleaned_data.get('away_score_bet')
+        if away_score is not None and away_score > 20:
+            raise forms.ValidationError("O placar não pode ser maior que 20 gols.")
+        return away_score

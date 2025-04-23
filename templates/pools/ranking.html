@@ -1,0 +1,129 @@
+{% extends 'pools/base_pools.html' %}
+{% load static %}
+
+{% block pool_content %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+        <h1 class="h3 mb-0">Ranking - {{ pool.name }}</h1>
+    </div>
+    
+    <div class="card-body">
+        <!-- Banner de topo destacado -->
+        <div class="ranking-header bg-gradient text-center py-4 mb-4 rounded shadow-sm">
+            <h2 class="ranking-title"><i class="fas fa-trophy gold-trophy"></i> Classificação Geral</h2>
+            <p class="text-muted">Total de participantes: {{ participants|length }} | Atualizado em: {{ now|date:"d/m/Y H:i" }}</p>
+        </div>
+
+        {% if participants|length > 2 %}
+        <!-- Pódio para os 3 primeiros -->
+        <div class="podium-container d-none d-md-flex justify-content-center mb-5">
+            <!-- 2º Lugar -->
+            <div class="podium-place second-place text-center">
+                <div class="podium-avatar">
+                    <div class="avatar-placeholder rounded-circle border border-3 border-silver">2</div>
+                </div>
+                <div class="podium-platform silver">
+                    <div class="podium-name">{{ participants.1.user.username }}</div>
+                    <div class="podium-points">{{ participants.1.points }} pts</div>
+                </div>
+            </div>
+            
+            <!-- 1º Lugar -->
+            <div class="podium-place first-place text-center">
+                <div class="winner-crown"><i class="fas fa-crown"></i></div>
+                <div class="podium-avatar">
+                    <div class="avatar-placeholder rounded-circle border border-3 border-gold">1</div>
+                </div>
+                <div class="podium-platform gold">
+                    <div class="podium-name">{{ participants.0.user.username }}</div>
+                    <div class="podium-points">{{ participants.0.points }} pts</div>
+                </div>
+            </div>
+            
+            <!-- 3º Lugar -->
+            <div class="podium-place third-place text-center">
+                <div class="podium-avatar">
+                    <div class="avatar-placeholder rounded-circle border border-3 border-bronze">3</div>
+                </div>
+                <div class="podium-platform bronze">
+                    <div class="podium-name">{{ participants.2.user.username }}</div>
+                    <div class="podium-points">{{ participants.2.points }} pts</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Tabela de classificação completa -->
+        <div class="table-responsive">
+            <table class="table table-hover ranking-table">
+                <thead class="table-dark sticky-top">
+                    <tr>
+                        <th class="position-col">#</th>
+                        <th>Participante</th>
+                        <th class="text-center">Pontos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participant in participants %}
+                    <tr class="{% if participant.user == request.user %}table-primary{% endif %} {% if forloop.counter <= 3 %}rank-highlight-{{forloop.counter}}{% endif %}">
+                        <td class="position-col fw-bold">
+                            {% if forloop.counter == 1 %}
+                            <span class="position-badge gold">1</span>
+                            {% elif forloop.counter == 2 %}
+                            <span class="position-badge silver">2</span>
+                            {% elif forloop.counter == 3 %}
+                            <span class="position-badge bronze">3</span>
+                            {% else %}
+                            {{ forloop.counter }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-placeholder-sm rounded-circle me-2">{{ participant.user.username|first|upper }}</div>
+                                <span class="fw-medium">{{ participant.user.username }}</span>
+                                {% if participant.user == pool.owner %}
+                                <span class="badge bg-info ms-2">Criador</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-center fw-bold">{{ participant.points }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4">
+                            <div class="empty-state">
+                                <i class="fas fa-users text-muted fa-3x mb-3"></i>
+                                <p>Ainda não há participantes no bolão.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Estatísticas rápidas -->
+        <div class="stats-summary card mt-4 mb-3 shadow-sm">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Estatísticas do Bolão</h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6 col-6 mb-3 mb-md-0">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ participants|length }}</div>
+                            <div class="stat-label">Participantes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-6">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ pool.max_points|default:'0' }}</div>
+                            <div class="stat-label">Pontos possíveis</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

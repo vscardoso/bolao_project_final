@@ -1,66 +1,151 @@
-{% extends 'base/base.html' %}
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
 
-{% block title %}Entrar | Bolão Online{% endblock %}
+{% block title %}Login | Bolão Online{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-lg border-0">
-            <div class="card-header bg-primary text-white text-center py-3">
-                <h3 class="mb-0">Entrar</h3>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="login-card">
+                <!-- Logo e cabeçalho -->
+                <div class="text-center mb-4">
+                    <img src="{% static 'img/logo.png' %}" alt="Bolão Online" class="login-logo mb-4">
+                    <h1 class="h3">Bem-vindo de volta!</h1>
+                    <p class="text-muted">Entre para acompanhar seus palpites e bolões</p>
+                </div>
+
+                <!-- Alertas e mensagens -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <!-- Formulário de login -->
+                <div class="login-form-container">
+                    <form method="post" class="login-form" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" name="username" class="form-control" id="id_username" placeholder="Nome de usuário" required autofocus>
+                            <label for="id_username">Nome de usuário</label>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="password" name="password" class="form-control" id="id_password" placeholder="Senha" required>
+                            <label for="id_password">Senha</label>
+                            <div class="password-toggle">
+                                <i class="fas fa-eye toggle-password" data-target="id_password"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember" id="rememberCheck">
+                                <label class="form-check-label" for="rememberCheck">
+                                    Lembrar-me
+                                </label>
+                            </div>
+                            <div>
+                                <a href="{% url 'password_reset' %}" class="forgot-link">Esqueceu a senha?</a>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Entrar
+                            </button>
+                        </div>
+                        
+                        {% if next %}
+                            <input type="hidden" name="next" value="{{ next }}">
+                        {% endif %}
+                    </form>
+                    
+                    <!-- Divisor -->
+                    <div class="divider">
+                        <span class="divider-text">ou</span>
+                    </div>
+                    
+                    <!-- Botões de redes sociais (opcional) -->
+                    <div class="social-login">
+                        <a href="#" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="fab fa-google me-2"></i>Entrar com Google
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary w-100">
+                            <i class="fab fa-facebook-f me-2"></i>Entrar com Facebook
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Rodapé do card -->
+                <div class="text-center mt-4">
+                    <p>Não tem uma conta? <a href="{% url 'users:register' %}" class="register-link">Registre-se</a></p>
+                </div>
             </div>
-            <div class="card-body p-4">
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    {% if form.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        Usuário ou senha incorretos. Por favor, tente novamente.
+            
+            <!-- Bloco de dicas -->
+            <div class="login-tips mt-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb text-warning me-2"></i>Dicas para o Bolão</h5>
                     </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Nome de usuário</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            {{ form.username }}
+                    <div class="card-body">
+                        <div id="carouselTips" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <p><strong>Sabia que?</strong> Usuários que apostam com pelo menos 6 horas de antecedência têm 25% mais chances de acertar!</p>
+                                </div>
+                                <div class="carousel-item">
+                                    <p><strong>Próximo evento:</strong> Copa do Mundo 2026 - Acompanhe os jogos ao vivo e faça apostas precisas!</p>
+                                </div>
+                                <div class="carousel-item">
+                                    <p><strong>Estatística:</strong> 72% dos vencedores de bolões consideram o histórico recente dos times.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Senha</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            {{ form.password }}
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="rememberCheck">
-                        <label class="form-check-label" for="rememberCheck">Lembrar de mim</label>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">Entrar</button>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="text-center">
-                        <p><a href="{% url 'password_reset' %}">Esqueceu sua senha?</a></p>
-                        <p>Não tem uma conta? <a href="{% url 'users:register' %}" class="text-primary fw-bold">Cadastre-se</a></p>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    // Adiciona classes Bootstrap aos campos de formulário
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('id_username').classList.add('form-control');
-        document.getElementById('id_password').classList.add('form-control');
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar/ocultar senha
+    const togglePassword = document.querySelector('.toggle-password');
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            const input = document.getElementById(target);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+            }
+        });
+    }
+    
+    // Iniciar o carrossel de dicas
+    const carouselElement = document.getElementById('carouselTips');
+    if (carouselElement && typeof bootstrap !== 'undefined') {
+        const carouselTips = new bootstrap.Carousel(carouselElement, {
+            interval: 7000
+        });
+    }
+});
 </script>
 {% endblock %}

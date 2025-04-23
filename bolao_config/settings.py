@@ -42,9 +42,14 @@ INSTALLED_APPS = [
     'pools',  # Certifique-se de que esta linha existe
     'users',
     # ... outras aplicações ...
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'django_extensions',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -59,7 +64,9 @@ ROOT_URLCONF = 'bolao_config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Diretório global de templates
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'bolao.context_processors.inactivity_timeout',  # Adicione esta linha
             ],
         },
     },
@@ -159,3 +167,20 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Durante dese
 
 # URL base para links em emails
 DEFAULT_FROM_EMAIL = 'naoresponda@bolaoonline.com'
+
+# Configuração para o timer de inatividade (em minutos)
+INACTIVITY_TIMEOUT = 30
+
+# Configuração de sessão - expira após 2 horas de inatividade
+SESSION_COOKIE_AGE = 7200  # 2 horas em segundos
+SESSION_SAVE_EVERY_REQUEST = True  # Atualiza o cookie a cada requisição
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # A sessão expira quando o navegador é fechado
+
+# Crispy Forms
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Configurações do Debug Toolbar
+INTERNAL_IPS = [
+    '127.0.0.1',
+]

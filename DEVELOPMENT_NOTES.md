@@ -3,6 +3,8 @@
 
 # Notas de Desenvolvimento - Projeto Bolão Online
 
+> A documentação completa foi movida para a pasta `/docs` para melhor organização e desempenho.
+
 ## Visão Geral do Projeto
 O Bolão Online é uma plataforma web que permite aos usuários criar e participar de bolões esportivos, fazer apostas, acompanhar resultados em tempo real e competir com amigos. O projeto é construído com Django, usa Bootstrap para o frontend e implementa várias funcionalidades modernas para engajamento do usuário.
 
@@ -214,27 +216,82 @@ python manage.py runserver
     - Adaptada a interface para ser totalmente responsiva em dispositivos móveis
     - Reorganizados elementos visuais para melhor hierarquia de informações
 
-## Implementações Recentes (Adicionadas em 14/04/2025)
+28. **Timer de inatividade para logout automático** - Implementado sistema de segurança:
+    - Adicionado script JavaScript para monitorar atividade do usuário (mouse, teclado, etc.)
+    - Criado timer configurável que desloga o usuário após período de inatividade
+    - Implementado aviso com contagem regressiva antes do logout automático
+    - Adicionada configuração para ajustar o tempo de inatividade permitido
+    - Integrado com o sistema de autenticação do Django para logout seguro
 
-1. **Sistema de Apostas**
-   - [x] Formulário intuitivo para apostas com interface visual rica
-   - [x] Regras de pontuação claras (10, 5, 3 pontos)
-   - [x] Countdown para início das partidas
-   - [x] Validações de prazo e participação
-   - [x] Estatísticas de apostas populares
-   - [x] Informações de confrontos anteriores
-   - [x] Visualização da aposta atual
-   - [x] Testes automatizados cobrindo toda a funcionalidade
+## Problemas Resolvidos (Atualizados em 17/04/2025)
+29. **TemplateSyntaxError em pool_discover.html** - Corrigido erro de sintaxe nas aspas:
+    - Identificado problema na linha com `{% if pool.sport.name == Futebol' %}` (aspas faltantes)
+    - Corrigida sintaxe para `{% if pool.sport.name == 'Futebol' %}`
+    - Verificados outros filtros condicionais para garantir consistência
 
-### Formulário de Apostas Aprimorado
-- [x] **Interface visual rica**: Redesign completo da página de apostas
-- [x] **Contador regressivo**: Adicionado cronômetro que mostra tempo restante até o início da partida
-- [x] **Validação em tempo real**: Implementado JavaScript para validar entradas do usuário
-- [x] **Feedback visual**: Efeitos interativos para melhorar a experiência do usuário
-- [x] **Sistema de apostas consistente**: Garantido que as apostas existentes sejam atualizadas em vez de gerar duplicatas
+30. **Erro css-propertyvalueexpected na barra de progresso** - Resolvido problema de CSS:
+    - Adicionada verificação para evitar divisão por zero em `widthratio`
+    - Implementada condição `{% if pool.max_participants > 0 %}` antes de calcular porcentagem
+    - Valor alternativo de 0% definido para casos onde max_participants é zero ou nulo
 
-### Sistema de Integridade de Dados
-- [x] **Verificação de apostas existentes**: Implementada lógica para evitar duplicatas no banco de dados
-- [x] **Atualização de apostas**: Modificada a view para atualizar apostas existentes em vez de criar novas
-- [x] **Mensagens contextuais**: Feedback diferenciado para criação vs. atualização de apostas
-- [x] **Validação de prazos**: Garantido que apostas só podem ser feitas/modificadas antes do início das partidas
+31. **Limitações de manutenção em código complexo de template** - Melhorada organização:
+    - Criados filtros personalizados em `pools/templatetags/pool_filters.py`
+    - Implementado filtro `sport_color` para centralizar associação de cores por esporte
+    - Adicionado filtro `sport_icon` para gerenciar ícones FontAwesome
+    - Desenvolvida tag `placeholder_image_url` para gerar URLs de imagens baseadas no esporte
+
+## Implementações Recentes (Atualizadas em 17/04/2025)
+
+### Sistema de Geração de Dados de Teste
+- [x] **Comando personalizado para criação de bolões de teste**:
+  - Implementado script `create_test_pools.py` como comando Django
+  - Capacidade de gerar usuários, esportes, competições e bolões em massa
+  - Configurável através do parâmetro `--count` para número de bolões
+
+- [x] **Dados realistas para teste da interface**:
+  - Geração de bolões com diferentes configurações (gratuitos/pagos, público/privados)
+  - Variação na taxa de ocupação para testar barras de progresso
+  - Criação de competições esportivas com datas realistas
+  - Distribuição randomizada de participantes nos bolões
+
+- [x] **Superação de desafios de integridade de dados**:
+  - Tratamento de campos obrigatórios (competition_id, start_date, end_date)
+  - Geração segura de UUIDs para chaves de convite
+  - Prevenção de erros em relacionamentos entre modelos
+  - Adaptação a restrições específicas do banco de dados MySQL
+
+### Melhorias na Descoberta de Bolões
+- [x] **Interface aprimorada para descobrir bolões**:
+  - Filtros visuais intuitivos por esporte
+  - Cards interativos com efeitos de hover
+  - Indicadores visuais de ocupação e tipo de bolão
+  - Cores específicas por esporte para melhor identificação visual
+  - Paginação aprimorada com preservação de filtros
+
+## Recentes Atualizações (17/04/2025)
+
+1. **Correção e melhoria do template de descoberta de bolões**
+   - Resolvido erro de sintaxe em filtros condicionais
+   - Implementada solução para problema na barra de progresso
+   - Criados filtros personalizados para simplificar o código
+   - Melhorada visualização de diferentes tipos de bolões
+
+2. **Sistema de geração de dados para testes**
+   - Desenvolvido comando Django para criar bolões de teste
+   - Implementadas validações para garantir integridade dos dados
+   - Geração de dados diversificados para testar todas as condições visuais
+   - Documentados os procedimentos para uso da ferramenta
+
+3. **Melhoria na organização do código de templates**
+   - Implementação de sistema de filtros personalizados
+   - Centralização de definições de cores e ícones por esporte
+   - Redução de complexidade em templates com condicionais aninhadas
+   - Maior facilidade para alterações futuras na aparência dos esportes
+
+## Próximos Passos
+
+- [ ] Sistema de convites para bolões
+- [ ] Integração com APIs de resultados esportivos
+- [ ] Dashboard de estatísticas do usuário
+
+Para mais detalhes, consulte a [documentação completa](/docs/README.md).

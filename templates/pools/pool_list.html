@@ -1,7 +1,14 @@
 {% extends 'pools/base_pools.html' %}
 {% load static %}
 
-{% block title %}Meus Bolões | Bolão Online{% endblock %}
+{% block title %}
+  {% if view_type == 'created' %}
+    Bolões que Criei
+  {% else %}
+    Bolões que Participo  
+  {% endif %}
+  | Bolão Online
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/main.css' %}">
@@ -113,182 +120,139 @@
 {% endblock %}
 
 {% block pool_content %}
-<!-- HEADER REFORMULADO EM LINHA ÚNICA -->
-<div class="page-header">
-    <div class="container">
-        <div class="header-content">
-            <div class="d-flex align-items-center">
-                <h1>Meus Bolões</h1>
-                <div class="stats-wrapper">
-                    <span class="stat-badge primary">
-                        <i class="fas fa-trophy"></i> {{ owned_pools_count }} Criados
-                    </span>
-                    <span class="stat-badge success">
-                        <i class="fas fa-users"></i> {{ joined_pools_count }} Participando
-                    </span>
-                    <span class="stat-badge info">
-                        <i class="fas fa-star"></i> {{ owned_pools_count|add:joined_pools_count }} Total
-                    </span>
-                </div>
-            </div>
-            <div class="ms-auto">
-                <a href="{% url 'pools:create' %}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-plus-circle me-1"></i> Criar Bolão
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="content-area">
-    <div class="container">
-        <!-- Bolões que criei - Seção com largura total -->
-        <section class="pool-section">
-            <div class="section-title owner-title d-flex align-items-center justify-content-between mb-3">
-                <h2 class="h4 mb-0 d-flex align-items-center">
-                    Bolões que criei
-                    <span class="badge bg-primary ms-2">{{ owned_pools_count }}</span>
-                </h2>
-            </div>
-            
-            {% if owned_pools %}
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                {% for pool in owned_pools %}
-                <div class="col">
-                    <div class="card pool-card h-100">
-                        <div class="card-header bg-primary text-white py-3">
-                            <h5 class="card-title mb-0">{{ pool.name }}</h5>
-                            <span class="status-badge badge {% if pool.status == 'open' %}bg-success{% elif pool.status == 'locked' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                                {{ pool.get_status_display }}
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text small text-muted mb-1">{{ pool.competition.name }}</p>
-                            <p class="card-text">{{ pool.description|truncatechars:80 }}</p>
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <div>
-                                    <small class="text-muted"><i class="fas fa-users me-1"></i> {{ pool.participants.count }}</small>
-                                    <small class="text-muted ms-2"><i class="fas fa-coins me-1"></i> R${{ pool.entry_fee }}</small>
-                                </div>
-                                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-sm btn-outline-primary">Ver Detalhes</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+<div class="container-xl px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            {% if view_type == 'created' %}
+                <i class="fas fa-trophy me-2 text-primary"></i> Bolões que Criei
             {% else %}
-            <div class="empty-state">
-                <i class="fas fa-trophy"></i>
-                <h3 class="h5">Você ainda não criou nenhum bolão</h3>
-                <p class="text-muted mb-3">Crie seu primeiro bolão e convide seus amigos para participar!</p>
-                <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-2"></i> Criar Bolão
-                </a>
-            </div>
+                <i class="fas fa-handshake me-2 text-success"></i> Bolões que Participo
             {% endif %}
-        </section>
+        </h1>
         
-        <!-- NOVO LAYOUT: Duas seções lado a lado com padronização apenas do badge -->
-        <div class="row mb-4">
-            <!-- Bolões que participo - Coluna esquerda (6) -->
-            <div class="col-md-6">
-                <section class="pool-section h-100">
-                    <!-- Título com badge na mesma linha -->
-                    <div class="section-title joined-title d-flex align-items-center justify-content-between mb-3">
-                        <h2 class="h4 mb-0 d-flex align-items-center">
-                            Bolões que participo
-                            <span class="badge bg-success ms-2">{{ joined_pools_count }}</span>
-                        </h2>
+        <a href="{% url 'pools:create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> Criar Novo Bolão
+        </a>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Buscar bolão..." value="{{ request.GET.search|default:'' }}">
                     </div>
-                    
-                    {% if participating_pools %}
-                    <div class="row row-cols-1 g-4">
-                        {% for pool in participating_pools %}
-                        <div class="col">
-                            <div class="card pool-card h-100">
-                                <div class="card-header bg-primary text-white py-3">
-                                    <h5 class="card-title mb-0">{{ pool.name }}</h5>
-                                    <span class="status-badge badge {% if pool.status == 'open' %}bg-success{% elif pool.status == 'locked' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                                        {{ pool.get_status_display }}
-                                    </span>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text small text-muted mb-1">{{ pool.competition.name }}</p>
-                                    <p class="card-text">{{ pool.description|truncatechars:80 }}</p>
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <div>
-                                            <small class="text-muted"><i class="fas fa-crown me-1"></i> {{ pool.owner.username }}</small>
-                                            <small class="text-muted ms-2"><i class="fas fa-users me-1"></i> {{ pool.participants.count }}</small>
-                                        </div>
-                                        <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-sm btn-outline-primary">Ver Detalhes</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-state h-100 d-flex flex-column justify-content-center">
-                        <i class="fas fa-users"></i>
-                        <h3 class="h5">Você ainda não participa de bolões de outras pessoas</h3>
-                        <p class="text-muted mb-3">Explore os bolões disponíveis ou aceite convites de amigos!</p>
-                    </div>
-                    {% endif %}
-                </section>
-            </div>
-            
-            <!-- Bolões disponíveis - Coluna direita (6) -->
-            <div class="col-md-6">
-                <section class="pool-section h-100">
-                    <!-- Título padronizado mas sem badge -->
-                    <div class="section-title discover-title d-flex align-items-center justify-content-between mb-3">
-                        <h2 class="h4 mb-0">Bolões disponíveis</h2>
-                    </div>
-                    
-                    {% if available_pools %}
-                    <div class="row row-cols-1 g-4">
-                        {% for pool in available_pools|slice:":2" %}
-                        <div class="col">
-                            <div class="card pool-card h-100">
-                                <div class="card-header bg-primary text-white py-3">
-                                    <h5 class="card-title mb-0">{{ pool.name }}</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text small text-muted mb-1">{{ pool.competition.name }}</p>
-                                    <p class="card-text">{{ pool.description|truncatechars:80 }}</p>
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <div>
-                                            <small class="text-muted"><i class="fas fa-crown me-1"></i> {{ pool.owner.username }}</small>
-                                            <small class="text-muted ms-2"><i class="fas fa-coins me-1"></i> R${{ pool.entry_fee }}</small>
-                                        </div>
-                                        <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-sm btn-primary">Participar</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    
-                    <div class="text-center mt-4">
-                        <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary explore-btn">
-                            <i class="fas fa-compass me-2"></i> Explorar Todos os Bolões
-                        </a>
-                    </div>
-                    {% else %}
-                    <div class="empty-state h-100 d-flex flex-column justify-content-center">
-                        <i class="fas fa-search"></i>
-                        <h3 class="h5">Nenhum bolão disponível no momento</h3>
-                        <p class="text-muted mb-3">Volte mais tarde ou crie seu próprio bolão!</p>
-                        
-                        <a href="{% url 'pools:discover' %}" class="btn btn-info text-white explore-btn align-self-center mt-3">
-                            <i class="fas fa-compass me-2"></i> Explorar Bolões <i class="fas fa-arrow-right ms-2"></i>
-                        </a>
-                    </div>
-                    {% endif %}
-                </section>
-            </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="sport" class="form-select">
+                        <option value="">Todos os Esportes</option>
+                        <!-- Adicionar opções de esportes aqui se necessário -->
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">Todos os Status</option>
+                        <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>Aberto</option>
+                        <option value="locked" {% if request.GET.status == 'locked' %}selected{% endif %}>Fechado</option>
+                        <option value="finished" {% if request.GET.status == 'finished' %}selected{% endif %}>Encerrado</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                </div>
+            </form>
         </div>
     </div>
+
+    {% if pools %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+            {% for pool in pools %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm hover-shadow border-0">
+                        <div class="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-light text-dark">{{ pool.sport.name }}</span>
+                                <span class="badge {% if pool.status == 'open' %}bg-success{% elif pool.status == 'locked' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ pool.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownPool{{ pool.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownPool{{ pool.id }}">
+                                    <li><a class="dropdown-item" href="{% url 'pools:detail' pool.slug %}">
+                                        <i class="fas fa-eye me-2 text-primary"></i> Ver Detalhes
+                                    </a></li>
+                                    
+                                    {% if view_type == 'created' %}
+                                    <li><a class="dropdown-item" href="{% url 'pools:update' pool.slug %}">
+                                        <i class="fas fa-edit me-2 text-warning"></i> Editar
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'pools:delete' pool.slug %}">
+                                        <i class="fas fa-trash-alt me-2"></i> Excluir
+                                    </a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ pool.name }}</h5>
+                            <p class="card-text small text-muted">{{ pool.description|truncatechars:100 }}</p>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small"><i class="fas fa-trophy me-1"></i> {{ pool.competition.name }}</span>
+                                    <span class="text-success fw-bold">R$ {{ pool.entry_fee|floatformat:2 }}</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users me-1"></i> {{ pool.participants.count }} participantes
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar-alt me-1"></i> {{ pool.created_at|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-white text-center p-2">
+                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="fas fa-arrow-right me-1"></i> Acessar Bolão
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                {% if view_type == 'created' %}
+                    <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+                    <h4 class="mb-3">Você ainda não criou nenhum bolão</h4>
+                    <p class="text-muted mb-4">Clique no botão abaixo para criar seu primeiro bolão e convidar seus amigos!</p>
+                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Criar Meu Primeiro Bolão
+                    </a>
+                {% else %}
+                    <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                    <h4 class="mb-3">Você ainda não participa de nenhum bolão</h4>
+                    <p class="text-muted mb-4">Descubra bolões disponíveis ou aguarde convites de seus amigos!</p>
+                    <a href="{% url 'pools:discover' %}" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Descobrir Bolões
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

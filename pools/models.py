@@ -5,6 +5,9 @@ from django.utils.text import slugify
 import uuid
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from django.utils.crypto import get_random_string
 
 class Sport(models.Model):
     """Modelo para categorias de esportes"""
@@ -37,11 +40,56 @@ class Competition(models.Model):
         verbose_name = 'Competição'
         verbose_name_plural = 'Competições'
 
+class Campeonato(models.Model):
+    nome = models.CharField(max_length=100)
+    temporada = models.CharField(max_length=10)
+    esporte = models.ForeignKey(Sport, on_delete=models.CASCADE)
+    inicio = models.DateField()
+    fim = models.DateField()
+    logo = models.ImageField(upload_to='campeonatos/', blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.nome} {self.temporada}"
+    
+    class Meta:
+        verbose_name = "Campeonato"
+        verbose_name_plural = "Campeonatos"
+
+class Time(models.Model):
+    nome = models.CharField(max_length=100)
+    sigla = models.CharField(max_length=3)
+    escudo = models.ImageField(upload_to='times/', blank=True, null=True)
+    campeonato = models.ForeignKey(Campeonato, related_name='times', on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.nome
+    
+    class Meta:
+        verbose_name = "Time"
+        verbose_name_plural = "Times"
+
+class Partida(models.Model):
+    campeonato = models.ForeignKey(Campeonato, related_name='partidas', on_delete=models.CASCADE)
+    rodada = models.IntegerField()
+    time_casa = models.ForeignKey(Time, related_name='partidas_casa', on_delete=models.CASCADE)
+    time_visitante = models.ForeignKey(Time, related_name='partidas_visitante', on_delete=models.CASCADE)
+    data_hora = models.DateTimeField()
+    gols_casa = models.IntegerField(null=True, blank=True)
+    gols_visitante = models.IntegerField(null=True, blank=True)
+    encerrada = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.time_casa} x {self.time_visitante} - Rodada {self.rodada}"
+    
+    class Meta:
+        verbose_name = "Partida"
+        verbose_name_plural = "Partidas"
+
 class Pool(models.Model):
     """Modelo principal para bolões"""
     STATUS_CHOICES = (
-        ('open', 'Aberto para Apostas'),
-        ('locked', 'Apostas Encerradas'),
+        ('open', 'Aberto'),
+        ('locked', 'Fechado'),
         ('finished', 'Encerrado'),
     )
     
@@ -51,24 +99,32 @@ class Pool(models.Model):
     )
     
     # Campos básicos
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=250, unique=True, blank=True)
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True, max_length=150)
     description = models.TextField(blank=True)
     
     # Relações
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_pools')
-    competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name='pools')
     participants = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through='Participation',
-        related_name='participating_pools'
+        related_name='joined_pools'
     )
+    competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name='pools')
+    campeonato = models.ForeignKey(Campeonato, on_delete=models.SET_NULL, null=True, blank=True, related_name='boloes')
     
     # Configurações do bolão
     entry_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     max_participants = models.PositiveIntegerField(default=0, help_text="0 para ilimitado")
+    importar_jogos_automaticamente = models.BooleanField(default=False)
+    
+    # Configurações de pontuação personalizadas
+    pontos_acerto_exato = models.IntegerField(default=10)  # Placar exato
+    pontos_acerto_vencedor_e_diferenca = models.IntegerField(default=5)  # Vencedor e diferença de gols
+    pontos_acerto_vencedor = models.IntegerField(default=3)  # Apenas vencedor
+    pontos_erro = models.IntegerField(default=0)  # Errou tudo
     
     # Datas importantes
     created_at = models.DateTimeField(auto_now_add=True)
@@ -129,6 +185,30 @@ class Pool(models.Model):
         """Retorna o número de participantes do bolão"""
         return self.participants.count()
     
+    def importar_jogos_do_campeonato(self):
+        if not self.campeonato:
+            return False
+            
+        # Importar jogos do campeonato selecionado
+        partidas = Partida.objects.filter(campeonato=self.campeonato)
+        count = 0
+        
+        for partida in partidas:
+            jogo, created = Match.objects.get_or_create(
+                pool=self,
+                round=partida.rodada,
+                defaults={
+                    'home_team': partida.time_casa.nome,
+                    'away_team': partida.time_visitante.nome,
+                    'start_time': partida.data_hora,
+                    'partida_relacionada': partida
+                }
+            )
+            if created:
+                count += 1
+                
+        return count
+    
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Bolão'
@@ -167,9 +247,56 @@ class Match(models.Model):
     home_score = models.IntegerField(null=True, blank=True)
     away_score = models.IntegerField(null=True, blank=True)
     finished = models.BooleanField(default=False)
+    partida_relacionada = models.ForeignKey(
+        Partida, on_delete=models.SET_NULL, null=True, blank=True, related_name='jogos_bolao'
+    )
     
     def __str__(self):
         return f"{self.home_team} vs {self.away_team}"
+    
+    def atualizar_resultado_automatico(self):
+        if self.partida_relacionada and self.partida_relacionada.encerrada:
+            self.home_score = self.partida_relacionada.gols_casa
+            self.away_score = self.partida_relacionada.gols_visitante
+            self.result = self.calcular_resultado()
+            self.save()
+            
+            # Atualizar pontuações das apostas relacionadas
+            self.atualizar_pontuacoes_apostas()
+    
+    def atualizar_pontuacoes_apostas(self):
+        pool = self.pool
+        apostas = self.bets.all()
+        
+        for aposta in apostas:
+            # Resultado real
+            home_real = self.home_score
+            away_real = self.away_score
+            
+            # Aposta do usuário
+            home_aposta = aposta.home_bet
+            away_aposta = aposta.away_bet
+            
+            # Valor padrão de pontos
+            pontos = pool.pontos_erro
+            
+            # Acertou placar exato
+            if home_real == home_aposta and away_real == away_aposta:
+                pontos = pool.pontos_acerto_exato
+            
+            # Acertou vencedor e diferença de gols
+            elif (home_real - away_real) == (home_aposta - away_aposta):
+                pontos = pool.pontos_acerto_vencedor_e_diferenca
+            
+            # Acertou apenas o vencedor ou empate
+            elif (home_real > away_real and home_aposta > away_aposta) or \
+                 (home_real < away_real and home_aposta < away_aposta) or \
+                 (home_real == away_real and home_aposta == away_aposta):
+                pontos = pool.pontos_acerto_vencedor
+            
+            # Atualizar pontuação da aposta
+            aposta.points = pontos
+            aposta.save()
     
     class Meta:
         verbose_name = 'Partida'
@@ -193,14 +320,15 @@ class Bet(models.Model):
         verbose_name_plural = 'Apostas'
     
     def __str__(self):
-        return f"Aposta de {self.user.username} em {self.match}"
+        return f"{self.user.username}: {self.match.home_team} {self.home_score_bet} x {self.away_score_bet} {self.match.away_team}"
     
     def calculate_points(self):
         """
         Calcula os pontos ganhos com base no resultado real e na aposta.
         Regras:
-        - 3 pontos para resultado exato
-        - 1 ponto para vencedor correto ou empate
+        - 10 pontos para resultado exato
+        - 5 pontos para vencedor correto e diferença de gols (exceto empates com placares diferentes)
+        - 3 pontos para vencedor correto ou empate
         - 0 pontos para erro
         """
         if not self.match.finished or self.match.home_score is None or self.match.away_score is None:
@@ -208,14 +336,31 @@ class Bet(models.Model):
             
         # Acertou placar exato
         if self.home_score_bet == self.match.home_score and self.away_score_bet == self.match.away_score:
-            return 3
+            return 10
+            
+        # Acertou o vencedor e a diferença de gols
+        real_diff = self.match.home_score - self.match.away_score
+        bet_diff = self.home_score_bet - self.away_score_bet
+        
+        # Para empates, vamos usar uma regra especial
+        if self.match.home_score == self.match.away_score and self.home_score_bet == self.away_score_bet:
+            # Se ambos são empates mas com placares diferentes, é 3 pontos
+            if self.match.home_score != self.home_score_bet:
+                return 3
+                
+        # Para outros casos com mesma diferença
+        if (real_diff == bet_diff) and (
+            (self.match.home_score > self.match.away_score and self.home_score_bet > self.away_score_bet) or
+            (self.match.home_score < self.match.away_score and self.home_score_bet < self.away_score_bet)
+        ):
+            return 5
             
         # Acertou o vencedor ou empate
         real_result = 0 if self.match.home_score == self.match.away_score else (1 if self.match.home_score > self.match.away_score else -1)
         bet_result = 0 if self.home_score_bet == self.away_score_bet else (1 if self.home_score_bet > self.away_score_bet else -1)
         
         if real_result == bet_result:
-            return 1
+            return 3
             
         return 0
     
@@ -223,6 +368,12 @@ class Bet(models.Model):
         if self.match.finished:
             self.points_earned = self.calculate_points()
         super().save(*args, **kwargs)
+    
+    def clean(self):
+        super().clean()
+        # Verificar primeiro se o atributo match existe e não é None
+        if hasattr(self, 'match') and self.match and self.match.start_time <= timezone.now():
+            raise ValidationError("Não é possível fazer apostas em partidas que já começaram.")
 
 @receiver(post_save, sender=Match)
 def update_bets_points(sender, instance, **kwargs):
@@ -252,3 +403,34 @@ def update_bets_points(sender, instance, **kwargs):
                     match__finished=True
                 ).aggregate(total=models.Sum('points_earned'))['total'] or 0
                 participation.save(update_fields=['points'])
+
+class Invitation(models.Model):
+    """Modelo para convites de bolões"""
+    STATUS_CHOICES = (
+        ('pending', 'Pendente'),
+        ('accepted', 'Aceito'),
+        ('declined', 'Recusado'),
+    )
+    
+    pool = models.ForeignKey(Pool, on_delete=models.CASCADE, related_name='invitations')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_invitations')
+    recipient_email = models.EmailField()
+    message = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    code = models.CharField(max_length=50, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        # Gerar código único para o convite se for novo
+        if not self.code:
+            self.code = get_random_string(length=20)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"Convite de {self.sender.username} para {self.recipient_email} - {self.pool.name}"
+    
+    class Meta:
+        unique_together = ('pool', 'recipient_email')
+        verbose_name = 'Convite'
+        verbose_name_plural = 'Convites'

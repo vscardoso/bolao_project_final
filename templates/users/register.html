@@ -1,57 +1,405 @@
-{% extends 'base/base.html' %}
+{% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Cadastro | Bolão Online{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-lg border-0">
-            <div class="card-header bg-primary text-white text-center py-3">
-                <h2 class="mb-0">Crie sua conta</h2>
-                <p class="mb-0">Junte-se ao Bolão Online e comece a se divertir!</p>
-            </div>
-            <div class="card-body p-4">
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    {% for field in form %}
-                    <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label">
-                            {{ field.label }}
-                            {% if field.field.required %}
-                                <span class="text-danger">*</span>
-                            {% endif %}
-                        </label>
-                        {{ field }}
-                        {% if field.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in field.errors %}
-                                    {{ error }}
-                                {% endfor %}
+    <div class="col-lg-10">
+        <div class="register-card">
+            <div class="row g-0">
+                <!-- Coluna de benefícios (lado esquerdo) -->
+                <div class="col-md-5 d-none d-md-block">
+                    <div class="benefits-panel h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="text-center mb-4 pt-4">
+                                <img src="{% static 'img/logo.png' %}" alt="Bolão Online" class="benefits-logo">
                             </div>
+                            <h2 class="benefits-title">Faça parte da nossa comunidade</h2>
+                            <p class="benefits-subtitle">Junte-se a milhares de apostadores</p>
+                            
+                            <div class="benefits-list">
+                                <div class="benefit-item">
+                                    <div class="benefit-icon">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div class="benefit-text">
+                                        <h4>Crie seus bolões</h4>
+                                        <p>Organize competições com amigos e colegas</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="benefit-item">
+                                    <div class="benefit-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="benefit-text">
+                                        <h4>Acompanhe rankings</h4>
+                                        <p>Veja sua posição e estatísticas em tempo real</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="benefit-item">
+                                    <div class="benefit-icon">
+                                        <i class="fas fa-medal"></i>
+                                    </div>
+                                    <div class="benefit-text">
+                                        <h4>Ganhe prêmios</h4>
+                                        <p>Acumule pontos e conquiste recompensas exclusivas</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="testimonial">
+                            <div class="testimonial-content">
+                                <p>"Melhor aplicativo de bolão que já usei. Interface incrível e muito fácil de gerenciar apostas!"</p>
+                            </div>
+                            <div class="testimonial-author">
+                                <img src="{% static 'img/avatar.png' %}" alt="Usuário" class="testimonial-avatar">
+                                <div>
+                                    <p class="testimonial-name">Carlos Silva</p>
+                                    <p class="testimonial-title">Membro desde 2024</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Formulário de registro (lado direito) -->
+                <div class="col-md-7">
+                    <div class="register-form-panel p-4 p-md-5">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2 class="h3 m-0">Criar conta</h2>
+                            <span>
+                                Já é membro? <a href="{% url 'login' %}" class="login-link">Entrar</a>
+                            </span>
+                        </div>
+                        
+                        <!-- Alertas e mensagens -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
                         {% endif %}
-                        {% if field.help_text %}
-                            <div class="form-text small text-muted">{{ field.help_text|safe }}</div>
-                        {% endif %}
+                        
+                        <!-- Formulário de registro -->
+                        <form method="post" novalidate class="needs-validation">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_username" class="form-label">Nome de usuário<span class="text-danger">*</span></label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_email" class="form-label">Email<span class="text-danger">*</span></label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="id_password1" class="form-label">Senha<span class="text-danger">*</span></label>
+                                {{ form.password1 }}
+                                <div id="password-strength" class="mt-2">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small class="password-strength-text text-muted">Força da senha: Muito fraca</small>
+                                </div>
+                                <div id="password-requirements" class="mt-2">
+                                    <!-- Será preenchido pelo JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="id_password2" class="form-label">Confirmar senha<span class="text-danger">*</span></label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Campos adicionais do formulário, se houverem -->
+                            {% for field in form %}
+                                {% if field.name != 'username' and field.name != 'email' and field.name != 'password1' and field.name != 'password2' %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Política de privacidade -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="privacyCheck" required>
+                                <label class="form-check-label small" for="privacyCheck">
+                                    Eu li e concordo com os <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Termos de Uso</a> e <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidade</a>
+                                </label>
+                                <div class="invalid-feedback">
+                                    Você precisa concordar com os termos para continuar.
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-user-plus me-2"></i>Criar minha conta
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Divisor -->
+                        <div class="divider">
+                            <span class="divider-text">ou registre-se com</span>
+                        </div>
+                        
+                        <!-- Botões de redes sociais -->
+                        <div class="social-login d-flex gap-2">
+                            <a href="#" class="btn btn-outline-secondary flex-grow-1">
+                                <i class="fab fa-google me-2"></i>Google
+                            </a>
+                            <a href="#" class="btn btn-outline-secondary flex-grow-1">
+                                <i class="fab fa-facebook-f me-2"></i>Facebook
+                            </a>
+                        </div>
                     </div>
-                    {% endfor %}
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="termsCheck" required>
-                        <label class="form-check-label" for="termsCheck">
-                            Eu concordo com os <a href="#" target="_blank">Termos de Uso</a> e <a href="#" target="_blank">Política de Privacidade</a>
-                        </label>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">Cadastrar</button>
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer bg-light text-center py-3">
-                <p class="mb-0">Já tem uma conta? <a href="{% url 'login' %}" class="text-primary">Entrar</a></p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modais de Termos e Política -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Termos de Uso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Aceitação dos Termos</h6>
+                <p>Ao acessar e utilizar o Bolão Online, você concorda em cumprir estes Termos de Uso.</p>
+                
+                <h6>2. Regras de Participação</h6>
+                <p>Para participar dos bolões, você deve ter idade mínima de 18 anos e seguir todas as regras específicas de cada competição.</p>
+                
+                <h6>3. Responsabilidades</h6>
+                <p>O Bolão Online não se responsabiliza por apostas perdidas, resultados contestados ou quaisquer disputas entre participantes.</p>
+                
+                <h6>4. Alterações dos Termos</h6>
+                <p>Reservamos o direito de modificar estes termos a qualquer momento, sendo sua responsabilidade verificar periodicamente por atualizações.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacyModalLabel">Política de Privacidade</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Informações Coletadas</h6>
+                <p>Coletamos dados como nome, e-mail e informações de uso para proporcionar uma melhor experiência.</p>
+                
+                <h6>2. Uso de Dados</h6>
+                <p>Utilizamos seus dados para aprimorar nossos serviços, enviar notificações e personalizar sua experiência.</p>
+                
+                <h6>3. Compartilhamento</h6>
+                <p>Não compartilhamos suas informações pessoais com terceiros sem seu consentimento expresso.</p>
+                
+                <h6>4. Segurança</h6>
+                <p>Implementamos medidas de segurança para proteger suas informações contra acesso não autorizado.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação personalizada
+    const form = document.querySelector('form.needs-validation');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    }
+    
+    // Configurar os requisitos de senha
+    const passwordInput = document.querySelector('#id_password1');
+    const passwordConfirmInput = document.querySelector('#id_password2');
+    const passwordRequirements = document.querySelector('#password-requirements');
+    const passwordStrengthBar = document.querySelector('#password-strength .progress-bar');
+    const passwordStrengthText = document.querySelector('.password-strength-text');
+    
+    // Definir os requisitos de senha
+    const requirements = [
+        { id: 'req-length', text: 'Pelo menos 8 caracteres', regex: /.{8,}/, met: false },
+        { id: 'req-number', text: 'Não pode ser inteiramente numérico', regex: /[^\d]/, met: false },
+        { id: 'req-common', text: 'Não pode ser uma senha comum', met: false },
+        { id: 'req-personal', text: 'Não pode ser semelhante às suas informações pessoais', met: false }
+    ];
+    
+    // Criar elementos de requisitos
+    let reqHTML = '<div class="password-requirements-items">';
+    requirements.forEach(req => {
+        reqHTML += `
+            <div id="${req.id}" class="password-requirement-item">
+                <i class="fas fa-circle-xmark text-danger me-2"></i>
+                <span>${req.text}</span>
+            </div>
+        `;
+    });
+    reqHTML += '</div>';
+    passwordRequirements.innerHTML = reqHTML;
+    
+    // Lista de senhas comuns para demonstração
+    const commonPasswords = ['password', '12345678', 'qwerty', 'admin123', 'welcome', 'senha123'];
+    
+    // Verificar força da senha
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const username = document.querySelector('#id_username')?.value || '';
+            let strengthScore = 0;
+            let metCount = 0;
+            
+            // Verificar requisito de comprimento
+            const reqLength = document.querySelector('#req-length i');
+            if (password.length >= 8) {
+                reqLength.className = 'fas fa-circle-check text-success me-2';
+                requirements[0].met = true;
+                metCount++;
+                strengthScore += 25;
+            } else {
+                reqLength.className = 'fas fa-circle-xmark text-danger me-2';
+                requirements[0].met = false;
+            }
+            
+            // Verificar se não é apenas numérico
+            const reqNumber = document.querySelector('#req-number i');
+            if (!/^\d+$/.test(password) && password.length > 0) {
+                reqNumber.className = 'fas fa-circle-check text-success me-2';
+                requirements[1].met = true;
+                metCount++;
+                strengthScore += 25;
+            } else {
+                reqNumber.className = 'fas fa-circle-xmark text-danger me-2';
+                requirements[1].met = false;
+            }
+            
+            // Verificar se não é comum
+            const reqCommon = document.querySelector('#req-common i');
+            if (!commonPasswords.includes(password.toLowerCase()) && password.length > 0) {
+                reqCommon.className = 'fas fa-circle-check text-success me-2';
+                requirements[2].met = true;
+                metCount++;
+                strengthScore += 25;
+            } else {
+                reqCommon.className = 'fas fa-circle-xmark text-danger me-2';
+                requirements[2].met = false;
+            }
+            
+            // Verificar similaridade com informações pessoais
+            const reqPersonal = document.querySelector('#req-personal i');
+            if (username && username.length > 0) {
+                if (password.toLowerCase().includes(username.toLowerCase())) {
+                    reqPersonal.className = 'fas fa-circle-xmark text-danger me-2';
+                    requirements[3].met = false;
+                } else {
+                    reqPersonal.className = 'fas fa-circle-check text-success me-2';
+                    requirements[3].met = true;
+                    metCount++;
+                    strengthScore += 25;
+                }
+            } else {
+                reqPersonal.className = 'fas fa-circle-check text-success me-2';
+                requirements[3].met = true;
+                metCount++;
+                strengthScore += 25;
+            }
+            
+            // Adicionar pontos adicionais baseados em complexidade
+            if (password.length > 12) strengthScore += 10;
+            if (/[A-Z]/.test(password)) strengthScore += 10;
+            if (/[a-z]/.test(password)) strengthScore += 10;
+            if (/[0-9]/.test(password)) strengthScore += 10;
+            if (/[^A-Za-z0-9]/.test(password)) strengthScore += 10;
+            
+            // Limitar score a 100
+            strengthScore = Math.min(strengthScore, 100);
+            
+            // Atualizar barra de progresso e texto
+            let strengthColor = 'danger';
+            let strengthLabel = 'Muito fraca';
+            
+            if (strengthScore >= 100) {
+                strengthColor = 'success';
+                strengthLabel = 'Muito forte';
+            } else if (strengthScore >= 80) {
+                strengthColor = 'success';
+                strengthLabel = 'Forte';
+            } else if (strengthScore >= 60) {
+                strengthColor = 'warning';
+                strengthLabel = 'Média';
+            } else if (strengthScore >= 40) {
+                strengthColor = 'warning';
+                strengthLabel = 'Regular';
+            } else if (strengthScore >= 20) {
+                strengthColor = 'danger';
+                strengthLabel = 'Fraca';
+            }
+            
+            passwordStrengthBar.className = `progress-bar bg-${strengthColor}`;
+            passwordStrengthBar.style.width = `${strengthScore}%`;
+            passwordStrengthText.textContent = `Força da senha: ${strengthLabel}`;
+        });
+    }
+    
+    // Verificar se as senhas coincidem
+    if (passwordConfirmInput && passwordInput) {
+        passwordConfirmInput.addEventListener('input', function() {
+            if (this.value === passwordInput.value) {
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+            } else {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

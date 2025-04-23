@@ -225,13 +225,14 @@ class BetViewTests(TestCase):
         )
         
         # URLs para os testes
-        self.bet_url = reverse('pools:bet_match', args=[self.pool.id, self.future_match.id])
-        self.past_bet_url = reverse('pools:bet_match', args=[self.pool.id, self.past_match.id])
+        self.bet_url = reverse('pools:bet_match', args=[self.pool.slug, self.future_match.id])
+        self.past_bet_url = reverse('pools:bet_match', args=[self.pool.slug, self.past_match.id])
     
     def test_bet_view_requires_login(self):
         """Teste se a view requer login"""
         response = self.client.get(self.bet_url)
-        login_url = reverse('login')
+        # Modificar esta linha para incluir a barra após login
+        login_url = "/accounts/login/"
         self.assertRedirects(response, f'{login_url}?next={self.bet_url}')
         
     def test_bet_view_get(self):
@@ -246,7 +247,7 @@ class BetViewTests(TestCase):
         self.client.login(username='testuser', password='testpass123')
         response = self.client.get(self.past_bet_url)
         # Deve redirecionar por causa do prazo expirado
-        self.assertRedirects(response, reverse('pools:detail', args=[self.pool.id]))
+        self.assertRedirects(response, reverse('pools:detail', args=[self.pool.slug]))
         
     def test_bet_view_nonparticipant_access(self):
         """Teste de acesso por usuário que não participa do bolão"""
@@ -262,7 +263,7 @@ class BetViewTests(TestCase):
         response = self.client.get(self.bet_url)
         
         # Deve redirecionar para detalhes do bolão
-        self.assertRedirects(response, reverse('pools:detail', args=[self.pool.id]))
+        self.assertRedirects(response, reverse('pools:detail', args=[self.pool.slug]))
     
     def test_bet_view_post_success(self):
         """Teste de criação de aposta bem-sucedida"""
@@ -271,7 +272,7 @@ class BetViewTests(TestCase):
             'home_score_bet': 3,
             'away_score_bet': 1
         })
-        self.assertRedirects(response, reverse('pools:detail', args=[self.pool.id]))
+        self.assertRedirects(response, reverse('pools:detail', args=[self.pool.slug]))
         
         # Verificar se a aposta foi criada
         bet = Bet.objects.filter(

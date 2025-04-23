@@ -27,13 +27,22 @@
                 <li><a class="dropdown-item" href="{% url 'pools:update' pool.slug %}">
                     <i class="fas fa-edit me-2"></i> Editar Bolão
                 </a></li>
-                <li><a class="dropdown-item" href="{% url 'pools:invitations' %}">
+                <li><a class="dropdown-item" href="{% url 'pools:invitations' pool.slug %}">
                     <i class="fas fa-user-plus me-2"></i> Convidar Participantes
                 </a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="{% url 'pools:delete' pool.slug %}">
                     <i class="fas fa-trash-alt me-2"></i> Excluir Bolão
                 </a></li>
+                {% if pool.is_owner_or_admin %}
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'pools:send_invitation' pool.slug %}" class="dropdown-item">
+                    <i class="fas fa-user-plus fa-fw me-2"></i> Convidar Participantes
+                </a>
+                <a href="{% url 'pools:invitations' pool.slug %}" class="dropdown-item">
+                    <i class="fas fa-envelope fa-fw me-2"></i> Gerenciar Convites
+                </a>
+                {% endif %}
             </ul>
         </div>
         {% endif %}
@@ -146,48 +155,137 @@
             <!-- Coluna 2: Ranking -->
             <div class="col-md-6 mb-4">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h3 class="h5 mb-0">Ranking</h3>
+                    <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                        <h3 class="h5 mb-0"><i class="fas fa-trophy me-2 text-warning"></i> Ranking</h3>
+                        {% if participants|length > 3 %}
+                        <a href="{% url 'pools:ranking' pool.slug %}" class="btn btn-sm btn-outline-light">
+                            Ver todos <i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                        {% endif %}
                     </div>
                     <div class="card-body p-0">
                         {% if participants %}
-                            <div class="table-responsive">
-                                <table class="table table-hover table-striped mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px;">#</th>
-                                            <th>Participante</th>
-                                            <th class="text-center" style="width: 80px;">Pontos</th>
-                                            <th class="text-center" style="width: 90px;">Acertos</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for participation in participants %}
-                                        <tr {% if participation.user == request.user %}class="table-primary"{% endif %}>
-                                            <td>{{ forloop.counter }}</td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar me-2">
-                                                        {% if participation.user.profile.avatar %}
-                                                            <img src="{{ participation.user.profile.avatar.url }}" class="rounded-circle" width="32" height="32">
-                                                        {% else %}
-                                                            <div class="avatar-placeholder rounded-circle bg-primary text-white">
+                            <div class="ranking-mini">
+                                <!-- Pódio para os 3 primeiros (apenas em desktop) -->
+                                {% if participants|length >= 3 %}
+                                <div class="podium-mini d-none d-md-flex justify-content-center my-3 px-3">
+                                    <!-- 2º Lugar -->
+                                    <div class="podium-mini-place second-place text-center">
+                                        <div class="podium-mini-avatar">
+                                            <div class="avatar-placeholder-sm rounded-circle border border-2 border-silver">
+                                                {{ participants.1.user.username|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div class="podium-mini-platform silver">
+                                            <div class="podium-mini-name">{{ participants.1.user.username|truncatechars:10 }}</div>
+                                            <div class="podium-mini-points">{{ participants.1.points }} pts</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 1º Lugar -->
+                                    <div class="podium-mini-place first-place text-center">
+                                        <div class="winner-mini-crown"><i class="fas fa-crown"></i></div>
+                                        <div class="podium-mini-avatar">
+                                            <div class="avatar-placeholder-sm rounded-circle border border-2 border-gold">
+                                                {{ participants.0.user.username|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div class="podium-mini-platform gold">
+                                            <div class="podium-mini-name">{{ participants.0.user.username|truncatechars:10 }}</div>
+                                            <div class="podium-mini-points">{{ participants.0.points }} pts</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 3º Lugar -->
+                                    <div class="podium-mini-place third-place text-center">
+                                        <div class="podium-mini-avatar">
+                                            <div class="avatar-placeholder-sm rounded-circle border border-2 border-bronze">
+                                                {{ participants.2.user.username|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div class="podium-mini-platform bronze">
+                                            <div class="podium-mini-name">{{ participants.2.user.username|truncatechars:10 }}</div>
+                                            <div class="podium-mini-points">{{ participants.2.points }} pts</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            
+                                <!-- Tabela de classificação para todos os participantes -->
+                                <div class="table-responsive">
+                                    <table class="table table-hover ranking-mini-table mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th style="width: 50px;" class="text-center">#</th>
+                                                <th>Participante</th>
+                                                <th class="text-center" style="width: 80px;">Pontos</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for participation in participants|slice:":5" %}
+                                            <tr {% if participation.user == request.user %}class="table-primary"{% endif %}>
+                                                <td class="text-center">
+                                                    {% if forloop.counter == 1 %}
+                                                        <span class="position-mini-badge gold">1</span>
+                                                    {% elif forloop.counter == 2 %}
+                                                        <span class="position-mini-badge silver">2</span>
+                                                    {% elif forloop.counter == 3 %}
+                                                        <span class="position-mini-badge bronze">3</span>
+                                                    {% else %}
+                                                        {{ forloop.counter }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-mini me-2">
+                                                            <div class="avatar-placeholder-sm rounded-circle bg-primary text-white">
                                                                 {{ participation.user.username|first|upper }}
                                                             </div>
+                                                        </div>
+                                                        <span class="username-truncate">{{ participation.user.username }}</span>
+                                                        {% if participation.user == pool.owner %}
+                                                            <span class="badge bg-warning text-dark ms-1">Admin</span>
                                                         {% endif %}
                                                     </div>
-                                                    <span>{{ participation.user.username }}</span>
-                                                    {% if participation.user == pool.owner %}
-                                                        <span class="badge bg-warning text-dark ms-2">Admin</span>
+                                                </td>
+                                                <td class="text-center fw-bold">{{ participation.points }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            
+                                            {% if participants|length > 5 %}
+                                            <!-- Linha de reticências para indicar mais participantes -->
+                                            <tr>
+                                                <td colspan="3" class="text-center py-2">
+                                                    <i class="fas fa-ellipsis-h text-muted"></i>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            
+                                            <!-- Se o usuário atual está além das 5 primeiras posições, mostrar sua posição também -->
+                                            {% if request.user.is_authenticated %}
+                                                {% for participation in participants %}
+                                                    {% if participation.user == request.user and forloop.counter > 5 %}
+                                                    <tr class="table-primary">
+                                                        <td class="text-center">{{ forloop.counter }}</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="avatar-mini me-2">
+                                                                    <div class="avatar-placeholder-sm rounded-circle bg-primary text-white">
+                                                                        {{ participation.user.username|first|upper }}
+                                                                    </div>
+                                                                </div>
+                                                                <span class="username-truncate">{{ participation.user.username }}</span>
+                                                                <span class="badge bg-info ms-1">Você</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-center fw-bold">{{ participation.points }}</td>
+                                                    </tr>
                                                     {% endif %}
-                                                </div>
-                                            </td>
-                                            <td class="text-center fw-bold">{{ participation.points }}</td>
-                                            <td class="text-center">0</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         {% else %}
                             <div class="text-center py-4">
@@ -195,6 +293,11 @@
                                 <p class="text-muted mb-0">Nenhum participante no momento</p>
                             </div>
                         {% endif %}
+                    </div>
+                    <div class="card-footer bg-white text-center py-3">
+                        <a href="{% url 'pools:ranking' pool.slug %}" class="btn btn-primary">
+                            <i class="fas fa-trophy me-2"></i> Ver Ranking Completo
+                        </a>
                     </div>
                 </div>
             </div>

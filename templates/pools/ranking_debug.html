@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Ranking</title>
+</head>
+<body>
+    <h1>Ranking Debug</h1>
+    <p>Pool: {{ pool.name }}</p>
+    <p>Participantes: {{ participants|length }}</p>
+    
+    <ul>
+    {% for participant in participants %}
+        <li>{{ participant.user.username }}: {{ participant.points }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

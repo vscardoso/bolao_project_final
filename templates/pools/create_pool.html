@@ -1,323 +1,227 @@
-{% extends 'base/base.html' %}
+{% extends 'pools/base_pools.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
-{% block title %}Criar Bolão | Bolão Online{% endblock %}
+{% block title %}Criar Novo Bolão | Bolão Online{% endblock %}
 
-{% block extra_css %}
-<style>
-    .form-section {
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .form-section:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
-    
-    .section-title {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 1.25rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    .section-title i {
-        color: var(--bs-primary);
-        margin-right: 0.75rem;
-    }
-    
-    .form-panel {
-        border-radius: 10px;
-        box-shadow: 0 .25rem 1rem rgba(0,0,0,.1);
-    }
-    
-    /* Campo de visibilidade com design moderno */
-    .visibility-option {
-        display: flex;
-        margin-right: 1rem;
-    }
-    
-    .visibility-option input[type="radio"] {
-        display: none;
-    }
-    
-    .visibility-option label {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1.25rem;
-        border: 1px solid rgba(0,0,0,.1);
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s;
-        width: 100%;
-        background-color: #f8f9fa;
-        color: #6c757d;
-    }
-    
-    .visibility-option input[type="radio"]:checked + label {
-        border-color: var(--bs-primary);
-        background-color: rgba(var(--bs-primary-rgb), 0.1);
-        color: var(--bs-primary);
-        box-shadow: 0 3px 10px rgba(var(--bs-primary-rgb), 0.1);
-    }
-    
-    .visibility-option label i {
-        margin-right: 0.5rem;
-        font-size: 1.1em;
-    }
-    
-    /* Estilo para dicas */
-    .tips-card {
-        background-color: rgba(var(--bs-primary-rgb), 0.03);
-        border-left: 4px solid var(--bs-primary);
-    }
-    
-    .tips-card ul li {
-        padding: 0.5rem 0;
-    }
-    
-    /* Melhoria nos inputs */
-    .form-control:focus, .form-select:focus {
-        border-color: rgba(var(--bs-primary-rgb), 0.5);
-        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
-    }
-    
-    /* Badges para campos obrigatórios */
-    .required-field::after {
-        content: "*";
-        color: #dc3545;
-        margin-left: 4px;
-    }
-    
-    /* Animação suave nos cards */
-    .card {
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-    
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.15);
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- Cabeçalho da página com introdução -->
-            <div class="text-center mb-4">
-                <h1 class="h2 mb-3">Novo Bolão</h1>
-                <p class="text-muted">Configure seu bolão personalizado para a competição e convide seus amigos!</p>
+{% block pool_content %}
+<div class="row">
+    <div class="col-lg-10 col-xl-8 mx-auto">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                <h1 class="h3 mb-0"><i class="fas fa-plus-circle me-2"></i> Criar Novo Bolão</h1>
             </div>
             
-            <!-- Card principal com formulário -->
-            <div class="card shadow border-0 form-panel mb-4">
-                <div class="card-header bg-primary text-white p-4">
-                    <div class="d-flex align-items-center">
-                        <div class="display-6 me-3">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <div>
-                            <h2 class="h3 mb-1">Criar Novo Bolão</h2>
-                            <p class="mb-0">Preencha os dados para configurar seu bolão</p>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Informações Básicas -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">Informações Básicas</h5>
+                        
+                        <div class="row g-3">
+                            <!-- Nome do Bolão -->
+                            <div class="col-md-8">
+                                <label for="{{ form.name.id_for_label }}" class="form-label fw-medium">{{ form.name.label }} <span class="text-danger">*</span></label>
+                                {% render_field form.name class="form-control" placeholder="Ex: Bolão Copa do Mundo 2026" %}
+                                <div class="form-text">Escolha um nome marcante e fácil de identificar</div>
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Valor de Entrada -->
+                            <div class="col-md-4">
+                                <label for="{{ form.entry_fee.id_for_label }}" class="form-label fw-medium">{{ form.entry_fee.label }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    {% render_field form.entry_fee class="form-control" placeholder="0.00" %}
+                                </div>
+                                <div class="form-text">Valor que cada participante deverá pagar</div>
+                                {% if form.entry_fee.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.entry_fee.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Descrição -->
+                            <div class="col-12">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-medium">{{ form.description.label }}</label>
+                                {% render_field form.description class="form-control" rows="4" placeholder="Descreva as regras do seu bolão, premiações, etc." %}
+                                <div class="form-text">Forneça detalhes importantes sobre o funcionamento do bolão</div>
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="card-body p-4">
-                    <form method="post" novalidate class="needs-validation">
-                        {% csrf_token %}
+                    
+                    <!-- Competição e Regras -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">Competição e Regras</h5>
                         
-                        <!-- Seção 1: Informações Básicas -->
-                        <div class="form-section">
-                            <h3 class="h5 section-title">
-                                <i class="fas fa-info-circle"></i> Informações Básicas
-                            </h3>
-                            
-                            <div class="row mb-4">
-                                <div class="col-md-8 mb-3 mb-md-0">
-                                    <label for="{{ form.name.id_for_label }}" class="form-label required-field">Nome do Bolão</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-font"></i></span>
-                                        {{ form.name }}
-                                    </div>
-                                    {% if form.name.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in form.name.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="form-text">Escolha um nome único e descritivo para seu bolão.</div>
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <label for="{{ form.entry_fee.id_for_label }}" class="form-label required-field">Valor da Aposta</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-money-bill-wave"></i></span>
-                                        {{ form.entry_fee }}
-                                    </div>
-                                    {% if form.entry_fee.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in form.entry_fee.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="form-text">Use 0 para bolões gratuitos.</div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="{{ form.description.id_for_label }}" class="form-label">Descrição e Regras</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-align-left"></i></span>
-                                    {{ form.description }}
-                                </div>
-                                {% if form.description.errors %}
-                                <div class="text-danger small mt-1">
-                                    {% for error in form.description.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
+                        <div class="row g-3">
+                            <!-- Esporte -->
+                            <div class="col-md-6">
+                                <label for="{{ form.sport.id_for_label }}" class="form-label fw-medium">{{ form.sport.label }} <span class="text-danger">*</span></label>
+                                {% render_field form.sport class="form-select" %}
+                                <div class="form-text">Selecione o esporte relacionado ao bolão</div>
+                                {% if form.sport.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.sport.errors }}</div>
                                 {% endif %}
-                                <div class="form-text">Descreva como funcionará seu bolão, regras de pontuação e distribuição de prêmios.</div>
                             </div>
-                        </div>
-                        
-                        <!-- Seção 2: Configurações da Competição -->
-                        <div class="form-section">
-                            <h3 class="h5 section-title">
-                                <i class="fas fa-futbol"></i> Configurações da Competição
-                            </h3>
+
+                            <!-- Competição -->
+                            <div class="col-md-6">
+                                <label for="{{ form.competition.id_for_label }}" class="form-label fw-medium">{{ form.competition.label }} <span class="text-danger">*</span></label>
+                                {% render_field form.competition class="form-select" %}
+                                <div class="form-text">Escolha a competição específica para o bolão</div>
+                                {% if form.competition.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.competition.errors }}</div>
+                                {% endif %}
+                            </div>
                             
-                            <div class="row mb-4">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="{{ form.competition.id_for_label }}" class="form-label required-field">Competição</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-trophy"></i></span>
-                                        {{ form.competition }}
-                                    </div>
-                                    {% if form.competition.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in form.competition.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="form-text">Selecione a competição para este bolão.</div>
+                            <!-- Data Limite para Apostas -->
+                            <div class="col-md-6">
+                                <label for="{{ form.betting_deadline.id_for_label }}" class="form-label fw-medium">{{ form.betting_deadline.label }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    {% render_field form.betting_deadline class="form-control" placeholder="DD/MM/AAAA HH:MM" type="datetime-local" %}
                                 </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="{{ form.betting_deadline.id_for_label }}" class="form-label required-field">Data Limite para Apostas</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                        {{ form.betting_deadline }}
-                                    </div>
-                                    {% if form.betting_deadline.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in form.betting_deadline.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="form-text">Até quando os participantes poderão fazer apostas.</div>
-                                </div>
+                                <div class="form-text">Data e hora limite para os participantes realizarem suas apostas</div>
+                                {% if form.betting_deadline.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.betting_deadline.errors }}</div>
+                                {% endif %}
                             </div>
-                        </div>
-                        
-                        <!-- Seção 3: Controle de Participação -->
-                        <div class="form-section">
-                            <h3 class="h5 section-title">
-                                <i class="fas fa-users"></i> Controle de Participação
-                            </h3>
                             
-                            <div class="row">
-                                <div class="col-md-6 mb-4 mb-md-0">
-                                    <label for="{{ form.max_participants.id_for_label }}" class="form-label">Número máximo de participantes</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-user-plus"></i></span>
-                                        {{ form.max_participants }}
-                                    </div>
-                                    {% if form.max_participants.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in form.max_participants.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="form-text">Use 0 para ilimitado.</div>
+                            <!-- Número Máximo de Participantes -->
+                            <div class="col-md-6">
+                                <label for="{{ form.max_participants.id_for_label }}" class="form-label fw-medium">{{ form.max_participants.label }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-users"></i></span>
+                                    {% render_field form.max_participants class="form-control" placeholder="Ilimitado se em branco" %}
                                 </div>
-                                
-                                <div class="col-md-6">
-                                    <label class="form-label required-field">Visibilidade</label>
-                                    <div class="d-flex flex-wrap">
-                                        <div class="visibility-option flex-grow-1 me-2 mb-2 mb-md-0">
-                                            <input type="radio" name="{{ form.visibility.name }}" value="public" id="id_visibility_0" {% if not form.visibility.value or form.visibility.value == 'public' %}checked{% endif %}>
-                                            <label for="id_visibility_0">
-                                                <i class="fas fa-globe"></i> Público
-                                            </label>
-                                        </div>
-                                        <div class="visibility-option flex-grow-1">
-                                            <input type="radio" name="{{ form.visibility.name }}" value="private" id="id_visibility_1" {% if form.visibility.value == 'private' %}checked{% endif %}>
-                                            <label for="id_visibility_1">
-                                                <i class="fas fa-lock"></i> Privado
-                                            </label>
-                                        </div>
-                                    </div>
-                                    {% if form.visibility.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {% for error in form.visibility.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="form-text">Bolões privados só podem ser acessados por convite.</div>
-                                </div>
+                                <div class="form-text">Deixe em branco para permitir participantes ilimitados</div>
+                                {% if form.max_participants.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.max_participants.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Configurações de Privacidade -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">Configurações de Privacidade</h5>
                         
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <a href="{% url 'pools:list' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-1"></i> Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-plus-circle me-1"></i> Criar Bolão
-                            </button>
+                        <div class="row g-3">
+                            <!-- Visibilidade -->
+                            <div class="col-md-6">
+                                <label for="{{ form.visibility.id_for_label }}" class="form-label fw-medium">{{ form.visibility.label }} <span class="text-danger">*</span></label>
+                                {% render_field form.visibility class="form-select" %}
+                                <div class="form-text">
+                                    <i class="fas fa-globe-americas me-1 text-success"></i> Público: Visível para todos os usuários<br>
+                                    <i class="fas fa-lock me-1 text-warning"></i> Privado: Visível apenas para convidados
+                                </div>
+                                {% if form.visibility.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.visibility.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label for="{{ form.status.id_for_label }}" class="form-label fw-medium">{{ form.status.label }} <span class="text-danger">*</span></label>
+                                {% render_field form.status class="form-select" %}
+                                <div class="form-text">
+                                    <i class="fas fa-door-open me-1 text-success"></i> Aberto: Novos participantes podem entrar<br>
+                                    <i class="fas fa-lock me-1 text-warning"></i> Fechado: Não aceita novos participantes
+                                </div>
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.status.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                    
+                    <div class="border-top pt-4 d-flex justify-content-between">
+                        <a href="{% url 'pools:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-check me-2"></i> Criar Bolão
+                        </button>
+                    </div>
+                </form>
             </div>
-            
-            <!-- Card de dicas melhorado -->
-            <div class="card border-0 shadow-sm tips-card">
-                <div class="card-body p-4">
-                    <h5 class="mb-3 d-flex align-items-center">
-                        <i class="fas fa-lightbulb text-primary me-2"></i>
-                        Dicas para criar um bolão de sucesso
-                    </h5>
-                    <ul class="mb-0">
-                        <li class="mb-2">
-                            <strong>Defina regras claras</strong> - Inclua informações sobre pontuação, critérios de desempate e prazos.
-                        </li>
-                        <li class="mb-2">
-                            <strong>Valor acessível</strong> - Estabeleça um valor de aposta que seja confortável para todos os participantes.
-                        </li>
-                        <li class="mb-2">
-                            <strong>Divulgue</strong> - Compartilhe o link de convite em grupos de WhatsApp, redes sociais ou email.
-                        </li>
-                        <li>
-                            <strong>Mantenha privacidade</strong> - Para um grupo fechado de amigos, use a opção "Privado" para maior controle.
-                        </li>
-                    </ul>
-                </div>
+        </div>
+        
+        <!-- Dicas e Recomendações -->
+        <div class="card border-0 shadow-sm mb-4 bg-light">
+            <div class="card-body p-4">
+                <h5 class="mb-3"><i class="fas fa-lightbulb text-warning me-2"></i> Dicas para criar um ótimo bolão:</h5>
+                <ul class="mb-0">
+                    <li class="mb-2">Defina regras claras sobre premiações e pontuação</li>
+                    <li class="mb-2">Escolha uma competição que todos os participantes possam acompanhar</li>
+                    <li class="mb-2">Configure a data limite antes do início da competição</li>
+                    <li>Compartilhe o bolão com amigos para aumentar a diversão e o prêmio!</li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Script para tornar dinâmico o campo de Competição quando um Esporte é selecionado
+    $(document).ready(function() {
+        // Armazenar as competições originais por esporte
+        var competitions = {};
+        
+        // Função para atualizar as competições disponíveis
+        function updateCompetitions() {
+            var sportId = $('#id_sport').val();
+            var $competitionSelect = $('#id_competition');
+            
+            // Limpar e desabilitar temporariamente
+            $competitionSelect.empty().prop('disabled', true);
+            
+            if (sportId) {
+                // Adicionar opções filtradas pelo esporte selecionado
+                if (competitions[sportId]) {
+                    $.each(competitions[sportId], function(id, name) {
+                        $competitionSelect.append($('<option>', {
+                            value: id,
+                            text: name
+                        }));
+                    });
+                    $competitionSelect.prop('disabled', false);
+                } else {
+                    // Carregar competições do servidor se ainda não estiverem em cache
+                    $.getJSON('/api/competitions/?sport=' + sportId, function(data) {
+                        competitions[sportId] = {};
+                        $.each(data, function(index, item) {
+                            competitions[sportId][item.id] = item.name;
+                            $competitionSelect.append($('<option>', {
+                                value: item.id,
+                                text: item.name
+                            }));
+                        });
+                        $competitionSelect.prop('disabled', false);
+                    });
+                }
+            } else {
+                $competitionSelect.append($('<option>', {
+                    value: '',
+                    text: 'Primeiro selecione um esporte'
+                }));
+            }
+        }
+        
+        // Atualizar competições quando o esporte mudar
+        $('#id_sport').change(updateCompetitions);
+        
+        // Executar uma vez na inicialização
+        updateCompetitions();
+    });
+</script>
 {% endblock %}

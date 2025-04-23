@@ -1,431 +1,198 @@
+/* Cores principais */
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
+    --primary-color: #1e3c72;
+    --primary-light: #2a5298;
+    --primary-dark: #152c54;
+    --secondary-color: #2a5298;
+    --accent-color: #FFD700;
+    --text-light: #f8f9fa;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --border-color: #dee2e6;
     --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
 }
 
+/* Estilos gerais */
 body {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    padding-top: 56px; /* Espaço para o header fixo */
+    min-height: 100vh;
     background-color: #f8f9fa;
-    color: #333;
 }
 
-/* Navbar personalizada */
+/* Gradiente para o header */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+/* Container principal */
+.main-container {
+    min-height: calc(100vh - 120px); /* Altura completa menos header e footer */
+}
+
+/* ----- HEADER NAVBAR ----- */
 .navbar {
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 1rem;
 }
 
 .navbar-brand {
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
-/* Cards com sombra suave */
-.card {
-    border-radius: 0.5rem;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.card:hover {
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-/* Botões personalizados */
-.btn {
-    border-radius: 0.375rem;
+    font-size: 1.25rem;
     font-weight: 600;
+}
+
+.navbar .nav-link {
     padding: 0.5rem 1rem;
-    transition: all 0.3s;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: #0069d9;
-    border-color: #0062cc;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,123,255,0.3);
-}
-
-/* Footer personalizado */
-footer {
-    margin-top: 4rem;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
-}
-
-/* Formulários elegantes */
-.form-control {
-    border-radius: 0.375rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid #ced4da;
-    transition: border-color 0.3s;
-}
-
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-/* Classes de utilidade */
-.shadow-sm {
-    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
-}
-
-.shadow {
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-
-.shadow-lg {
-    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-}
-
-/* Animação para elementos interativos */
-.hover-scale {
-    transition: transform 0.3s ease;
-}
-
-.hover-scale:hover {
-    transform: scale(1.03);
-}
-
-/* Customizando progress bar */
-.progress {
-    border-radius: 1rem;
-    background-color: #e9ecef;
-}
-
-.progress-bar {
-    border-radius: 1rem;
-    transition: width 0.6s ease;
-}
-
-/* Prevenir sobreposição de conteúdo com navbar fixa */
-body {
-    padding-bottom: 80px; /* Ajuste conforme necessário */
-}
-
-/* Garantir que o conteúdo principal fique sobre elementos fixos quando necessário */
-.content-section {
     position: relative;
-    z-index: 1;
-}
-
-/* Ajustar z-index do menu fixo */
-.navbar-fixed-top, .fixed-top {
-    z-index: 1030; /* Valor padrão do Bootstrap */
-}
-
-/* Adicionar classe para elementos que precisam ficar acima do menu */
-.z-over-nav {
-    position: relative;
-    z-index: 1031;
-}
-
-/* Melhorias nos cards de bolões */
-.pool-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.pool-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-/* Estilo para avatares */
-.avatar-placeholder {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    transition: transform 0.2s ease;
-}
-
-.avatar-placeholder:hover {
-    transform: scale(1.15);
-}
-
-/* Melhorar aparência das tabelas */
-.table-striped > tbody > tr:nth-of-type(odd) > * {
-    --bs-table-accent-bg: rgba(var(--bs-primary-rgb), 0.05);
-}
-
-/* Estilização da tabela de classificação */
-.table-striped {
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.05);
-}
-
-.table-striped thead th {
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-}
-
-/* Efeito hover nas linhas */
-.table-striped > tbody > tr:hover > * {
-    background-color: rgba(var(--bs-primary-rgb), 0.1);
-}
-
-/* Estilização do usuário atual */
-.table-striped > tbody > tr.table-primary {
-    --bs-table-bg: rgba(var(--bs-primary-rgb), 0.15);
-    --bs-table-color: var(--bs-primary);
     font-weight: 500;
+}
+
+.navbar .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.5rem;
+    right: 0.5rem;
+    height: 3px;
+    background-color: var(--accent-color);
+    border-radius: 3px 3px 0 0;
+}
+
+/* ----- SIDEBAR ----- */
+.sidebar {
+    position: fixed;
+    top: 56px; /* Alinha com o header */
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+    transition: all 0.2s ease;
+}
+
+.sidebar-sticky {
     position: relative;
+    top: 0;
+    height: calc(100vh - 56px);
+    padding-top: 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-.table-striped > tbody > tr.table-primary::before {
-    content: "►";
-    position: absolute;
-    left: -15px;
-    color: var(--primary-color);
-    font-size: 1rem;
+.sidebar-section {
+    padding: 0.5rem 0 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
-/* Medalhas para os primeiros lugares */
-.table-striped > tbody > tr:nth-child(1) td:first-child {
-    position: relative;
-}
-
-.table-striped > tbody > tr:nth-child(1) td:first-child::after {
-    content: "🥇";
-    position: absolute;
-    margin-left: 5px;
-}
-
-.table-striped > tbody > tr:nth-child(2) td:first-child::after {
-    content: "🥈";
-    position: absolute;
-    margin-left: 5px;
-}
-
-.table-striped > tbody > tr:nth-child(3) td:first-child::after {
-    content: "🥉";
-    position: absolute;
-    margin-left: 5px;
-}
-
-/* Estilização de pontos */
-.table-striped .fw-bold {
-    background: linear-gradient(120deg, #007bff, #0056b3);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 700 !important;
-}
-
-/* Barras de progresso para pontuações */
-.points-bar {
-    height: 4px;
-    background-color: #e9ecef;
-    border-radius: 2px;
-    margin-top: 4px;
-    overflow: hidden;
-    width: 100%;
-}
-
-.points-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), #0056b3);
-    transition: width 0.6s ease;
-}
-
-/* Estilos para a página de apostas */
-
-/* Card de apostas */
-.bet-card {
-    border-radius: 1rem;
-    overflow: hidden;
-    transition: transform 0.2s;
-}
-
-.bet-card:hover {
-    transform: translateY(-5px);
-}
-
-.bet-card .card-header {
-    background: linear-gradient(135deg, var(--primary-color), #0056b3);
-}
-
-/* Estilização dos times da partida */
-.match-teams {
-    padding: 1.5rem 0;
-    background-color: rgba(0,0,0,0.02);
-    border-radius: 1rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05) inset;
-}
-
-.team-name {
+.sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
     font-weight: 600;
-    margin: 0;
-    transition: color 0.2s;
+    color: var(--text-muted);
+    padding: 0.5rem 1rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
 }
 
-.team-name.home {
-    color: #2c3e50;
-    margin-right: -10px;
+.sidebar .nav-link {
+    color: var(--text-dark);
+    padding: 0.5rem 1.5rem;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
 }
 
-.team-name.away {
-    color: #2c3e50;
-    margin-left: -10px;
+.sidebar .nav-link:hover {
+    color: var(--primary-color);
+    background-color: rgba(0, 0, 0, 0.03);
 }
 
-.vs-badge {
-    background: linear-gradient(135deg, var(--primary-color), #0056b3);
-    color: white;
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-    border-radius: 50%;
-    text-align: center;
-    font-weight: bold;
-    margin: 0 auto;
-    font-size: 0.85rem;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+.sidebar .nav-link.active {
+    color: var(--primary-color);
+    background-color: rgba(30, 60, 114, 0.05);
+    border-left-color: var(--primary-color);
+    font-weight: 600;
 }
 
-/* Campos de input para os placares */
-.score-container {
+/* ----- CONTENT AREA ----- */
+.content-wrapper {
+    padding-top: 1rem;
+    transition: all 0.2s ease;
+}
+
+/* ----- RESPONSIVIDADE ----- */
+@media (max-width: 991.98px) {
+    .sidebar {
+        position: static;
+        height: auto;
+        padding-top: 0;
+        box-shadow: none;
+        margin-bottom: 1rem;
+    }
+    
+    .sidebar-sticky {
+        height: auto;
+    }
+    
+    body {
+        padding-top: 56px;
+    }
+}
+
+/* ----- UTIL CLASSES ----- */
+.hover-shadow {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* ----- FOOTER ----- */
+.footer {
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* ----- CARD ENHANCEMENTS ----- */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     padding: 1rem;
 }
 
-.score-container label {
-    font-weight: 500;
-    color: #2c3e50;
+/* ----- CUSTOM BUTTONS ----- */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
 }
 
-.score-input, input.form-control.score-input {
-    height: 60px;
-    width: 80px !important;
-    font-size: 2rem;
-    text-align: center;
-    font-weight: bold;
-    border: 2px solid rgba(0,0,0,0.1);
-    border-radius: 12px;
-    background: white;
-    color: #2c3e50;
-    margin: 0 auto;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.05);
-    transition: all 0.3s;
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
 }
 
-.score-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+/* ----- CUSTOM ALERT ----- */
+.messages-container {
+    margin-bottom: 1.5rem;
 }
 
-.score-divider {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #aaa;
-}
-
-/* Botões */
-.btn-lg {
-    border-radius: 10px;
-    font-weight: 500;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    transition: all 0.3s;
-}
-
-/* Regras de apostas */
-.bet-rules {
-    transition: transform 0.2s;
-}
-
-.bet-rules:hover {
-    transform: translateY(-3px);
-}
-
-.bet-rules .card-header {
-    border-bottom: 2px solid rgba(0,0,0,0.05);
-}
-
-/* Estilos simplificados para o cronômetro regressivo */
-.countdown-timer {
-    font-family: monospace;
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #495057;
-}
-
-.countdown-value {
-    display: inline-block;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    padding: 2px 4px;
-    margin: 0 2px;
-    min-width: 28px;
-    text-align: center;
-    border-radius: 3px;
-}
-
-/* Estado de urgência */
-.countdown-urgent .countdown-value {
-    color: #dc3545;
-    font-weight: bold;
-}
-
-/* Responsividade */
-@media (max-width: 576px) {
-    .table-responsive {
-        border-radius: 0.5rem;
-        box-shadow: 0 0 15px rgba(0,0,0,0.05);
-    }
-    
-    .table-striped > tbody > tr.table-primary::before {
-        left: 0;
-    }
-    
-    .team-name {
-        font-size: 1rem;
-    }
-    
-    .score-input, input.form-control.score-input {
-        height: 50px;
-        width: 60px !important;
-        font-size: 1.5rem;
-    }
-    
-    .score-divider {
-        font-size: 1.5rem;
-    }
-    
-    .bet-card .card-body {
-        padding: 1rem;
-    }
-    
-    .countdown-timer {
-        gap: 5px;
-    }
-    
-    .countdown-item {
-        min-width: auto;
-    }
-    
-    .countdown-value {
-        font-size: 1.2rem;
-        min-width: 36px;
-        padding: 4px 6px;
-    }
-    
-    .countdown-label {
-        font-size: 0.7rem;
-    }
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }

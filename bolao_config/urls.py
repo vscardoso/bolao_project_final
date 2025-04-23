@@ -20,6 +20,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from core import views as core_views
+from users import views as user_views  # Ajuste para o seu app de usuários
+import debug_toolbar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,6 +43,11 @@ urlpatterns = [
          auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), 
          name='password_reset_complete'),
     
+    # URLs de autenticação
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
+    path('register/', user_views.register, name='register'),
+
     # Outras URLs do projeto
     path('users/', include('users.urls')),
     path('pools/', include('pools.urls', namespace='pools')),
@@ -48,6 +55,9 @@ urlpatterns = [
     # Inclui todas as URLs do app core também na raiz
     path('', core_views.home, name='home'),
     path('', include('core.urls')),
+    
+    # Debug toolbar URLs
+    path('__debug__/', include(debug_toolbar.urls)),
 ]
 
 if settings.DEBUG:

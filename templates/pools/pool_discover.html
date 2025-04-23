@@ -1,97 +1,278 @@
 {% extends 'pools/base_pools.html' %}
 {% load static %}
+{% load pool_filters %}
 
 {% block title %}Descobrir Bolões | Bolão Online{% endblock %}
 
-{% block pool_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Descobrir Bolões</h1>
-</div>
+{% block extra_css %}
+<style>
+    /* Estilos para os cards de bolão */
+    .pool-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .pool-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .pool-header {
+        height: 140px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+    
+    .pool-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+    
+    .pool-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .sport-icon {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .participants-counter {
+        background-color: rgba(255,255,255,0.9);
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 8px;
+        align-self: flex-start;
+    }
+    
+    .filter-card {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    .filter-pill {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .filter-pill:hover {
+        transform: translateY(-2px);
+    }
+    
+    .filter-pill.active {
+        background-color: var(--bs-primary) !important;
+        color: white !important;
+    }
+    
+    .featured-badge {
+        position: absolute;
+        top: -10px;
+        right: 20px;
+        z-index: 2;
+    }
+    
+    .progress {
+        height: 5px;
+    }
+    
+    /* Background colors for sport categories */
+    .bg-sport-soccer { background-color: #38b000; }
+    .bg-sport-basketball { background-color: #ff7b00; }
+    .bg-sport-f1 { background-color: #d90429; }
+    .bg-sport-ufc { background-color: #212529; }
+    .bg-sport-volleyball { background-color: #4cc9f0; }
+    .bg-sport-tennis { background-color: #7209b7; }
+</style>
+{% endblock %}
 
-<!-- Filtros -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3">
-            <div class="col-md-4">
-                <label for="search" class="form-label">Busca</label>
-                <input type="text" class="form-control" id="search" name="search" value="{{ search }}" placeholder="Nome, descrição...">
-            </div>
-            <div class="col-md-3">
-                <label for="sport" class="form-label">Esporte</label>
-                <select class="form-select" id="sport" name="sport">
-                    <option value="">Todos os esportes</option>
-                    {% for sport in sports %}
-                    <option value="{{ sport.id }}" {% if selected_sport == sport.id|stringformat:"i" %}selected{% endif %}>
-                        {{ sport.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="order_by" class="form-label">Ordenar por</label>
-                <select class="form-select" id="order_by" name="order_by">
-                    <option value="-created_at" {% if order_by == '-created_at' %}selected{% endif %}>Mais recentes</option>
-                    <option value="created_at" {% if order_by == 'created_at' %}selected{% endif %}>Mais antigos</option>
-                    <option value="name" {% if order_by == 'name' %}selected{% endif %}>Nome (A-Z)</option>
-                    <option value="-name" {% if order_by == '-name' %}selected{% endif %}>Nome (Z-A)</option>
-                    <option value="entry_fee" {% if order_by == 'entry_fee' %}selected{% endif %}>Valor (menor-maior)</option>
-                    <option value="-entry_fee" {% if order_by == '-entry_fee' %}selected{% endif %}>Valor (maior-menor)</option>
-                </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <div class="d-grid w-100">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-2"></i> Filtrar
-                    </button>
+{% block pool_content %}
+<!-- Banner hero -->
+<div class="card border-0 overflow-hidden mb-4 bg-primary text-white">
+    <div class="card-body p-0">
+        <div class="row g-0">
+            <div class="col-md-8 p-4 p-md-5">
+                <h1 class="display-5 fw-bold mb-3">Descobrir Bolões</h1>
+                <p class="lead mb-4">Encontre bolões interessantes para participar e competir com outros apostadores em diversos esportes e competições.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="#filters" class="btn btn-light">
+                        <i class="fas fa-search me-2"></i> Filtrar bolões
+                    </a>
+                    <a href="{% url 'pools:create' %}" class="btn btn-outline-light">
+                        <i class="fas fa-plus-circle me-2"></i> Criar meu bolão
+                    </a>
                 </div>
             </div>
-        </form>
+            <div class="col-md-4 d-none d-md-block position-relative bg-primary" style="min-height: 250px;">
+                <div class="position-absolute top-0 end-0 bottom-0 start-0 d-flex align-items-center justify-content-center">
+                    <div class="text-center">
+                        <i class="fas fa-trophy fa-5x text-white opacity-25 mb-3"></i>
+                        <div class="d-flex gap-3 justify-content-center">
+                            <i class="fas fa-futbol fa-2x text-white opacity-50"></i>
+                            <i class="fas fa-basketball-ball fa-2x text-white opacity-75"></i>
+                            <i class="fas fa-flag-checkered fa-2x text-white opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chips de categorias populares -->
+<div class="mb-4" id="filters">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Categorias Populares</h5>
+        <a href="#all-pools" class="text-decoration-none small">Ver todos <i class="fas fa-chevron-right ms-1 small"></i></a>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="?sport=1" class="badge bg-light text-dark p-2 px-3 filter-pill {% if selected_sport == '1' %}active{% endif %}">
+            <i class="fas fa-futbol me-1"></i> Futebol
+        </a>
+        <a href="?sport=2" class="badge bg-light text-dark p-2 px-3 filter-pill {% if selected_sport == '2' %}active{% endif %}">
+            <i class="fas fa-basketball-ball me-1"></i> Basquete
+        </a>
+        <a href="?sport=3" class="badge bg-light text-dark p-2 px-3 filter-pill {% if selected_sport == '3' %}active{% endif %}">
+            <i class="fas fa-flag-checkered me-1"></i> Fórmula 1
+        </a>
+        <a href="?sport=4" class="badge bg-light text-dark p-2 px-3 filter-pill {% if selected_sport == '4' %}active{% endif %}">
+            <i class="fas fa-fist-raised me-1"></i> UFC
+        </a>
+        <a href="?sport=5" class="badge bg-light text-dark p-2 px-3 filter-pill {% if selected_sport == '5' %}active{% endif %}">
+            <i class="fas fa-volleyball-ball me-1"></i> Vôlei
+        </a>
+        <a href="?sport=6" class="badge bg-light text-dark p-2 px-3 filter-pill {% if selected_sport == '6' %}active{% endif %}">
+            <i class="fas fa-table-tennis me-1"></i> Tênis
+        </a>
+        {% if selected_sport %}
+        <a href="{% url 'pools:discover' %}" class="badge bg-danger text-white p-2 px-3">
+            <i class="fas fa-times me-1"></i> Limpar filtros
+        </a>
+        {% endif %}
     </div>
 </div>
 
 <!-- Lista de Bolões -->
+<h5 class="mb-3" id="all-pools">Bolões disponíveis 
+    {% if search or selected_sport %}
+    <span class="text-muted small">(Filtro aplicado)</span>
+    {% endif %}
+</h5>
+
 {% if pools %}
-<div class="row g-4">
+<div class="row g-4 mb-4">
     {% for pool in pools %}
-    <div class="col-md-6 col-lg-4">
-        <div class="card h-100 border-0 shadow-sm">
+    <div class="col-xl-4 col-md-6">
+        <div class="card pool-card shadow-sm">
+            {% if pool.is_featured %}
+            <div class="featured-badge">
+                <div class="badge bg-danger px-3 py-2 shadow">
+                    <i class="fas fa-star me-1"></i> DESTAQUE
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="pool-header" 
+                style="background-image: url('{% if pool.cover_image %}{{ pool.cover_image.url }}{% else %}{% placeholder_image_url pool.sport.name %}{% endif %}');">
+                <div class="sport-icon">
+                    <i class="{{ pool.sport.name|sport_icon }}"></i>
+                </div>
+                
+                <div class="pool-overlay">
+                    <div class="participants-counter text-dark">
+                        <i class="fas fa-users me-1"></i> {{ pool.participants.count|default:0 }} participante{{ pool.participants.count|default:0|pluralize }}
+                    </div>
+                    <h5 class="text-white mb-0">{{ pool.name }}</h5>
+                </div>
+            </div>
+            
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0">{{ pool.name }}</h5>
-                    <span class="badge bg-{{ pool.visibility|yesno:'info,secondary' }}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge {% if pool.visibility == 'public' %}bg-info{% else %}bg-secondary{% endif %}">
                         {{ pool.get_visibility_display }}
                     </span>
+                    <span class="fw-bold {% if pool.entry_fee > 0 %}text-success{% endif %}">
+                        {% if pool.entry_fee > 0 %}
+                        R$ {{ pool.entry_fee|floatformat:2 }}
+                        {% else %}
+                        <span class="badge bg-success">Grátis</span>
+                        {% endif %}
+                    </span>
                 </div>
-                <p class="text-muted small mb-3">
-                    {{ pool.description|truncatechars:100 }}
-                </p>
-                <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
-                    <div>
-                        <i class="fas fa-trophy me-1"></i> {{ pool.competition.name }}
-                    </div>
-                    <div>
-                        <i class="fas fa-users me-1"></i> {{ pool.participants.count }} participantes
-                    </div>
+                
+                <p class="text-muted small mb-2">{{ pool.description|truncatechars:80 }}</p>
+                
+                <div class="d-flex justify-content-between align-items-center small text-muted mb-2">
+                    <span><i class="fas fa-trophy me-1"></i> {{ pool.competition.name|default:"Sem competição" }}</span>
                 </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="fw-bold {% if pool.entry_fee > 0 %}text-success{% endif %}">
-                            {% if pool.entry_fee > 0 %}
-                            R$ {{ pool.entry_fee|floatformat:2 }}
-                            {% else %}
-                            Grátis
-                            {% endif %}
+                
+                {% if pool.max_participants > 0 %}
+                <div class="mb-3 small text-muted">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Vagas preenchidas</span>
+                        <span>{{ pool.participants.count }}/{{ pool.max_participants }}</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress">
+                            <div class="progress-bar 
+                                {% if pool.participants.count >= pool.max_participants %}
+                                    bg-danger
+                                {% elif pool.participants.count >= pool.max_participants|add:"-3" %}
+                                    bg-warning
+                                {% else %}
+                                    bg-success
+                                {% endif %}" 
+                                style="width: {% if pool.max_participants > 0 %}{% widthratio pool.participants.count pool.max_participants 100 %}{% else %}0{% endif %}%;"
+                                role="progressbar"
+                                aria-valuenow="{{ pool.participants.count }}"
+                                aria-valuemin="0" 
+                                aria-valuemax="{{ pool.max_participants|default:'0' }}">
+                            </div>
+                        </div>
+                        <span class="progress-percentage">
+                            {% widthratio pool.participants.count pool.max_participants 100 %}%
                         </span>
                     </div>
-                    <a href="{% url 'pools:join' pool.slug %}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus-circle me-1"></i> Participar
+                </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'pools:join' pool.slug %}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i> Participar
+                    </a>
+                    <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-secondary btn-sm">
+                        Ver detalhes
                     </a>
                 </div>
             </div>
-            <div class="card-footer bg-white border-top-0 text-muted small">
-                <div class="d-flex justify-content-between">
+            
+            <div class="card-footer bg-light border-0 py-2">
+                <div class="d-flex justify-content-between text-muted small">
                     <span><i class="fas fa-user me-1"></i> {{ pool.owner.username }}</span>
-                    <span><i class="fas fa-clock me-1"></i> criado {{ pool.created_at|timesince }}</span>
+                    <span><i class="fas fa-clock me-1"></i> {{ pool.created_at|timesince }}</span>
                 </div>
             </div>
         </div>
@@ -99,15 +280,20 @@
     {% endfor %}
 </div>
 
+<!-- Paginação aprimorada -->
 {% if is_paginated %}
-<nav aria-label="Paginação" class="mt-4">
+<nav aria-label="Navegação de páginas" class="mt-4">
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
         <li class="page-item">
-            <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">&laquo; Primeira</a>
+            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Primeira">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
         </li>
         <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Anterior</a>
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Anterior">
+                <i class="fas fa-angle-left"></i>
+            </a>
         </li>
         {% endif %}
 
@@ -118,17 +304,21 @@
         </li>
         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">{{ num }}</a>
+            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
         </li>
         {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Próxima</a>
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Próxima">
+                <i class="fas fa-angle-right"></i>
+            </a>
         </li>
         <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if selected_sport %}&sport={{ selected_sport }}{% endif %}{% if order_by %}&order_by={{ order_by }}{% endif %}">Última &raquo;</a>
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Última">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
         </li>
         {% endif %}
     </ul>
@@ -136,11 +326,18 @@
 {% endif %}
 
 {% else %}
+<!-- Estado vazio aprimorado -->
 <div class="card shadow-sm border-0">
     <div class="card-body text-center py-5">
         <img src="{% static 'img/empty-search.svg' %}" alt="Nenhum bolão encontrado" class="img-fluid mb-4" style="max-width: 200px;">
         <h3>Nenhum bolão encontrado</h3>
-        <p class="text-muted mb-4">Não encontramos bolões com os critérios de busca informados.</p>
+        <p class="text-muted mb-4">
+            {% if search or selected_sport %}
+                Não encontramos bolões com os critérios de busca informados.
+            {% else %}
+                Parece que ainda não há bolões disponíveis para participação.
+            {% endif %}
+        </p>
         <div class="d-flex justify-content-center gap-3">
             <a href="{% url 'pools:discover' %}" class="btn btn-primary">
                 <i class="fas fa-sync me-2"></i> Limpar filtros
@@ -152,4 +349,37 @@
     </div>
 </div>
 {% endif %}
+
+<!-- Call to Action - Crie seu próprio bolão -->
+<div class="card bg-primary text-white border-0 mt-5">
+    <div class="card-body p-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold mb-2">Não encontrou o que procurava?</h3>
+                <p class="mb-md-0">Crie seu próprio bolão personalizado e convide amigos, colegas e familiares para participar!</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'pools:create' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus-circle me-2"></i> Criar meu bolão
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight na navegação ativa
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.addEventListener('click', function(e) {
+                document.querySelectorAll('.filter-pill').forEach(p => {
+                    p.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
 {% endblock %}

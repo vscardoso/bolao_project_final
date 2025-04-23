@@ -3,6 +3,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db.models import Sum
+from django.views.generic import CreateView
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
 from .forms import CustomUserCreationForm, UserProfileForm, ProfileEditForm
 from .models import CustomUser
 from pools.models import Pool, Participation, Bet
@@ -30,6 +33,17 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'users/register.html', {'form': form})
+
+class SignupView(CreateView):
+    template_name = 'registration/signup.html'
+    form_class = UserCreationForm
+    success_url = reverse_lazy('login')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Faça login automático após o registro, se desejado
+        # auth_login(self.request, self.object)
+        return response
 
 @login_required
 def profile(request):
@@ -106,3 +120,22 @@ def dashboard(request):
         'total_pools': len(pools) + len(owned_pools)
     }
     return render(request, 'users/dashboard.html', context)
+
+def login_view(request):
+    # ... código existente ...
+    
+    if request.method == 'POST':
+        # ... código existente de autenticação ...
+        
+        if user is not None:
+            login(request, user)
+            
+            # Verificar se há um código de convite na sessão
+            if 'invitation_code' in request.session:
+                code = request.session['invitation_code']
+                del request.session['invitation_code']
+                
+                # Redirecionar para a página de aceitação do convite
+                return redirect('pools:accept_invitation', code=code)
+                
+            # ... resto do código existente ...
