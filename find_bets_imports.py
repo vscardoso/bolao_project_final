@@ -120,10 +120,10 @@ def generate_sed_commands(results):
     print("-" * 80)
     
     replacements = [
-        ("from bets.models import", "from pools.models import"),
+        ("from pools.models import", "from pools.models import"),
         ("from bets import", "from pools import"),
-        ("import bets.models", "import pools.models"),
-        ("bets.models.", "pools.models."),
+        ("import pools.models", "import pools.models"),
+        ("pools.models.", "pools.models."),
     ]
     
     for old, new in replacements:

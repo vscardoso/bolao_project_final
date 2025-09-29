@@ -16,7 +16,7 @@ def replace_imports_in_file(file_path):
         # Substituições
         replacements = [
             (r'from bets\.models import', 'from pools.models import'),
-            (r'from bets import models', 'from pools import models'),
+            (r'from pools import models', 'from pools import models'),
             (r'import bets\.models', 'import pools.models'),
             (r'bets\.models\.', 'pools.models.'),
             (r'bets\.views\.', 'pools.views.'),

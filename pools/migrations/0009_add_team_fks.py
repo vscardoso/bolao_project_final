@@ -6,13 +6,32 @@ def forwards_populate_team_fks(apps, schema_editor):
     """
     Data migration that populates the temporary FK fields home_team_fk and
     away_team_fk on Match by looking up Teams by name. If a Team with the
-    given name does not exist, it will be created.
+    given name does not exist, it will be created with a default championship.
 
     We use apps.get_model to obtain historical models that match the state at
     migration time.
     """
     Team = apps.get_model('pools', 'Team')
     Match = apps.get_model('pools', 'Match')
+    Championship = apps.get_model('pools', 'Championship')
+    Sport = apps.get_model('pools', 'Sport')
+
+    # Get or create a default championship for orphaned teams
+    default_sport, _ = Sport.objects.get_or_create(
+        name='Football',
+        defaults={'icon': 'football.png'}
+    )
+    
+    default_championship, _ = Championship.objects.get_or_create(
+        name='Migration Default',
+        season='2024',
+        defaults={
+            'sport': default_sport,
+            'start_date': '2024-01-01',
+            'end_date': '2024-12-31',
+            'description': 'Default championship created during migration'
+        }
+    )
 
     created_teams = 0
     for match in Match.objects.all():
@@ -21,13 +40,25 @@ def forwards_populate_team_fks(apps, schema_editor):
         away_name = getattr(match, 'away_team', None)
 
         if home_name:
-            team, created = Team.objects.get_or_create(name=home_name)
+            team, created = Team.objects.get_or_create(
+                name=home_name,
+                defaults={
+                    'code': home_name[:3].upper(),
+                    'championship': default_championship
+                }
+            )
             if created:
                 created_teams += 1
             match.home_team_fk_id = team.pk
 
         if away_name:
-            team, created = Team.objects.get_or_create(name=away_name)
+            team, created = Team.objects.get_or_create(
+                name=away_name,
+                defaults={
+                    'code': away_name[:3].upper(),
+                    'championship': default_championship
+                }
+            )
             if created:
                 created_teams += 1
             match.away_team_fk_id = team.pk

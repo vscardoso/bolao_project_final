@@ -3,9 +3,9 @@
 ================================================================================
 
 📊 Estatísticas:
-   Total de arquivos .py analisados: 59
-   Arquivos com referências a bets: 5
-   Total de ocorrências encontradas: 12
+   Total de arquivos .py analisados: 60
+   Arquivos com referências a bets: 6
+   Total de ocorrências encontradas: 10
 
 📄 Arquivos afetados:
 --------------------------------------------------------------------------------
@@ -20,12 +20,9 @@
    Linha   25: match = models.ForeignKey(Match, on_delete=models.CASCADE, related_nam
 
 📁 find_bets_imports.py
-   5 ocorrência(s)
+   2 ocorrência(s)
    Linha   18: r"['\"]bets['\"]",  # String literal 'bets'
-   Linha  123: ("from bets.models import", "from pools.models import"),
    Linha  124: ("from bets import", "from pools import"),
-   Linha  125: ("import bets.models", "import pools.models"),
-   Linha  126: ("bets.models.", "pools.models."),
 
 📁 pools\legacy_models.py
    3 ocorrência(s)
@@ -36,6 +33,10 @@
 📁 pools\views.py
    1 ocorrência(s)
    Linha  331: context_object_name = 'bets'
+
+📁 substituir_imports.py
+   1 ocorrência(s)
+   Linha   20: (r'import bets\.models', 'import pools.models'),
 
 ================================================================================
 
@@ -49,13 +50,13 @@
 🔧 Comandos para substituição automática:
 --------------------------------------------------------------------------------
 
-# Substituir 'from bets.models import' por 'from pools.models import'
+# Substituir 'from pools.models import' por 'from pools.models import'
 find . -name '*.py' -type f -not -path '*/venv/*' -not -path '*/__pycache__/*' \
-  -exec sed -i 's/from bets.models import/from pools.models import/g' {} \;
+  -exec sed -i 's/from pools.models import/from pools.models import/g' {} \;
 
 # Windows PowerShell:
 Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'venv|__pycache__'} | ForEach-Object {
-    (Get-Content $_.FullName) -replace 'from bets.models import', 'from pools.models import' | Set-Content $_.FullName
+    (Get-Content $_.FullName) -replace 'from pools.models import', 'from pools.models import' | Set-Content $_.FullName
 }
 
 # Substituir 'from bets import' por 'from pools import'
@@ -67,20 +68,20 @@ Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'ven
     (Get-Content $_.FullName) -replace 'from bets import', 'from pools import' | Set-Content $_.FullName
 }
 
-# Substituir 'import bets.models' por 'import pools.models'
+# Substituir 'import pools.models' por 'import pools.models'
 find . -name '*.py' -type f -not -path '*/venv/*' -not -path '*/__pycache__/*' \
-  -exec sed -i 's/import bets.models/import pools.models/g' {} \;
+  -exec sed -i 's/import pools.models/import pools.models/g' {} \;
 
 # Windows PowerShell:
 Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'venv|__pycache__'} | ForEach-Object {
-    (Get-Content $_.FullName) -replace 'import bets.models', 'import pools.models' | Set-Content $_.FullName
+    (Get-Content $_.FullName) -replace 'import pools.models', 'import pools.models' | Set-Content $_.FullName
 }
 
-# Substituir 'bets.models.' por 'pools.models.'
+# Substituir 'pools.models.' por 'pools.models.'
 find . -name '*.py' -type f -not -path '*/venv/*' -not -path '*/__pycache__/*' \
-  -exec sed -i 's/bets.models./pools.models./g' {} \;
+  -exec sed -i 's/pools.models./pools.models./g' {} \;
 
 # Windows PowerShell:
 Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'venv|__pycache__'} | ForEach-Object {
-    (Get-Content $_.FullName) -replace 'bets.models.', 'pools.models.' | Set-Content $_.FullName
+    (Get-Content $_.FullName) -replace 'pools.models.', 'pools.models.' | Set-Content $_.FullName
 }
