@@ -179,21 +179,34 @@ INTERNAL_IPS = [
 # Chave da API Football-Data.org
 FOOTBALL_DATA_API_KEY = config('FOOTBALL_DATA_API_KEY')
 
+# ========================================
+# CONFIGURAÇÕES DE SEGURANÇA (Produção)
+# ========================================
+
 # Configurações de segurança para produção
 if not DEBUG:
     # HTTPS e SSL
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     
     # Cookies seguros
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
+    SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
     
     # HSTS (HTTP Strict Transport Security)
-    SECURE_HSTS_SECONDS = 31536000  # 1 ano
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)  # 1 ano
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     
     # X-Frame-Options
     X_FRAME_OPTIONS = 'DENY'
+
+# ========================================
+# ARQUIVOS ESTÁTICOS E MÍDIA
+# ========================================
+
+STATIC_URL = config('STATIC_URL', default='/static/')
+STATIC_ROOT = config('STATIC_ROOT', default=BASE_DIR / 'staticfiles')
+MEDIA_URL = config('MEDIA_URL', default='/media/')
+MEDIA_ROOT = config('MEDIA_ROOT', default=BASE_DIR / 'media')
