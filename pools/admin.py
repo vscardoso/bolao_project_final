@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Sport, Competition, Pool, Match, Bet, Participation, Campeonato, Time, Partida
+from django.utils.html import format_html
+from .models import Sport, Competition, Pool, Match, Bet, Participation, Championship, Team, Game, Standing
 
 class PoolAdmin(admin.ModelAdmin):
     list_display = ['name', 'owner', 'competition', 'status', 'visibility']  # Removido 'admin'
@@ -13,24 +14,42 @@ class PoolAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('owner', 'competition')
 
-@admin.register(Campeonato)
-class CampeonatoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'temporada', 'esporte', 'inicio', 'fim')
-    search_fields = ('nome', 'temporada')
-    list_filter = ('esporte',)
+@admin.register(Championship)
+class ChampionshipAdmin(admin.ModelAdmin):
+    list_display = ('name', 'season', 'sport', 'start_date', 'end_date')
+    search_fields = ('name', 'season')
+    list_filter = ('sport',)
 
-@admin.register(Time)
-class TimeAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'sigla', 'campeonato')
-    search_fields = ('nome', 'sigla')
-    list_filter = ('campeonato',)
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'championship', 'display_logo')
+    search_fields = ('name', 'code')
+    list_filter = ('championship',)
+    
+    def display_logo(self, obj):
+        if obj.logo:
+            return format_html('<img src="{}" height="30" />', obj.logo.url)
+        return "-"
+    display_logo.short_description = 'Logo'
 
-@admin.register(Partida)
-class PartidaAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'campeonato', 'rodada', 'data_hora', 'encerrada')
-    list_filter = ('campeonato', 'rodada', 'encerrada')
-    search_fields = ('time_casa__nome', 'time_visitante__nome')
-    date_hierarchy = 'data_hora'
+@admin.register(Game)
+class GameAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'championship', 'round', 'datetime', 'status', 'display_score')
+    list_filter = ('championship', 'status', 'round')
+    search_fields = ('home_team__name', 'away_team__name')
+    date_hierarchy = 'datetime'
+    
+    def display_score(self, obj):
+        if obj.status in ['finished', 'live']:
+            return f"{obj.home_score} - {obj.away_score}"
+        return "-"
+    display_score.short_description = 'Score'
+
+@admin.register(Standing)
+class StandingAdmin(admin.ModelAdmin):
+    list_display = ('position', 'team', 'championship', 'played', 'won', 'drawn', 'lost', 'points')
+    list_filter = ('championship',)
+    search_fields = ('team__name',)
 
 admin.site.register(Sport)
 admin.site.register(Competition)

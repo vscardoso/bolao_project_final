@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
-USE_TZ = False
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -184,3 +184,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+# Chave da API Football-Data.org
+FOOTBALL_DATA_API_KEY = '***REMOVED***'

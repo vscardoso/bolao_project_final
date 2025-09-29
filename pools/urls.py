@@ -15,7 +15,7 @@ urlpatterns = [
     path('discover/', views.PoolDiscoverView.as_view(), name='discover'),
     
     # Convites
-    path('invitations/', views.InvitationListView.as_view(), name='all_invitations'),
+    path('invitations/', views.InvitationListView.as_view(), name='all_invitations'), 
     
     # Meus bolões criados e participados - MOVA ESTAS ROTAS PARA ANTES DO PADRÃO GENÉRICO
     path('my-created/', views.MyCreatedPoolsView.as_view(), name='my_created'),

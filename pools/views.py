@@ -787,3 +787,54 @@ def criar_bolao_brasileirao(request):
         'form': form,
         'campeonato': brasileirao
     })
+
+def create_tournament_pool(request, tournament_slug):
+    """Cria um bolão para um torneio específico"""
+    
+    tournament = get_object_or_404(Tournament, slug=tournament_slug)
+    
+    if request.method == 'POST':
+        form = PoolForm(request.POST, request.FILES)
+        if form.is_valid():
+            pool = form.save(commit=False)
+            pool.owner = request.user
+            pool.tournament = tournament
+            pool.import_matches_automatically = form.cleaned_data.get('import_matches_automatically', True)
+            
+            # Configurar sistema de pontuação
+            pool.exact_score_points = form.cleaned_data.get('exact_score_points', 10)
+            pool.correct_difference_points = form.cleaned_data.get('correct_difference_points', 5)
+            pool.correct_winner_points = form.cleaned_data.get('correct_winner_points', 3)
+            pool.wrong_points = form.cleaned_data.get('wrong_points', 0)
+            
+            pool.save()
+            form.save_m2m()
+            
+            # Importar jogos se configurado
+            matches_imported = 0
+            if pool.import_matches_automatically:
+                matches_imported = pool.import_tournament_matches()
+            
+            messages.success(
+                request, 
+                f"Bolão {pool.name} criado com sucesso! {matches_imported} jogos importados."
+            )
+            return redirect('pools:detail', slug=pool.slug)
+    else:
+        # Formulário pré-preenchido
+        form = PoolForm(initial={
+            'name': f"{tournament.name} {tournament.season}",
+            'description': f"Bolão do {tournament.name} {tournament.season}",
+            'entry_fee': 50.00,  # Valor sugerido
+            'sport': tournament.sport,
+            'import_matches_automatically': True,
+            'exact_score_points': 10,
+            'correct_difference_points': 5,
+            'correct_winner_points': 3,
+            'wrong_points': 0,
+        })
+    
+    return render(request, 'pools/create_tournament_pool.html', {
+        'form': form,
+        'tournament': tournament
+    })

@@ -1,0 +1,86 @@
+================================================================================
+🔍 RELATÓRIO DE AUDITORIA - App Bets
+================================================================================
+
+📊 Estatísticas:
+   Total de arquivos .py analisados: 59
+   Arquivos com referências a bets: 5
+   Total de ocorrências encontradas: 12
+
+📄 Arquivos afetados:
+--------------------------------------------------------------------------------
+
+📁 bets\apps.py
+   1 ocorrência(s)
+   Linha    6: name = 'bets'
+
+📁 bets\models.py
+   2 ocorrência(s)
+   Linha   24: user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related
+   Linha   25: match = models.ForeignKey(Match, on_delete=models.CASCADE, related_nam
+
+📁 find_bets_imports.py
+   5 ocorrência(s)
+   Linha   18: r"['\"]bets['\"]",  # String literal 'bets'
+   Linha  123: ("from bets.models import", "from pools.models import"),
+   Linha  124: ("from bets import", "from pools import"),
+   Linha  125: ("import bets.models", "import pools.models"),
+   Linha  126: ("bets.models.", "pools.models."),
+
+📁 pools\legacy_models.py
+   3 ocorrência(s)
+   Linha   22: app_label = 'bets'
+   Linha   46: app_label = 'bets'
+   Linha   62: app_label = 'bets'
+
+📁 pools\views.py
+   1 ocorrência(s)
+   Linha  331: context_object_name = 'bets'
+
+================================================================================
+
+💡 Próximos passos sugeridos:
+   1. Revisar cada arquivo listado acima
+   2. Substituir imports: bets.models → pools.models
+   3. Atualizar referências em settings.py (INSTALLED_APPS)
+   4. Remover app bets/ do projeto
+   5. Executar testes para validar mudanças
+
+🔧 Comandos para substituição automática:
+--------------------------------------------------------------------------------
+
+# Substituir 'from bets.models import' por 'from pools.models import'
+find . -name '*.py' -type f -not -path '*/venv/*' -not -path '*/__pycache__/*' \
+  -exec sed -i 's/from bets.models import/from pools.models import/g' {} \;
+
+# Windows PowerShell:
+Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'venv|__pycache__'} | ForEach-Object {
+    (Get-Content $_.FullName) -replace 'from bets.models import', 'from pools.models import' | Set-Content $_.FullName
+}
+
+# Substituir 'from bets import' por 'from pools import'
+find . -name '*.py' -type f -not -path '*/venv/*' -not -path '*/__pycache__/*' \
+  -exec sed -i 's/from bets import/from pools import/g' {} \;
+
+# Windows PowerShell:
+Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'venv|__pycache__'} | ForEach-Object {
+    (Get-Content $_.FullName) -replace 'from bets import', 'from pools import' | Set-Content $_.FullName
+}
+
+# Substituir 'import bets.models' por 'import pools.models'
+find . -name '*.py' -type f -not -path '*/venv/*' -not -path '*/__pycache__/*' \
+  -exec sed -i 's/import bets.models/import pools.models/g' {} \;
+
+# Windows PowerShell:
+Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'venv|__pycache__'} | ForEach-Object {
+    (Get-Content $_.FullName) -replace 'import bets.models', 'import pools.models' | Set-Content $_.FullName
+}
+
+# Substituir 'bets.models.' por 'pools.models.'
+find . -name '*.py' -type f -not -path '*/venv/*' -not -path '*/__pycache__/*' \
+  -exec sed -i 's/bets.models./pools.models./g' {} \;
+
+# Windows PowerShell:
+Get-ChildItem -Recurse -Filter '*.py' | Where-Object {$_.FullName -notmatch 'venv|__pycache__'} | ForEach-Object {
+    (Get-Content $_.FullName) -replace 'bets.models.', 'pools.models.' | Set-Content $_.FullName
+}
