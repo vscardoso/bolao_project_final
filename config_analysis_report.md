@@ -114,7 +114,7 @@ DB_USER=bolao_user
 DB_PASSWORD=senha_super_segura
 DB_HOST=localhost
 DB_PORT=3306
-FOOTBALL_DATA_API_KEY=***REMOVED***
+FOOTBALL_DATA_API_KEY=bd9aef7e419a40e2b95c6d345c634c1c
 ```
 
 ### 📦 Dependências Adicionais

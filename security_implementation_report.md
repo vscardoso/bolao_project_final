@@ -114,7 +114,7 @@ DB_HOST=localhost
 DB_PORT=3306
 
 # APIs EXTERNAS
-FOOTBALL_DATA_API_KEY=***REMOVED***
+FOOTBALL_DATA_API_KEY=bd9aef7e419a40e2b95c6d345c634c1c
 ```
 
 ### 📝 **Template .env.example**

@@ -7,7 +7,7 @@
 
 ## ⚠️ **PROBLEMA IDENTIFICADO**
 
-### 📧 **Email configurado**: `***REMOVED***`
+### 📧 **Email configurado**: `jogador.lastshelter@gmail.com`
 ### 🔐 **Senha fornecida**: `Maria@8822` (senha regular)
 
 ### ❌ **ERRO**: Gmail não aceita senhas regulares para SMTP
@@ -67,7 +67,7 @@ EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 ## 📋 **PRÓXIMOS PASSOS**
 
 ### 🎯 **Para continuar com Gmail**:
-1. Ative 2FA na conta `***REMOVED***`
+1. Ative 2FA na conta `jogador.lastshelter@gmail.com`
 2. Gere senha de app
 3. Atualize `.env` com a nova senha
 4. Teste novamente: `python test_email.py`

@@ -2,7 +2,7 @@
 
 **Data**: 29/09/2025 10:57:27  
 **Status**: 🎉 **TOTALMENTE OPERACIONAL**  
-**Email**: ***REMOVED***  
+**Email**: jogador.lastshelter@gmail.com  
 
 ---
 
@@ -12,10 +12,10 @@
 - **Backend**: `django.core.mail.backends.smtp.EmailBackend`
 - **Host**: `smtp.gmail.com`
 - **Port**: `587`
-- **User**: `***REMOVED***`
-- **Password**: `***REMOVED***` (senha de app)
+- **User**: `jogador.lastshelter@gmail.com`
+- **Password**: `lrkl dtrt eywv ombz` (senha de app)
 - **TLS**: `True`
-- **From**: `***REMOVED***`
+- **From**: `jogador.lastshelter@gmail.com`
 
 ### ✅ **Testes Realizados**
 - [x] Conexão SMTP estabelecida com sucesso
@@ -35,7 +35,7 @@
 ### 📧 **Teste de Envio**
 ```
 ✅ Email enviado com sucesso!
-📧 Destinatário: ***REMOVED***
+📧 Destinatário: jogador.lastshelter@gmail.com
 📋 Assunto: ✅ Teste Django Bolão - 29/09/2025 10:57:27
 ```
 
@@ -106,7 +106,7 @@ from django.core.mail import send_mail
 send_mail(
     'Assunto do Email',
     'Mensagem do email...',
-    '***REMOVED***',
+    'jogador.lastshelter@gmail.com',
     ['destinatario@email.com'],
     fail_silently=False,
 )
@@ -119,7 +119,7 @@ from django.core.mail import EmailMessage
 email = EmailMessage(
     'Assunto',
     '<h1>Email HTML</h1><p>Conteúdo...</p>',
-    '***REMOVED***',
+    'jogador.lastshelter@gmail.com',
     ['destinatario@email.com'],
 )
 email.content_subtype = 'html'
@@ -133,7 +133,7 @@ from django.core.mail import EmailMessage
 email = EmailMessage(
     'Relatório Bolão',
     'Segue relatório em anexo.',
-    '***REMOVED***',
+    'jogador.lastshelter@gmail.com',
     ['usuario@email.com'],
 )
 email.attach_file('/path/to/relatorio.pdf')

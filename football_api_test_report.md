@@ -6,7 +6,7 @@
 ## 📊 Resumo do Teste
 
 ### ✅ **Status da API**
-- **Chave**: `***REMOVED***` (32 caracteres)
+- **Chave**: `bd9aef7e419a40e2b95c6d345c634c1c` (32 caracteres)
 - **Status**: ✅ Ativa e válida
 - **Plano**: Gratuito (Free Tier)
 - **Conectividade**: ✅ Funcionando normalmente

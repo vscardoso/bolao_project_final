@@ -51,7 +51,7 @@ def test_simple_email():
             subject='Teste de Email - Django Bolão',
             message='Este é um email de teste enviado em ' + str(django.utils.timezone.now()),
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['***REMOVED***'],  # Enviando para o próprio email
+            recipient_list=['jogador.lastshelter@gmail.com'],  # Enviando para o próprio email
             fail_silently=False,
         )
         print(f"✅ Email simples enviado: {result > 0}")

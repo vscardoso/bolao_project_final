@@ -41,7 +41,7 @@ SECRET_KEY = '%1me5zn+4-48zj*$m774...'  # ✅ Gerada pelo Django
 DB_PASSWORD = 'senha_segura_aqui'  # ❌ Senha óbvia
 
 # Depois (forte)
-DB_PASSWORD = '***REMOVED***'  # ✅ 16 chars seguros
+DB_PASSWORD = '@+kZ8LsF76KTRLzf'  # ✅ 16 chars seguros
 ```
 
 ### 📊 **Características da Nova Senha**

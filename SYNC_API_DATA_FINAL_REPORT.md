@@ -102,7 +102,7 @@ python manage.py sync_api_data --competition CL --update-results
 
 #### Arquivo .env
 ```env
-FOOTBALL_API_KEY=***REMOVED***
+FOOTBALL_API_KEY=bd9aef7e419a40e2b95c6d345c634c1c
 ```
 
 #### Settings.py

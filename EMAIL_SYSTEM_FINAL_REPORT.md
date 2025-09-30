@@ -131,9 +131,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = '***REMOVED***'
+EMAIL_HOST_USER = 'jogador.lastshelter@gmail.com'
 EMAIL_HOST_PASSWORD = '***'  # Senha de app Gmail
-DEFAULT_FROM_EMAIL = '***REMOVED***'
+DEFAULT_FROM_EMAIL = 'jogador.lastshelter@gmail.com'
 ```
 
 ### 📱 Template Base Responsivo
@@ -174,8 +174,8 @@ EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST: smtp.gmail.com
 EMAIL_PORT: 587
 EMAIL_USE_TLS: True
-EMAIL_HOST_USER: ***REMOVED***
-DEFAULT_FROM_EMAIL: ***REMOVED***
+EMAIL_HOST_USER: jogador.lastshelter@gmail.com
+DEFAULT_FROM_EMAIL: jogador.lastshelter@gmail.com
 ```
 
 ---

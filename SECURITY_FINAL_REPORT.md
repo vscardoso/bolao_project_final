@@ -7,7 +7,7 @@
 
 ### 1. Nova SECRET_KEY Gerada
 - ✅ **SECRET_KEY anterior**: Substituída por nova chave criptograficamente segura
-- ✅ **Nova SECRET_KEY**: `***REMOVED***`
+- ✅ **Nova SECRET_KEY**: `m59ig6z&60-!1@t#26i1#go_zr1m+#1w2)mra7^(al+__&wv64`
 - ✅ **Método**: Usando `django.core.management.utils.get_random_secret_key()`
 - ✅ **Armazenamento**: Salva no arquivo `.env` para segurança
 
@@ -62,7 +62,7 @@ python manage.py sync_api_data --dry-run
 
 ```env
 # SEGURANÇA
-SECRET_KEY=***REMOVED***
+SECRET_KEY=m59ig6z&60-!1@t#26i1#go_zr1m+#1w2)mra7^(al+__&wv64
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1,*.localhost,0.0.0.0
 
@@ -70,7 +70,7 @@ ALLOWED_HOSTS=localhost,127.0.0.1,*.localhost,0.0.0.0
 DB_ENGINE=django.db.backends.mysql
 DB_NAME=bolao_online
 DB_USER=bolao_user
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=@+kZ8LsF76KTRLzf
 DB_HOST=localhost
 DB_PORT=3306
 
@@ -78,12 +78,12 @@ DB_PORT=3306
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_HOST_USER=***REMOVED***
-EMAIL_HOST_PASSWORD=***REMOVED***
+EMAIL_HOST_USER=jogador.lastshelter@gmail.com
+EMAIL_HOST_PASSWORD=lrkl dtrt eywv ombz
 EMAIL_USE_TLS=True
 
 # API FOOTBALL-DATA.ORG
-FOOTBALL_API_KEY=***REMOVED***
+FOOTBALL_API_KEY=bd9aef7e419a40e2b95c6d345c634c1c
 ```
 
 ## 🔍 Validações de Segurança

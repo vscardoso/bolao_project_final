@@ -35,7 +35,7 @@ def check_gmail_status():
     
     print("\n✅ Soluções recomendadas:")
     print("1. Verificar todas as pastas do email (Spam, Promoções, etc.)")
-    print("2. Adicionar '***REMOVED***' aos contatos")
+    print("2. Adicionar 'jogador.lastshelter@gmail.com' aos contatos")
     print("3. Aguardar alguns minutos (delay de entrega)")
     print("4. Verificar logs do Gmail na conta remetente")
 

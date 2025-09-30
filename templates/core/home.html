@@ -15,10 +15,10 @@
                 
                 {% if user.is_authenticated %}
                 <div class="d-flex gap-3 flex-column flex-md-row">
-                    <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg">
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-light btn-lg">
                         <i class="fas fa-tachometer-alt me-2"></i> Meu Dashboard
                     </a>
-                    <a href="{% url 'pool_list' %}" class="btn btn-outline-light btn-lg">
+                    <a href="{% url 'pools:list' %}" class="btn btn-outline-light btn-lg">
                         <i class="fas fa-plus-circle me-2"></i> Ver Bolões
                     </a>
                 </div>

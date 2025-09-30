@@ -101,7 +101,7 @@ print(get_delivery_stats())
 - [ ] Verificar aba **"Promoções"** 
 - [ ] Verificar aba **"Social"**
 - [ ] Verificar pasta **"Spam"**
-- [ ] Adicionar `***REMOVED***` aos contatos
+- [ ] Adicionar `jogador.lastshelter@gmail.com` aos contatos
 - [ ] Aguardar 2-5 minutos (delay de entrega)
 
 ### ✅ **Para o Sistema:**

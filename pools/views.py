@@ -628,6 +628,22 @@ class PoolJoinView(LoginRequiredMixin, View):
     
     def post(self, request, **_kwargs):
         pool = self.get_pool()
+        
+        # Verificar novamente se o usuário já participa (proteção contra duplicate entry)
+        if Participation.objects.filter(user=request.user, pool=pool).exists():
+            messages.info(request, 'Você já participa deste bolão.')
+            return redirect('pools:detail', slug=pool.slug)
+        
+        # Verificar se o bolão ainda está aberto
+        if pool.status != 'open':
+            messages.error(request, 'Este bolão não está mais disponível para participação.')
+            return redirect('pools:detail', slug=pool.slug)
+        
+        # Verificar limite de participantes
+        if pool.max_participants and pool.get_participant_count() >= pool.max_participants:
+            messages.error(request, 'Este bolão já atingiu o limite máximo de participantes.')
+            return redirect('pools:detail', slug=pool.slug)
+        
         form = PoolJoinForm(request.POST)
         
         # Verificar se o formulário é válido antes de acessar cleaned_data
@@ -635,17 +651,29 @@ class PoolJoinView(LoginRequiredMixin, View):
             # Agora podemos acessar cleaned_data com segurança
             payment_method = form.cleaned_data.get('payment_method')
             
-            # Criar participação
-            participation = Participation(
-                user=request.user,
-                pool=pool,
-                payment_method=payment_method,
-                payment_status='pending'
-            )
-            participation.save()
-            
-            messages.success(request, f'Você se juntou ao bolão {pool.name}!')
-            return redirect('pools:detail', slug=pool.slug)
+            try:
+                # Criar participação com proteção adicional
+                participation, created = Participation.objects.get_or_create(
+                    user=request.user,
+                    pool=pool,
+                    defaults={
+                        'payment_method': payment_method,
+                        'payment_status': 'pending'
+                    }
+                )
+                
+                if created:
+                    messages.success(request, f'Você se juntou ao bolão {pool.name}!')
+                else:
+                    messages.info(request, 'Você já participa deste bolão.')
+                
+                return redirect('pools:detail', slug=pool.slug)
+                
+            except IntegrityError:
+                # Fallback em caso de erro de integridade
+                messages.info(request, 'Você já participa deste bolão.')
+                return redirect('pools:detail', slug=pool.slug)
+                
         else:
             # Formulário não é válido, renderizar novamente com erros
             return render(request, self.template_name, {'pool': pool, 'form': form})
@@ -1313,17 +1341,41 @@ def accept_invitation(request, code):
         messages.info(request, "Você já está participando deste bolão.")
         return redirect('pools:detail', slug=invitation.pool.slug)
     
-    # Criar participação e atualizar status do convite
-    Participation.objects.create(
-        user=request.user,
-        pool=invitation.pool,
-        payment_status='pending' if invitation.pool.entry_fee > 0 else 'paid'
-    )
+    # Verificar se o bolão ainda está aberto
+    if invitation.pool.status != 'open':
+        messages.error(request, 'Este bolão não está mais disponível para participação.')
+        return redirect('pools:detail', slug=invitation.pool.slug)
     
-    invitation.status = 'accepted'
-    invitation.save()
+    # Verificar limite de participantes
+    if invitation.pool.max_participants and invitation.pool.get_participant_count() >= invitation.pool.max_participants:
+        messages.error(request, 'Este bolão já atingiu o limite máximo de participantes.')
+        return redirect('pools:detail', slug=invitation.pool.slug)
     
-    messages.success(request, f"Você entrou no bolão {invitation.pool.name}!")
+    try:
+        # Criar participação com proteção adicional
+        participation, created = Participation.objects.get_or_create(
+            user=request.user,
+            pool=invitation.pool,
+            defaults={
+                'payment_status': 'pending' if invitation.pool.entry_fee > 0 else 'paid'
+            }
+        )
+        
+        if created:
+            invitation.status = 'accepted'
+            invitation.save()
+            messages.success(request, f"Você entrou no bolão {invitation.pool.name}!")
+        else:
+            invitation.status = 'accepted'
+            invitation.save()
+            messages.info(request, "Você já está participando deste bolão.")
+            
+    except IntegrityError:
+        # Fallback em caso de erro de integridade
+        invitation.status = 'accepted'
+        invitation.save()
+        messages.info(request, "Você já está participando deste bolão.")
+    
     return redirect('pools:detail', slug=invitation.pool.slug)
 
 def decline_invitation(request, code):

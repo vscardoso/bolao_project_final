@@ -48,10 +48,10 @@
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_HOST_USER=***REMOVED***
-EMAIL_HOST_PASSWORD=***REMOVED***
+EMAIL_HOST_USER=jogador.lastshelter@gmail.com
+EMAIL_HOST_PASSWORD=lrkl dtrt eywv ombz
 EMAIL_USE_TLS=True
-DEFAULT_FROM_EMAIL=***REMOVED***
+DEFAULT_FROM_EMAIL=jogador.lastshelter@gmail.com
 ```
 
 ### 🗄️ **Banco de Dados (MySQL)**
@@ -59,14 +59,14 @@ DEFAULT_FROM_EMAIL=***REMOVED***
 DB_ENGINE=django.db.backends.mysql
 DB_NAME=bolao_online
 DB_USER=bolao_user
-DB_PASSWORD=***REMOVED***
+DB_PASSWORD=@+kZ8LsF76KTRLzf
 DB_HOST=localhost
 DB_PORT=3306
 ```
 
 ### 🔑 **APIs Externas**
 ```env
-FOOTBALL_DATA_API_KEY=***REMOVED***
+FOOTBALL_DATA_API_KEY=bd9aef7e419a40e2b95c6d345c634c1c
 ```
 
 ### 🔒 **Segurança**
