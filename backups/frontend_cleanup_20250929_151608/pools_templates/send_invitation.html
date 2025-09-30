@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Convidar - {{ pool.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'pools:detail' pool.slug %}">{{ pool.name }}</a></li>
+                    <li class="breadcrumb-item active">Convidar</li>
+                </ol>
+            </nav>
+            
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Convidar para {{ pool.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="card-text mb-4">
+                        Envie um convite para que amigos possam participar do seu bolão!
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Enviar Convite
+                            </button>
+                            <a href="{% url 'pools:invitations' pool.slug %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-list me-2"></i>Ver Convites Enviados
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

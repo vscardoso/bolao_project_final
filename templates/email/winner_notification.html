@@ -1,0 +1,67 @@
+{% extends "email/base_email.html" %}
+
+{% block content %}
+<h2>🏆 Parabéns! Você é o campeão!</h2>
+
+<p>Olá, <strong>{{ winner_name }}</strong>!</p>
+
+<p>🎉 <strong>Parabéns!</strong> Você venceu o bolão <strong>"{{ pool_name }}"</strong> com um desempenho excepcional!</p>
+
+<div style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+    <h3 style="margin: 0; color: #333; font-size: 24px;">🥇 CAMPEÃO 🥇</h3>
+    <p style="margin: 10px 0 0 0; color: #333; font-size: 18px; font-weight: bold;">{{ final_points }} pontos</p>
+</div>
+
+<div class="highlight">
+    <h3 style="margin-top: 0;">📊 Estatísticas Finais</h3>
+    <ul style="background: transparent; padding: 0; border: none;">
+        <li><strong>🎯 Total de pontos:</strong> {{ final_points }}</li>
+        <li><strong>✅ Acertos:</strong> {{ total_correct }}/{{ total_predictions }}</li>
+        <li><strong>📈 Taxa de acerto:</strong> {{ accuracy_percentage }}%</li>
+        <li><strong>🏆 Vantagem sobre o 2º:</strong> {{ points_difference }} pontos</li>
+        {% if prize_amount %}
+        <li><strong>💰 Prêmio:</strong> R$ {{ prize_amount }}</li>
+        {% endif %}
+    </ul>
+</div>
+
+<h3>🏅 Classificação Final</h3>
+<div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+    {% for participant in final_ranking %}
+    <p style="margin: 5px 0; {% if forloop.first %}font-weight: bold; color: #ffd700;{% endif %}">
+        {{ forloop.counter }}º - <strong>{{ participant.name }}</strong> - {{ participant.points }} pontos
+        {% if forloop.first %}👑{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% endif %}
+    </p>
+    {% endfor %}
+</div>
+
+<h3>🎯 Seus Melhores Momentos</h3>
+<ul>
+    {% for highlight in best_predictions %}
+    <li><strong>{{ highlight.match }}</strong> - Aposta: {{ highlight.prediction }} ✅</li>
+    {% endfor %}
+</ul>
+
+{% if prize_amount %}
+<div style="background: #d4edda; padding: 15px; border-radius: 5px; border-left: 4px solid #28a745; margin: 20px 0;">
+    <h4 style="margin-top: 0; color: #155724;">💰 Informações sobre o Prêmio</h4>
+    <p style="margin: 0; color: #155724;">
+        Seu prêmio de <strong>R$ {{ prize_amount }}</strong> será transferido em até 5 dias úteis para a conta cadastrada.
+    </p>
+</div>
+{% endif %}
+
+<p style="text-align: center;">
+    <a href="{{ certificate_url }}" class="button">
+        🏆 Baixar Certificado de Campeão
+    </a>
+</p>
+
+<p style="text-align: center; margin-top: 30px;">
+    <strong>🎊 Obrigado por participar e parabéns mais uma vez! 🎊</strong>
+</p>
+
+<p style="text-align: center; font-style: italic; color: #666;">
+    "A sorte favorece os preparados, mas a persistência vence sempre!" 🍀
+</p>
+{% endblock %}

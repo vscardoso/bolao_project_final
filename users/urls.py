@@ -10,4 +10,5 @@ urlpatterns = [
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('signup/', views.SignupView.as_view(), name='signup'),
+    path('settings/', views.profile, name='settings'),  # Temporário - redireciona para profile
 ]

@@ -54,6 +54,16 @@ def home(request):
         'total_pools': total_pools
     }
     
+    # Bolões em destaque para a homepage
+    try:
+        context['featured_pools'] = Pool.objects.filter(
+            status='active',
+            visibility='public'
+        ).order_by('-created_at')[:3]  # 3 bolões mais recentes
+    except Exception as e:
+        print(f"Erro ao buscar bolões em destaque: {e}")
+        context['featured_pools'] = []
+    
     return render(request, 'core/home.html', context)
 
 def about(request):

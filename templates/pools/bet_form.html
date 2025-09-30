@@ -1,141 +1,1247 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load pool_extras %}
 
-{% block title %}Fazer Aposta - {{ match.home_team }} x {{ match.away_team }}{% endblock %}
+{% block title %}Fazer Apostas - {{ pool.name }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --warning-gradient: linear-gradient(135deg, #fcb045 0%, #fd1d1d 100%);
+    --info-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --step-active: #667eea;
+    --step-completed: #28a745;
+    --step-inactive: #6c757d;
+}
+
+/* Stepper Progress */
+.stepper-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.stepper::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    z-index: 1;
+}
+
+.stepper-progress {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+    z-index: 2;
+    transition: width 0.5s ease;
+    transform: translateY(-50%);
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 3;
+    background: white;
+    padding: 0 1rem;
+}
+
+.step-indicator {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+    border: 4px solid;
+}
+
+.step.inactive .step-indicator {
+    background: #f8f9fa;
+    border-color: var(--step-inactive);
+    color: var(--step-inactive);
+}
+
+.step.active .step-indicator {
+    background: var(--step-active);
+    border-color: var(--step-active);
+    color: white;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.step.completed .step-indicator {
+    background: var(--step-completed);
+    border-color: var(--step-completed);
+    color: white;
+}
+
+.step-label {
+    font-weight: 600;
+    color: #495057;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.step.active .step-label {
+    color: var(--step-active);
+}
+
+.step.completed .step-label {
+    color: var(--step-completed);
+}
+
+/* Match Cards */
+.match-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+.match-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.match-card.selected {
+    border-color: var(--step-active);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.match-card.completed {
+    border-color: var(--step-completed);
+    background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+}
+
+.match-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.match-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.match-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.match-selector {
+    width: 20px;
+    height: 20px;
+    accent-color: white;
+}
+
+.match-body {
+    padding: 1.5rem;
+}
+
+.teams-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+}
+
+.team-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    border: 2px solid #e9ecef;
+}
+
+.team-name {
+    font-weight: 600;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.vs-separator {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+}
+
+.score-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.score-input {
+    width: 80px !important;
+    height: 60px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.score-input:focus {
+    border-color: var(--step-active);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+    transform: scale(1.05);
+}
+
+.score-input.valid {
+    border-color: var(--step-completed);
+    background: #f8fff9;
+}
+
+.score-input.invalid {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+
+.points-preview {
+    text-align: center;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.points-preview.visible {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    color: #155724;
+}
+
+/* Countdown Timer */
+.countdown-container {
+    background: linear-gradient(135deg, #fcb045 0%, #fd1d1d 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(252, 176, 69, 0.3);
+}
+
+.countdown-timer {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+.countdown-item {
+    display: inline-block;
+    margin: 0 0.5rem;
+    text-align: center;
+}
+
+.countdown-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.countdown-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+/* Step Content */
+.step-content {
+    display: none;
+    animation: fadeInUp 0.5s ease;
+}
+
+.step-content.active {
+    display: block;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Navigation Buttons */
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-nav {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    min-width: 120px;
+}
+
+.btn-prev {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-prev:hover {
+    background: #5a6268;
+    transform: translateX(-5px);
+}
+
+.btn-next {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-next:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.btn-submit:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+/* Summary */
+.bet-summary {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-match {
+    font-weight: 600;
+    color: #495057;
+}
+
+.summary-score {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--step-active);
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: none;
+    overflow: hidden;
+}
+
+.toast-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-bottom: none;
+}
+
+.toast.success .toast-header {
+    background: var(--success-gradient);
+}
+
+.toast.warning .toast-header {
+    background: var(--warning-gradient);
+}
+
+/* Auto-save Indicator */
+.auto-save-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.auto-save-indicator.show {
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stepper {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .stepper::before {
+        display: none;
+    }
+    
+    .teams-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .score-inputs {
+        margin-top: 1rem;
+    }
+    
+    .navigation-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-nav {
+        width: 100%;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-lg bet-card">
-                <div class="card-header bg-primary text-white py-3">
-                    <h4 class="mb-0 text-center">
-                        <i class="fas fa-futbol me-2"></i> Registrar Aposta
-                    </h4>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-1">🎲 Fazer Apostas</h1>
+                    <p class="text-muted mb-0">{{ pool.name }} • {{ pool.competition.name }}</p>
                 </div>
-                
-                <div class="card-body p-4">
-                    <!-- Informações da partida -->
-                    <div class="match-info mb-4">
-                        <div class="text-center small mb-2">
-                            <span class="badge bg-light text-dark">
-                                {{ match.competition.name }}
-                            </span>
-                            <span class="text-muted ms-2">{{ match.start_time|date:"d/m/Y H:i" }}</span>
-                        </div>
-                        
-                        <div class="row align-items-center justify-content-center match-teams">
-                            <div class="col-4 text-end">
-                                <h5 class="team-name home">{{ match.home_team }}</h5>
-                            </div>
-                            <div class="col-4 text-center">
-                                <div class="vs-badge">VS</div>
-                            </div>
-                            <div class="col-4 text-start">
-                                <h5 class="team-name away">{{ match.away_team }}</h5>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Formulário de apostas -->
-                    <form method="post" class="bet-form">
-                        {% csrf_token %}
-                        <div class="row justify-content-center">
-                            <div class="col-5 text-center">
-                                <div class="score-container">
-                                    <label for="{{ form.home_score_bet.id_for_label }}" class="d-block mb-2">
-                                        {{ form.home_score_bet.label }}
-                                    </label>
-                                    {{ form.home_score_bet }}
-                                    {{ form.home_score_bet.errors }}
-                                </div>
-                            </div>
-                            
-                            <div class="col-2 d-flex align-items-center justify-content-center p-0">
-                                <div class="score-divider">x</div>
-                            </div>
-                            
-                            <div class="col-5 text-center">
-                                <div class="score-container">
-                                    <label for="{{ form.away_score_bet.id_for_label }}" class="d-block mb-2">
-                                        {{ form.away_score_bet.label }}
-                                    </label>
-                                    {{ form.away_score_bet }}
-                                    {{ form.away_score_bet.errors }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-center mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
-                                <i class="fas fa-check me-2"></i> Confirmar Aposta
-                            </button>
-                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-secondary btn-lg ms-3">
-                                <i class="fas fa-times me-2"></i> Cancelar
-                            </a>
-                        </div>
-                    </form>
-                </div>
-                
-                <div class="card-footer bg-light p-3">
-                    <div class="text-center">
-                        <p class="mb-2">
-                            <i class="fas fa-clock me-1"></i>
-                            <small>Tempo restante para apostar:</small>
-                        </p>
-                        
-                        <div class="countdown-timer mb-2" data-match-time="{{ match.start_time|date:'Y-m-d H:i:s' }}">
-                            <span class="countdown-value days">00</span>d
-                            <span class="countdown-value hours">00</span>h
-                            <span class="countdown-value minutes">00</span>m
-                            <span class="countdown-value seconds">00</span>s
-                        </div>
-                        
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Você pode alterar sua aposta até o início da partida.
-                        </small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bet-rules mt-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0"><i class="fas fa-trophy text-warning me-2"></i> Sistema de Pontuação</h5>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <i class="fas fa-star text-warning me-2"></i>
-                                    Acertar o placar exato
-                                </span>
-                                <span class="badge bg-primary rounded-pill">10 pontos</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <i class="fas fa-star text-warning me-2"></i>
-                                    Acertar o vencedor e diferença de gols
-                                </span>
-                                <span class="badge bg-primary rounded-pill">5 pontos</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <i class="fas fa-star text-warning me-2"></i>
-                                    Acertar apenas o vencedor
-                                </span>
-                                <span class="badge bg-primary rounded-pill">3 pontos</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                </a>
             </div>
         </div>
     </div>
+    
+    <!-- Countdown Timer -->
+    {% if next_deadline %}
+    <div class="countdown-container">
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <i class="fas fa-clock fa-lg"></i>
+            <span>Próximo deadline de apostas:</span>
+        </div>
+        <div class="countdown-timer" id="countdown-timer" data-deadline="{{ next_deadline|date:'c' }}">
+            <div class="countdown-item">
+                <span class="countdown-number" id="days">--</span>
+                <span class="countdown-label">Dias</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="hours">--</span>
+                <span class="countdown-label">Horas</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="minutes">--</span>
+                <span class="countdown-label">Min</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-number" id="seconds">--</span>
+                <span class="countdown-label">Seg</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Stepper Progress -->
+    <div class="stepper-container">
+        <div class="stepper">
+            <div class="stepper-progress" id="stepper-progress" style="width: 33.33%"></div>
+            
+            <div class="step active" data-step="1">
+                <div class="step-indicator">
+                    <i class="fas fa-list-check"></i>
+                </div>
+                <div class="step-label">Selecionar Partidas</div>
+            </div>
+            
+            <div class="step inactive" data-step="2">
+                <div class="step-indicator">
+                    <i class="fas fa-dice"></i>
+                </div>
+                <div class="step-label">Fazer Palpites</div>
+            </div>
+            
+            <div class="step inactive" data-step="3">
+                <div class="step-indicator">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="step-label">Confirmar</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Form Wizard -->
+    <form id="bet-wizard-form" method="post" hx-post="{% url 'pools:bet_wizard' pool.slug %}" hx-trigger="submit">
+        {% csrf_token %}
+        
+        <!-- Step 1: Selecionar Partidas -->
+        <div class="step-content active" id="step-1">
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="mb-3">🎯 Selecione as partidas para apostar</h4>
+                    <p class="text-muted mb-4">Escolha as partidas que deseja apostar. Você pode selecionar quantas quiser.</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                {% for match in available_matches %}
+                <div class="col-lg-6 col-xl-4">
+                    <div class="match-card" data-match-id="{{ match.id }}">
+                        <div class="match-header">
+                            <div class="match-date">
+                                <i class="fas fa-calendar"></i>
+                                <span>{{ match.start_time|date:"d/m H:i" }}</span>
+                            </div>
+                            <div class="match-selector-container">
+                                <input type="checkbox" 
+                                       name="match_{{ match.id }}_selected" 
+                                       id="match_{{ match.id }}_selected"
+                                       class="match-selector"
+                                       onchange="toggleMatchCard(this)"
+                                       {% if match.id in user_bets_dict %}checked{% endif %}>
+                                <label for="match_{{ match.id }}_selected" class="mb-0 ms-2">
+                                    Apostar
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="match-body">
+                            <div class="teams-container">
+                                <div class="team">
+                                    <div class="team-logo">
+                                        {% if match.home_team.logo %}
+                                            <img src="{{ match.home_team.logo.url }}" alt="{{ match.home_team.name }}" style="width: 40px; height: 40px; object-fit: contain;">
+                                        {% else %}
+                                            <i class="fas fa-shield-alt fa-lg"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="team-name">{{ match.home_team.name }}</div>
+                                </div>
+                                
+                                <div class="vs-separator">VS</div>
+                                
+                                <div class="team">
+                                    <div class="team-logo">
+                                        {% if match.away_team.logo %}
+                                            <img src="{{ match.away_team.logo.url }}" alt="{{ match.away_team.name }}" style="width: 40px; height: 40px; object-fit: contain;">
+                                        {% else %}
+                                            <i class="fas fa-shield-alt fa-lg"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="team-name">{{ match.away_team.name }}</div>
+                                </div>
+                            </div>
+                            
+                            {% if match.venue %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ match.venue }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                        <h4>Nenhuma partida disponível</h4>
+                        <p class="text-muted">Não há partidas disponíveis para apostas no momento.</p>
+                        <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar ao Bolão
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Step 2: Fazer Palpites -->
+        <div class="step-content" id="step-2">
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="mb-3">⚽ Faça seus palpites</h4>
+                    <p class="text-muted mb-4">Digite o placar que você acha que será o resultado de cada partida.</p>
+                </div>
+            </div>
+            
+            <div id="selected-matches-container">
+                <!-- Partidas selecionadas serão inseridas aqui via JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Step 3: Confirmar -->
+        <div class="step-content" id="step-3">
+            <div class="row">
+                <div class="col-12">
+                    <h4 class="mb-3">✅ Confirme suas apostas</h4>
+                    <p class="text-muted mb-4">Revise suas apostas antes de confirmar. Após confirmar, você poderá editar até 30 minutos antes do jogo.</p>
+                </div>
+            </div>
+            
+            <div class="bet-summary" id="bet-summary">
+                <!-- Resumo das apostas será inserido aqui via JavaScript -->
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Sistema de Pontuação:</strong>
+                <ul class="mb-0 mt-2">
+                    <li><strong>Placar Exato:</strong> 10 pontos</li>
+                    <li><strong>Saldo de Gols:</strong> 5 pontos</li>
+                    <li><strong>Apenas Vencedor:</strong> 3 pontos</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="navigation-buttons">
+            <button type="button" class="btn btn-nav btn-prev" id="btn-prev" onclick="previousStep()" style="display: none;">
+                <i class="fas fa-arrow-left me-2"></i>Anterior
+            </button>
+            
+            <div class="ms-auto">
+                <button type="button" class="btn btn-nav btn-next" id="btn-next" onclick="nextStep()">
+                    Próximo<i class="fas fa-arrow-right ms-2"></i>
+                </button>
+                
+                <button type="submit" class="btn btn-nav btn-submit" id="btn-submit" style="display: none;">
+                    <i class="fas fa-check me-2"></i>Confirmar Apostas
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'js/bet_form.js' %}"></script>
+<!-- Auto-save Indicator -->
+<div class="auto-save-indicator" id="auto-save-indicator">
+    <i class="fas fa-save me-2"></i>Salvando...
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<!-- Template para partidas selecionadas -->
+<template id="selected-match-template">
+    <div class="match-card selected" data-match-id="">
+        <div class="match-header">
+            <div class="match-date">
+                <i class="fas fa-calendar"></i>
+                <span class="match-date-text"></span>
+            </div>
+            <div class="match-deadline">
+                <i class="fas fa-clock text-warning"></i>
+                <span class="deadline-text"></span>
+            </div>
+        </div>
+        
+        <div class="match-body">
+            <div class="teams-container">
+                <div class="team">
+                    <div class="team-logo home-logo"></div>
+                    <div class="team-name home-name"></div>
+                </div>
+                
+                <div class="vs-separator">VS</div>
+                
+                <div class="team">
+                    <div class="team-logo away-logo"></div>
+                    <div class="team-name away-name"></div>
+                </div>
+            </div>
+            
+            <div class="score-inputs">
+                <input type="number" 
+                       class="score-input home-score"
+                       min="0" max="20" 
+                       placeholder="0"
+                       name=""
+                       oninput="validateScore(this); calculatePoints(this); autoSave()"
+                       onblur="finalizeScore(this)">
+                
+                <div class="vs-separator">×</div>
+                
+                <input type="number" 
+                       class="score-input away-score"
+                       min="0" max="20" 
+                       placeholder="0"
+                       name=""
+                       oninput="validateScore(this); calculatePoints(this); autoSave()"
+                       onblur="finalizeScore(this)">
+            </div>
+            
+            <div class="points-preview">
+                <span class="points-text">Digite o placar para ver pontos possíveis</span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+// Global variables
+let currentStep = 1;
+let selectedMatches = new Set();
+let matchData = {};
+let autoSaveTimeout;
+
+// Match data from Django context
+const availableMatches = [
+    {% for match in available_matches %}
+    {
+        id: {{ match.id }},
+        homeTeam: '{{ match.home_team.name|escapejs }}',
+        awayTeam: '{{ match.away_team.name|escapejs }}',
+        startTime: '{{ match.start_time|date:"d/m H:i" }}',
+        deadline: new Date('{{ match.start_time|date:"c" }}'),
+        venue: '{{ match.venue|default:""|escapejs }}',
+        homeTeamLogo: '{% if match.home_team.logo %}{{ match.home_team.logo.url }}{% endif %}',
+        awayTeamLogo: '{% if match.away_team.logo %}{{ match.away_team.logo.url }}{% endif %}'
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Existing bets
+const existingBets = {
+    {% for match_id, bet in user_bets_dict.items %}
+    {{ match_id }}: {
+        homeScore: {{ bet.home_score_bet }},
+        awayScore: {{ bet.away_score_bet }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializePage();
+    loadLocalStorage();
+    initializeCountdown();
+    
+    // Mark pre-selected matches
+    Object.keys(existingBets).forEach(matchId => {
+        selectedMatches.add(parseInt(matchId));
+        const checkbox = document.getElementById(`match_${matchId}_selected`);
+        if (checkbox) {
+            checkbox.checked = true;
+            toggleMatchCard(checkbox);
+        }
+    });
+    
+    updateNextButton();
+});
+
+function initializePage() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+
+function loadLocalStorage() {
+    // Load saved form data
+    const saved = localStorage.getItem('bet_form_data_{{ pool.id }}');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            // Restore form state
+            Object.keys(data).forEach(key => {
+                const input = document.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = data[key];
+                    } else {
+                        input.value = data[key];
+                    }
+                }
+            });
+        } catch (e) {
+            console.error('Error loading saved data:', e);
+        }
+    }
+}
+
+function autoSave() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        saveToLocalStorage();
+        showAutoSaveIndicator();
+    }, 1000);
+}
+
+function saveToLocalStorage() {
+    const formData = new FormData(document.getElementById('bet-wizard-form'));
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    localStorage.setItem('bet_form_data_{{ pool.id }}', JSON.stringify(data));
+}
+
+function showAutoSaveIndicator() {
+    const indicator = document.getElementById('auto-save-indicator');
+    indicator.classList.add('show');
+    setTimeout(() => {
+        indicator.classList.remove('show');
+    }, 2000);
+}
+
+function toggleMatchCard(checkbox) {
+    const matchId = parseInt(checkbox.dataset.matchId || checkbox.name.match(/\d+/)[0]);
+    const card = checkbox.closest('.match-card');
+    
+    if (checkbox.checked) {
+        selectedMatches.add(matchId);
+        card.classList.add('selected');
+    } else {
+        selectedMatches.delete(matchId);
+        card.classList.remove('selected');
+        delete matchData[matchId];
+    }
+    
+    updateNextButton();
+    autoSave();
+}
+
+function updateNextButton() {
+    const nextBtn = document.getElementById('btn-next');
+    const selectedCount = selectedMatches.size;
+    
+    if (currentStep === 1) {
+        nextBtn.disabled = selectedCount === 0;
+        nextBtn.innerHTML = selectedCount > 0 ? 
+            `Continuar (${selectedCount} selecionada${selectedCount > 1 ? 's' : ''})<i class="fas fa-arrow-right ms-2"></i>` : 
+            'Selecione ao menos uma partida';
+    }
+}
+
+function nextStep() {
+    if (currentStep === 1) {
+        if (selectedMatches.size === 0) {
+            showToast('Atenção', 'Selecione pelo menos uma partida para continuar.', 'warning');
+            return;
+        }
+        buildStep2();
+    } else if (currentStep === 2) {
+        if (!validateStep2()) {
+            return;
+        }
+        buildStep3();
+    }
+    
+    currentStep++;
+    updateStepperUI();
+    updateNavigationButtons();
+}
+
+function previousStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        updateStepperUI();
+        updateNavigationButtons();
+    }
+}
+
+function updateStepperUI() {
+    // Update progress bar
+    const progress = (currentStep - 1) * 50; // 0%, 50%, 100%
+    document.getElementById('stepper-progress').style.width = progress + '%';
+    
+    // Update step indicators
+    document.querySelectorAll('.step').forEach((step, index) => {
+        const stepNumber = index + 1;
+        step.classList.remove('active', 'completed', 'inactive');
+        
+        if (stepNumber < currentStep) {
+            step.classList.add('completed');
+            step.querySelector('.step-indicator i').className = 'fas fa-check';
+        } else if (stepNumber === currentStep) {
+            step.classList.add('active');
+        } else {
+            step.classList.add('inactive');
+        }
+    });
+    
+    // Show/hide step content
+    document.querySelectorAll('.step-content').forEach((content, index) => {
+        const stepNumber = index + 1;
+        content.classList.toggle('active', stepNumber === currentStep);
+    });
+}
+
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+    const submitBtn = document.getElementById('btn-submit');
+    
+    prevBtn.style.display = currentStep > 1 ? 'block' : 'none';
+    
+    if (currentStep === 3) {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'block';
+    } else {
+        nextBtn.style.display = 'block';
+        submitBtn.style.display = 'none';
+        
+        if (currentStep === 2) {
+            nextBtn.innerHTML = 'Revisar<i class="fas fa-arrow-right ms-2"></i>';
+        } else {
+            updateNextButton();
+        }
+    }
+}
+
+function buildStep2() {
+    const container = document.getElementById('selected-matches-container');
+    const template = document.getElementById('selected-match-template');
+    container.innerHTML = '';
+    
+    selectedMatches.forEach(matchId => {
+        const match = availableMatches.find(m => m.id === matchId);
+        if (!match) return;
+        
+        const clone = template.content.cloneNode(true);
+        const card = clone.querySelector('.match-card');
+        
+        // Set match data
+        card.dataset.matchId = matchId;
+        clone.querySelector('.match-date-text').textContent = match.startTime;
+        clone.querySelector('.home-name').textContent = match.homeTeam;
+        clone.querySelector('.away-name').textContent = match.awayTeam;
+        
+        // Set team logos
+        const homeLogo = clone.querySelector('.home-logo');
+        const awayLogo = clone.querySelector('.away-logo');
+        
+        if (match.homeTeamLogo) {
+            homeLogo.innerHTML = `<img src="${match.homeTeamLogo}" alt="${match.homeTeam}" style="width: 40px; height: 40px; object-fit: contain;">`;
+        } else {
+            homeLogo.innerHTML = '<i class="fas fa-shield-alt fa-lg"></i>';
+        }
+        
+        if (match.awayTeamLogo) {
+            awayLogo.innerHTML = `<img src="${match.awayTeamLogo}" alt="${match.awayTeam}" style="width: 40px; height: 40px; object-fit: contain;">`;
+        } else {
+            awayLogo.innerHTML = '<i class="fas fa-shield-alt fa-lg"></i>';
+        }
+        
+        // Set input names and values
+        const homeInput = clone.querySelector('.home-score');
+        const awayInput = clone.querySelector('.away-score');
+        
+        homeInput.name = `match_${matchId}_home_score`;
+        awayInput.name = `match_${matchId}_away_score`;
+        
+        // Load existing values
+        if (existingBets[matchId]) {
+            homeInput.value = existingBets[matchId].homeScore;
+            awayInput.value = existingBets[matchId].awayScore;
+            calculatePoints(homeInput);
+        }
+        
+        // Calculate deadline warning
+        const now = new Date();
+        const deadline = new Date(match.deadline);
+        const hoursLeft = (deadline - now) / (1000 * 60 * 60);
+        
+        if (hoursLeft < 24) {
+            const deadlineText = clone.querySelector('.deadline-text');
+            if (hoursLeft < 1) {
+                deadlineText.textContent = 'Encerrando em breve!';
+                deadlineText.parentElement.className = 'match-deadline text-danger';
+            } else {
+                deadlineText.textContent = `${Math.floor(hoursLeft)}h restantes`;
+                deadlineText.parentElement.className = 'match-deadline text-warning';
+            }
+        }
+        
+        container.appendChild(clone);
+    });
+}
+
+function validateStep2() {
+    let isValid = true;
+    const requiredInputs = document.querySelectorAll('#step-2 .score-input');
+    
+    requiredInputs.forEach(input => {
+        if (input.value === '' || input.value < 0) {
+            input.classList.add('invalid');
+            isValid = false;
+        } else {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+        }
+    });
+    
+    if (!isValid) {
+        showToast('Atenção', 'Preencha todos os placares antes de continuar.', 'warning');
+    }
+    
+    return isValid;
+}
+
+function buildStep3() {
+    const container = document.getElementById('bet-summary');
+    let summaryHtml = '';
+    let totalMatches = 0;
+    
+    selectedMatches.forEach(matchId => {
+        const match = availableMatches.find(m => m.id === matchId);
+        const homeScore = document.querySelector(`[name="match_${matchId}_home_score"]`).value;
+        const awayScore = document.querySelector(`[name="match_${matchId}_away_score"]`).value;
+        
+        if (homeScore !== '' && awayScore !== '') {
+            totalMatches++;
+            const points = calculatePossiblePoints(parseInt(homeScore), parseInt(awayScore));
+            
+            summaryHtml += `
+                <div class="summary-item">
+                    <div class="summary-match">
+                        <strong>${match.homeTeam} vs ${match.awayTeam}</strong>
+                        <br><small class="text-muted">${match.startTime}</small>
+                    </div>
+                    <div class="summary-score">
+                        ${homeScore} × ${awayScore}
+                        <br><small class="text-success">Até ${points} pts</small>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    summaryHtml += `
+        <div class="summary-item">
+            <div class="summary-match">
+                <strong>Total de Apostas</strong>
+            </div>
+            <div class="summary-score">
+                ${totalMatches} partida${totalMatches !== 1 ? 's' : ''}
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = summaryHtml;
+}
+
+function validateScore(input) {
+    const value = parseInt(input.value);
+    
+    input.classList.remove('valid', 'invalid');
+    
+    if (input.value === '' || isNaN(value) || value < 0 || value > 20) {
+        input.classList.add('invalid');
+    } else {
+        input.classList.add('valid');
+    }
+}
+
+function calculatePoints(input) {
+    const card = input.closest('.match-card');
+    const homeInput = card.querySelector('.home-score');
+    const awayInput = card.querySelector('.away-score');
+    const preview = card.querySelector('.points-preview');
+    
+    const homeScore = parseInt(homeInput.value);
+    const awayScore = parseInt(awayInput.value);
+    
+    if (!isNaN(homeScore) && !isNaN(awayScore)) {
+        const maxPoints = calculatePossiblePoints(homeScore, awayScore);
+        preview.innerHTML = `<strong>Pontos possíveis: até ${maxPoints} pts</strong>`;
+        preview.classList.add('visible');
+    } else {
+        preview.innerHTML = 'Digite o placar para ver pontos possíveis';
+        preview.classList.remove('visible');
+    }
+}
+
+function calculatePossiblePoints(homeScore, awayScore) {
+    // Placar exato sempre vale 10 pontos no máximo
+    return 10;
+}
+
+function finalizeScore(input) {
+    // Additional validation when user finishes editing
+    validateScore(input);
+    calculatePoints(input);
+    autoSave();
+}
+
+function initializeCountdown() {
+    const timer = document.getElementById('countdown-timer');
+    if (!timer) return;
+    
+    const deadline = new Date(timer.dataset.deadline);
+    
+    function updateCountdown() {
+        const now = new Date();
+        const diff = deadline - now;
+        
+        if (diff <= 0) {
+            timer.innerHTML = '<span class="text-danger">Prazo encerrado!</span>';
+            return;
+        }
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').textContent = days.toString().padStart(2, '0');
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+
+function showToast(title, message, type = 'info') {
+    const container = document.querySelector('.toast-container');
+    const toastId = 'toast-' + Date.now();
+    
+    const toastHtml = `
+        <div class="toast ${type}" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
+            <div class="toast-header">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                <strong class="me-auto">${title}</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+    toast.show();
+    
+    // Remove toast element after it's hidden
+    toastElement.addEventListener('hidden.bs.toast', function () {
+        toastElement.remove();
+    });
+}
+
+// Form submission handling
+document.getElementById('bet-wizard-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    const submitBtn = document.getElementById('btn-submit');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+    submitBtn.disabled = true;
+    
+    // Simulate API call (replace with actual HTMX or fetch)
+    setTimeout(() => {
+        showToast('Sucesso!', 'Suas apostas foram salvas com sucesso!', 'success');
+        
+        // Clear localStorage
+        localStorage.removeItem('bet_form_data_{{ pool.id }}');
+        
+        // Redirect after success
+        setTimeout(() => {
+            window.location.href = '{% url "pools:detail" pool.slug %}';
+        }, 2000);
+    }, 2000);
+});
+</script>
 {% endblock %}

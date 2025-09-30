@@ -1,0 +1,49 @@
+{% extends "email/base_email.html" %}
+
+{% block content %}
+<h2>🎯 Resultados da Rodada - {{ round_name }}</h2>
+
+<p>Olá, <strong>{{ user_name }}</strong>!</p>
+
+<p>Os resultados da <strong>{{ round_name }}</strong> do bolão <strong>"{{ pool_name }}"</strong> já estão disponíveis!</p>
+
+<div class="highlight">
+    <h3 style="margin-top: 0;">📊 Sua Performance</h3>
+    <ul style="background: transparent; padding: 0; border: none;">
+        <li><strong>🎯 Pontos nesta rodada:</strong> {{ round_points }} pontos</li>
+        <li><strong>🏆 Total acumulado:</strong> {{ total_points }} pontos</li>
+        <li><strong>📈 Posição atual:</strong> {{ current_position }}º lugar</li>
+        <li><strong>✅ Acertos:</strong> {{ correct_predictions }}/{{ total_predictions }}</li>
+    </ul>
+</div>
+
+<h3>🏅 Top 3 da Rodada</h3>
+<ol>
+    {% for leader in top_performers %}
+    <li><strong>{{ leader.name }}</strong> - {{ leader.points }} pontos</li>
+    {% endfor %}
+</ol>
+
+<h3>⚽ Principais Resultados</h3>
+<div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+    {% for match in matches %}
+    <p style="margin: 5px 0;">
+        <strong>{{ match.home_team }}</strong> {{ match.home_score }} x {{ match.away_score }} <strong>{{ match.away_team }}</strong>
+        {% if match.user_prediction %}
+        - Sua aposta: {{ match.user_prediction }}
+        {% if match.was_correct %}✅{% else %}❌{% endif %}
+        {% endif %}
+    </p>
+    {% endfor %}
+</div>
+
+<p style="text-align: center;">
+    <a href="{{ pool_url }}" class="button">
+        📱 Ver Classificação Completa
+    </a>
+</p>
+
+<p style="text-align: center; margin-top: 30px;">
+    <strong>Continue apostando e boa sorte na próxima rodada! 🍀</strong>
+</p>
+{% endblock %}

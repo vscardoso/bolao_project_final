@@ -3,363 +3,84 @@
 
 {% block title %}Bolão Online - A Melhor Forma de Apostar com Amigos{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}">
-{% endblock %}
-
 {% block content %}
-<!-- Hero Section com elementos interativos -->
-<section class="hero bg-gradient-primary text-white py-5 position-relative overflow-hidden">
-    <div class="position-absolute top-0 start-0 w-100 h-100">
-        <div class="position-absolute" style="width: 300px; height: 300px; background: rgba(255,255,255,0.1); border-radius: 50%; left: -150px; top: -150px;"></div>
-        <div class="position-absolute" style="width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; right: 10%; bottom: 10%;"></div>
-    </div>
-    
-    <div class="container py-lg-5 position-relative">
-        <div class="row align-items-center">
+<!-- Hero Section -->
+<section class="py-5 bg-primary bg-gradient text-white">
+    <div class="container">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
             <div class="col-lg-6 mb-5 mb-lg-0">
-                <div class="hero-badges mb-3">
-                    <span class="badge bg-success rounded-pill"><i class="fas fa-check-circle me-1"></i> 100% Seguro</span>
-                    <span class="badge bg-warning text-dark rounded-pill"><i class="fas fa-bolt me-1"></i> Rápido</span>
-                    <span class="badge bg-danger rounded-pill"><i class="fas fa-heart me-1"></i> Diversão Garantida</span>
-                    <span class="badge bg-info rounded-pill"><div class="live-indicator me-1"></div> Ao Vivo</span>
-                </div>
-                
-                <h1 class="display-3 fw-bold mb-3">Transforme seus palpites em diversão e prêmios!</h1>
-                <p class="lead mb-4 fs-4">O jeito mais fácil de organizar bolões com amigos, colegas de trabalho e família. Crie, participe, aposte e ganhe!</p>
+                <h1 class="display-4 fw-bold mb-3">Transforme seus palpites em diversão e prêmios!</h1>
+                <p class="lead mb-4">O jeito mais fácil de organizar bolões com amigos, colegas de trabalho e família. Crie, participe, aposte e ganhe!</p>
                 
                 {% if user.is_authenticated %}
-                <!-- Conteúdo para usuários logados -->
                 <div class="d-flex gap-3 flex-column flex-md-row">
-                    <a href="{% url 'users:dashboard' %}" class="btn btn-light btn-lg shine-effect">
+                    <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg">
                         <i class="fas fa-tachometer-alt me-2"></i> Meu Dashboard
                     </a>
-                    <a href="#" class="btn btn-outline-light btn-lg shine-effect">
-                        <i class="fas fa-plus-circle me-2"></i> Criar Bolão
+                    <a href="{% url 'pool_list' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i> Ver Bolões
                     </a>
                 </div>
-                
-                <!-- Resumo para usuários logados -->
-                <div class="mt-4 p-3 glass-card rounded">
-                    <div class="d-flex align-items-center">
-                        <div class="d-flex align-items-center me-4">
-                            <i class="fas fa-trophy text-warning me-2" style="font-size: 1.5rem;"></i>
-                            <span class="text-white">
-                                <span class="stat-counter text-white">10</span>
-                                <span class="ms-1">Bolões Ativos</span>
-                            </span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-users text-info me-2" style="font-size: 1.5rem;"></i>
-                            <span class="text-white">
-                                <span class="stat-counter text-white">50</span>
-                                <span class="ms-1">Participantes</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
                 {% else %}
-                <!-- Conteúdo para usuários não logados -->
                 <div class="d-grid gap-3 d-md-flex">
-                    <a href="/users/register/" class="btn btn-light btn-lg px-4 shine-effect">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4">
                         <i class="fas fa-user-plus me-2"></i> Comece agora
                     </a>
                     <a href="#como-funciona" class="btn btn-outline-light btn-lg px-4">
                         <i class="fas fa-info-circle me-2"></i> Como funciona
                     </a>
                 </div>
-                
-                <!-- Contador regressivo para grande evento -->
-                <div class="mt-4">
-                    <p class="mb-1"><i class="fas fa-clock me-2"></i> Próximo grande evento:</p>
-                    <div class="countdown-container">
-                        <div class="countdown-box">
-                            <span class="countdown-number" id="days">15</span>
-                            <span class="countdown-label">Dias</span>
-                        </div>
-                        <div class="countdown-box">
-                            <span class="countdown-number" id="hours">22</span>
-                            <span class="countdown-label">Horas</span>
-                        </div>
-                        <div class="countdown-box">
-                            <span class="countdown-number" id="minutes">36</span>
-                            <span class="countdown-label">Min</span>
-                        </div>
-                        <div class="countdown-box">
-                            <span class="countdown-number" id="seconds">45</span>
-                            <span class="countdown-label">Seg</span>
-                        </div>
-                    </div>
-                </div>
                 {% endif %}
             </div>
-            <div class="col-lg-6">
-                <img src="{% static 'img/hero-image.png' %}" alt="Bolão Online" class="img-fluid rounded shadow animate-float">
-            </div>
-        </div>
-    </div>
-    
-    <!-- Separador de onda -->
-    <div class="wave-separator">
-        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
-        </svg>
-    </div>
-</section>
-
-<!-- Estatísticas do site -->
-<section class="stats-floating">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="card shadow border-0">
-                    <div class="card-body py-4">
-                        <div class="row text-center">
-                            <div class="col-md-3 col-6 mb-3 mb-md-0">
-                                <div class="d-flex flex-column">
-                                    <div class="stat-counter mb-2">250+</div>
-                                    <div class="text-muted">Bolões Criados</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-6 mb-3 mb-md-0">
-                                <div class="d-flex flex-column">
-                                    <div class="stat-counter mb-2">5.000+</div>
-                                    <div class="text-muted">Usuários</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-6">
-                                <div class="d-flex flex-column">
-                                    <div class="stat-counter mb-2">R$ 50k+</div>
-                                    <div class="text-muted">Em Prêmios</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-6">
-                                <div class="d-flex flex-column">
-                                    <div class="stat-counter mb-2">99%</div>
-                                    <div class="text-muted">Satisfação</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-trophy" style="font-size: 12rem; opacity: 0.1;"></i>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Jogos em Destaque / Ao Vivo -->
-
-<!-- Jogos em Destaque / Ao Vivo -->
+<!-- Estatísticas -->
 <section class="py-5">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="display-6 fw-bold mb-1">Jogos em Destaque</h2>
-                <p class="text-muted">Eventos esportivos populares disponíveis para apostas</p>
-            </div>
-            <div class="d-none d-md-block">
-                <div class="btn-group" role="group" id="sportsFilter">
-                    <button type="button" class="btn btn-outline-primary active" data-sport="futebol">
-                        <i class="fas fa-futbol me-1"></i> Futebol
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" data-sport="basquete">
-                        <i class="fas fa-basketball-ball me-1"></i> Basquete
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" data-sport="tênis">
-                        <i class="fas fa-table-tennis me-1"></i> Tênis
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Filtro para mobile -->
-        <div class="d-md-none mb-3">
-            <select class="form-select form-select-sm" id="sportFilterMobile">
-                <option value="futebol" selected>Futebol</option>
-                <option value="basquete">Basquete</option>
-                <option value="tênis">Tênis</option>
-            </select>
-        </div>
-        
-        <div class="row g-4">
-            <!-- Jogo 1 - Ao Vivo -->
-            <div class="col-md-6 col-lg-4">
-                <div class="live-match-card shadow-sm h-100">
-                    <div class="card-header bg-danger text-white d-flex align-items-center">
-                        <div class="live-indicator me-2"></div>
-                        <span class="fw-bold">AO VIVO</span>
-                        <span class="ms-auto">45' <i class="fas fa-circle text-warning ms-1 small" title="Acréscimos"></i></span>
-                    </div>
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <!-- Liga/campeonato -->
-                        <div class="text-center small mb-2">
-                            <span class="fw-bold">Brasileirão Série A - Rodada 10</span>
-                        </div>
-                        
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="text-center">
-                                <img src="{% static 'img/team-logo1.png' %}" alt="Time A" class="team-logo mb-2">
-                                <h6 class="mb-0">Flamengo</h6>
-                                <small class="text-muted">(Casa)</small>
-                            </div>
-                            <div class="text-center">
-                                <div class="display-6 fw-bold">2 - 1</div>
-                                <span class="badge bg-light text-dark">1º tempo</span>
-                                <div class="mt-1">
-                                    <span class="text-danger"><i class="fas fa-futbol me-1"></i>34' Gol</span>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <img src="{% static 'img/team-logo2.png' %}" alt="Time B" class="team-logo mb-2">
-                                <h6 class="mb-0">Palmeiras</h6>
-                                <small class="text-muted">(Fora)</small>
-                            </div>
-                        </div>
-                        <div class="progress mb-2" style="height: 5px">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 45%" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="d-flex justify-content-between small text-muted mb-3">
-                            <div>55% Posse</div>
-                            <div>45%</div>
-                        </div>
-                        <div class="d-grid">
-                            <button class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-chart-line me-1"></i> Ver estatísticas
-                            </button>
-                        </div>
+                        <h3 class="display-6 fw-bold text-primary">250+</h3>
+                        <p class="text-muted mb-0">Bolões Criados</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- Jogo 2 - Hoje -->
-            <div class="col-md-6 col-lg-4">
-                <div class="live-match-card shadow-sm h-100">
-                    <div class="card-header bg-primary text-white d-flex align-items-center">
-                        <i class="far fa-clock me-2"></i>
-                        <span class="fw-bold">HOJE</span>
-                        <span class="ms-auto">21:30</span>
-                    </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <!-- Liga/campeonato -->
-                        <div class="text-center small mb-2">
-                            <span class="fw-bold">Campeonato Brasileiro - Série A</span>
-                        </div>
-                        
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="text-center">
-                                <img src="{% static 'img/team-logo3.png' %}" alt="Time C" class="team-logo mb-2">
-                                <h6 class="mb-0">Santos</h6>
-                                <div class="mt-1">
-                                    <span class="badge bg-success">Em alta</span>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <div class="display-6 fw-bold">vs</div>
-                                <span class="badge bg-light text-dark">Série A</span>
-                                <div class="small text-muted mt-1">Começa em 3h</div>
-                            </div>
-                            <div class="text-center">
-                                <img src="{% static 'img/team-logo4.png' %}" alt="Time D" class="team-logo mb-2">
-                                <h6 class="mb-0">São Paulo</h6>
-                                <div class="mt-1">
-                                    <span class="badge bg-warning text-dark">3 jogos invicto</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card bg-light p-2 mb-3 rounded">
-                            <div class="row text-center g-0">
-                                <div class="col-4">
-                                    <div class="fw-bold">1.90</div>
-                                    <small class="text-muted">Santos</small>
-                                </div>
-                                <div class="col-4">
-                                    <div class="fw-bold">3.50</div>
-                                    <small class="text-muted">Empate</small>
-                                </div>
-                                <div class="col-4">
-                                    <div class="fw-bold">4.20</div>
-                                    <small class="text-muted">São Paulo</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-grid">
-                            <button class="btn btn-primary btn-sm">
-                                <i class="fas fa-bolt me-1"></i> Fazer aposta rápida
-                            </button>
-                        </div>
+                        <h3 class="display-6 fw-bold text-primary">5.000+</h3>
+                        <p class="text-muted mb-0">Usuários</p>
                     </div>
                 </div>
             </div>
-            
-            <!-- Jogo 3 - Amanhã -->
-            <div class="col-md-6 col-lg-4">
-                <div class="live-match-card shadow-sm h-100">
-                    <div class="card-header bg-dark text-white d-flex align-items-center">
-                        <i class="far fa-calendar-alt me-2"></i>
-                        <span class="fw-bold">AMANHÃ</span>
-                        <span class="ms-auto">16:00</span>
-                    </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                        <!-- Liga/campeonato -->
-                        <div class="text-center small mb-2">
-                            <span class="fw-bold text-danger">Clássico - Copa do Brasil</span>
-                        </div>
-                        
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <div class="text-center">
-                                <img src="{% static 'img/team-logo5.png' %}" alt="Time E" class="team-logo mb-2">
-                                <h6 class="mb-0">Corinthians</h6>
-                                <small>3º colocado</small>
-                            </div>
-                            <div class="text-center">
-                                <div class="display-6 fw-bold">vs</div>
-                                <span class="badge bg-light text-dark">Quartas de Final</span>
-                                <div class="small text-muted mt-1">Jogo de ida</div>
-                            </div>
-                            <div class="text-center">
-                                <img src="{% static 'img/team-logo6.png' %}" alt="Time F" class="team-logo mb-2">
-                                <h6 class="mb-0">Grêmio</h6>
-                                <small>5º colocado</small>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between text-center small mb-3">
-                            <div>
-                                <div class="fw-bold mb-1">Últimos 5</div>
-                                <span class="badge bg-success">V</span>
-                                <span class="badge bg-danger">D</span>
-                                <span class="badge bg-success">V</span>
-                                <span class="badge bg-warning text-dark">E</span>
-                                <span class="badge bg-success">V</span>
-                            </div>
-                            <div>
-                                <div class="fw-bold mb-1">Últimos 5</div>
-                                <span class="badge bg-success">V</span>
-                                <span class="badge bg-success">V</span>
-                                <span class="badge bg-danger">D</span>
-                                <span class="badge bg-success">V</span>
-                                <span class="badge bg-warning text-dark">E</span>
-                            </div>
-                        </div>
-                        <div class="d-grid">
-                            <button class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-bell me-1"></i> Lembrar deste jogo
-                            </button>
-                        </div>
+                        <h3 class="display-6 fw-bold text-primary">R$ 50k+</h3>
+                        <p class="text-muted mb-0">Em Prêmios</p>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="#" class="btn btn-outline-primary px-4">
-                Ver todos os jogos <i class="fas fa-arrow-right ms-2"></i>
-            </a>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="display-6 fw-bold text-primary">99%</h3>
+                        <p class="text-muted mb-0">Satisfação</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Como Funciona Section com ícones animados -->
+<!-- Como Funciona -->
 <section id="como-funciona" class="py-5 bg-light">
     <div class="container">
         <div class="text-center mb-5">
@@ -369,50 +90,35 @@
         
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm highlight-card">
+                <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-4">
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
                             <i class="fas fa-users fa-2x"></i>
                         </div>
                         <h3 class="h4 mb-3">Crie seu Bolão</h3>
-                        <p class="text-muted mb-3">Defina as regras, o valor das apostas e convidar seus amigos em apenas alguns cliques.</p>
-                        <ul class="list-unstyled text-start">
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Bolões públicos ou privados</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Convites por e-mail ou link</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Personalização completa</li>
-                        </ul>
+                        <p class="text-muted">Defina as regras, o valor das apostas e convide seus amigos em apenas alguns cliques.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm highlight-card">
+                <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-4">
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
                             <i class="fas fa-trophy fa-2x"></i>
                         </div>
                         <h3 class="h4 mb-3">Faça suas Apostas</h3>
-                        <p class="text-muted mb-3">Aposte nos resultados dos jogos e acompanhe em tempo real para ver se acertou.</p>
-                        <ul class="list-unstyled text-start">
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Interface intuitiva</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Atualizações em tempo real</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Estatísticas detalhadas</li>
-                        </ul>
+                        <p class="text-muted">Aposte nos resultados dos jogos e acompanhe em tempo real para ver se acertou.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm highlight-card">
+                <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body text-center p-4">
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
                             <i class="fas fa-money-bill-wave fa-2x"></i>
                         </div>
                         <h3 class="h4 mb-3">Ganhe Prêmios</h3>
-                        <p class="text-muted mb-3">Acompanhe sua posição no ranking e receba seus prêmios de forma transparente.</p>
-                        <ul class="list-unstyled text-start">
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Sistema de pontuação justo</li>
-                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Pagamentos seguros</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Histórico completo</li>
-                        </ul>
+                        <p class="text-muted">Acompanhe sua posição no ranking e receba seus prêmios de forma transparente.</p>
                     </div>
                 </div>
             </div>
@@ -435,7 +141,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="card-title mb-0">{{ pool.name }}</h5>
-                            <span class="badge bg-{{ pool.visibility|yesno:'info,secondary' }}">
+                            <span class="badge bg-primary">
                                 {{ pool.get_visibility_display }}
                             </span>
                         </div>
@@ -444,7 +150,8 @@
                         </p>
                         <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
                             <div>
-                                <i class="fas fa-trophy me-1"></i> {{ pool.competition.name }}
+                                <i class="fas fa-trophy me-1"></i> 
+                                {% if pool.competition %}{{ pool.competition.name }}{% else %}Competição{% endif %}
                             </div>
                             <div>
                                 <i class="fas fa-users me-1"></i> {{ pool.participants.count }} participantes
@@ -457,8 +164,8 @@
                             <i class="fas fa-plus-circle me-1"></i> Participar
                         </a>
                         {% else %}
-                        <a href="/users/register/" class="btn btn-primary">
-                            <i class="fas fa-user-plus me-2"></i> Cadastre-se para criar bolões
+                        <a href="{% url 'register' %}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i> Cadastre-se para participar
                         </a>
                         {% endif %}
                     </div>
@@ -470,9 +177,8 @@
                     <p class="lead">Nenhum bolão em destaque no momento.</p>
                     {% if user.is_authenticated %}
                     <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle me-2"></i> Seja o primeiro a criar um bolão
+                        <i class="fas fa-plus-circle me-2"></i> Criar seu primeiro bolão
                     </a>
-                    {% else %}
                     {% endif %}
                 </div>
             </div>
@@ -480,502 +186,24 @@
         </div>
         
         <div class="text-center mt-4">
-            <a href="{% url 'pools:discover' %}" class="btn btn-lg btn-outline-primary">
+            <a href="{% url 'pools:list' %}" class="btn btn-lg btn-outline-primary">
                 <i class="fas fa-search me-2"></i> Ver todos os bolões
             </a>
         </div>
     </div>
 </section>
 
-<!-- Melhores Bolões -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">Bolões Populares</h2>
-            <p class="lead text-muted">Junte-se a estas comunidades populares</p>
-        </div>
-        
-        <div class="row g-4">
-            <!-- Bolão 1 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm highlight-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-primary rounded-circle text-white p-3 me-3">
-                                <i class="fas fa-futbol fa-2x"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-1">Brasileirão 2025</h5>
-                                <span class="badge bg-success me-1">Público</span>
-                                <small class="text-muted">120 participantes</small>
-                            </div>
-                        </div>
-                        <p class="text-muted">O maior bolão do Campeonato Brasileiro! Aposte em todos os jogos da temporada.</p>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-group me-2">
-                                    <img src="{% static 'img/avatar1.jpg' %}" class="avatar-mini" alt="User">
-                                    <img src="{% static 'img/avatar2.jpg' %}" class="avatar-mini" alt="User">
-                                    <img src="{% static 'img/avatar3.jpg' %}" class="avatar-mini" alt="User">
-                                </div>
-                                <small class="text-muted">+117</small>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-primary">R$ 20,00</span>
-                                <small class="text-muted">/ entrada</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-white border-top-0">
-                        <div class="d-grid">
-                            <button class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus-circle me-1"></i> Participar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Bolão 2 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm highlight-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-success rounded-circle text-white p-3 me-3">
-                                <i class="fas fa-globe-americas fa-2x"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-1">Copa América 2025</h5>
-                                <span class="badge bg-warning text-dark me-1">Popular</span>
-                                <small class="text-muted">85 participantes</small>
-                            </div>
-                        </div>
-                        <p class="text-muted">Aposte nos resultados da Copa América e concorra a prêmios exclusivos.</p>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-group me-2">
-                                    <img src="{% static 'img/avatar4.jpg' %}" class="avatar-mini" alt="User">
-                                    <img src="{% static 'img/avatar5.jpg' %}" class="avatar-mini" alt="User">
-                                    <img src="{% static 'img/avatar6.jpg' %}" class="avatar-mini" alt="User">
-                                </div>
-                                <small class="text-muted">+82</small>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-primary">R$ 50,00</span>
-                                <small class="text-muted">/ entrada</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-white border-top-0">
-                        <div class="d-grid">
-                            <button class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus-circle me-1"></i> Participar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Bolão 3 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm highlight-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-danger rounded-circle text-white p-3 me-3">
-                                <i class="fas fa-trophy fa-2x"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-1">Champions League</h5>
-                                <span class="badge bg-secondary me-1">Privado</span>
-                                <small class="text-muted">42 participantes</small>
-                            </div>
-                        </div>
-                        <p class="text-muted">O bolão exclusivo para os maiores fãs do futebol europeu.</p>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-group me-2">
-                                    <img src="{% static 'img/avatar7.jpg' %}" class="avatar-mini" alt="User">
-                                    <img src="{% static 'img/avatar8.jpg' %}" class="avatar-mini" alt="User">
-                                    <img src="{% static 'img/avatar9.jpg' %}" class="avatar-mini" alt="User">
-                                </div>
-                                <small class="text-muted">+39</small>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-primary">R$ 100,00</span>
-                                <small class="text-muted">/ entrada</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-white border-top-0">
-                        <div class="d-grid">
-                            <button class="btn btn-outline-secondary btn-sm" disabled>
-                                <i class="fas fa-lock me-1"></i> Requer convite
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="#" class="btn btn-outline-primary px-4">
-                Explorar todos os bolões <i class="fas fa-arrow-right ms-2"></i>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Ranking e Líderes -->
-<section class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">Os Melhores Apostadores</h2>
-            <p class="lead text-muted">Confira quem está dominando os rankings</p>
-        </div>
-        
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white">
-                        <ul class="nav nav-tabs card-header-tabs">
-                            <li class="nav-item">
-                                <a class="nav-link active" href="#">Últimos 7 dias</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Mensal</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Todo tempo</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table ranking-table mb-0">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Apostador</th>
-                                    <th>Acertos</th>
-                                    <th>Ganhos</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><span class="badge bg-warning text-dark">1</span></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{% static 'img/avatar1.jpg' %}" class="avatar-mini" alt="User">
-                                            <span>João Silva</span>
-                                        </div>
-                                    </td>
-                                    <td>25/30 <span class="text-success">(83%)</span></td>
-                                    <td><span class="text-primary fw-bold">R$ 450,00</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="badge bg-secondary text-white">2</span></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{% static 'img/avatar2.jpg' %}" class="avatar-mini" alt="User">
-                                            <span>Maria Santos</span>
-                                        </div>
-                                    </td>
-                                    <td>22/30 <span class="text-success">(73%)</span></td>
-                                    <td><span class="text-primary fw-bold">R$ 350,00</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="badge bg-secondary text-white">3</span></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{% static 'img/avatar3.jpg' %}" class="avatar-mini" alt="User">
-                                            <span>Pedro Oliveira</span>
-                                        </div>
-                                    </td>
-                                    <td>20/30 <span class="text-success">(67%)</span></td>
-                                    <td><span class="text-primary fw-bold">R$ 300,00</span></td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{% static 'img/avatar4.jpg' %}" class="avatar-mini" alt="User">
-                                            <span>Ana Costa</span>
-                                        </div>
-                                    </td>
-                                    <td>19/30 <span class="text-success">(63%)</span></td>
-                                    <td><span class="text-primary fw-bold">R$ 280,00</span></td>
-                                </tr>
-                                <tr>
-                                    <td>5</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{% static 'img/avatar5.jpg' %}" class="avatar-mini" alt="User">
-                                            <span>Lucas Ferreira</span>
-                                        </div>
-                                    </td>
-                                    <td>18/30 <span class="text-success">(60%)</span></td>
-                                    <td><span class="text-primary fw-bold">R$ 250,00</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-3">
-                    <a href="#" class="btn btn-outline-primary btn-sm px-4">
-                        Ver ranking completo
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Depoimentos de Usuários -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">O que nossos usuários dizem</h2>
-            <p class="lead text-muted">Experiências reais de nossa comunidade</p>
-        </div>
-        
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm testimonial-card">
-                    <div class="card-body p-4">
-                        <div class="mb-3">
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                        </div>
-                        <p class="mb-4">"O melhor site de bolão que já usei! Interface intuitiva, atualizações em tempo real e ótima comunidade. Ganhei R$500 no meu primeiro mês!"</p>
-                        <div class="d-flex align-items-center">
-                            <img src="{% static 'img/avatar1.jpg' %}" alt="User" class="rounded-circle me-3" width="50" height="50">
-                            <div>
-                                <h6 class="mb-0">Carlos Eduardo</h6>
-                                <small class="text-muted">Membro desde 2023</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm testimonial-card">
-                    <div class="card-body p-4">
-                        <div class="mb-3">
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                        </div>
-                        <p class="mb-4">"Finalmente uma plataforma que facilita a organização de bolões! Antes, era um pesadelo gerenciar planilhas e pagamentos. Agora é tudo automático!"</p>
-                        <div class="d-flex align-items-center">
-                            <img src="{% static 'img/avatar2.jpg' %}" alt="User" class="rounded-circle me-3" width="50" height="50">
-                            <div>
-                                <h6 class="mb-0">Patricia Mendes</h6>
-                                <small class="text-muted">Membro desde 2024</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm testimonial-card">
-                    <div class="card-body p-4">
-                        <div class="mb-3">
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star text-warning"></i>
-                            <i class="fas fa-star-half-alt text-warning"></i>
-                        </div>
-                        <p class="mb-4">"A competitividade entre amigos ficou muito mais divertida! O sistema de notificações me mantém informado sobre os jogos e as apostas dos outros participantes."</p>
-                        <div class="d-flex align-items-center">
-                            <img src="{% static 'img/avatar3.jpg' %}" alt="User" class="rounded-circle me-3" width="50" height="50">
-                            <div>
-                                <h6 class="mb-0">Roberto Almeida</h6>
-                                <small class="text-muted">Membro desde 2022</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- FAQ Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">Perguntas Frequentes</h2>
-            <p class="lead text-muted">Tudo o que você precisa saber para começar</p>
-        </div>
-        
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item border-0 mb-3 shadow-sm">
-                        <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                Como criar um bolão?
-                            </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Para criar um bolão, basta clicar no botão "Criar Bolão" no seu painel, definir as regras, escolher o campeonato e convidar seus amigos. O sistema cuida de todo o resto, incluindo atualizações de resultados e distribuição de pontos.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item border-0 mb-3 shadow-sm">
-                        <h2 class="accordion-header" id="headingTwo">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                Como são calculados os pontos?
-                            </button>
-                        </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Nosso sistema padrão concede 3 pontos para acerto exato, 1 ponto para acerto do vencedor/empate e 0 pontos para erro. O administrador do bolão também pode personalizar o sistema de pontuação conforme preferir.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item border-0 mb-3 shadow-sm">
-                        <h2 class="accordion-header" id="headingThree">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                Como funciona o pagamento dos prêmios?
-                            </button>
-                        </h2>
-                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                O sistema facilita a gestão dos pagamentos entre os participantes. O administrador pode definir como o prêmio será distribuído (vencedor único, top 3, etc). Oferecemos integração com PIX e outras formas de pagamento para facilitar as transações.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item border-0 mb-3 shadow-sm">
-                        <h2 class="accordion-header" id="headingFour">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                Posso criar bolões para diferentes esportes?
-                            </button>
-                        </h2>
-                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                Sim! Nossa plataforma suporta bolões para futebol, basquete, tênis, vôlei, fórmula 1, e-sports e muito mais. Você pode personalizar as regras para se adequar ao esporte escolhido.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Dicas e Estratégias -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">Dicas para Vencer</h2>
-            <p class="lead text-muted">Estratégias que podem te ajudar a ganhar mais bolões</p>
-        </div>
-        
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="feature-icon bg-primary text-white d-flex align-items-center justify-content-center me-3">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <h5 class="mb-0">Analise Estatísticas</h5>
-                        </div>
-                        <p class="text-muted">Antes de apostar, confira o histórico de confrontos, desempenho recente e fatores como jogadores lesionados ou suspensos.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="feature-icon bg-success text-white d-flex align-items-center justify-content-center me-3">
-                                <i class="fas fa-balance-scale"></i>
-                            </div>
-                            <h5 class="mb-0">Diversifique Apostas</h5>
-                        </div>
-                        <p class="text-muted">Não aposte apenas em favoritos. Inclua alguns resultados surpreendentes estrategicamente para se diferenciar dos outros apostadores.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="feature-icon bg-danger text-white d-flex align-items-center justify-content-center me-3">
-                                <i class="fas fa-stopwatch"></i>
-                            </div>
-                            <h5 class="mb-0">Apostas Oportunas</h5>
-                        </div>
-                        <p class="text-muted">Aguarde até o último momento possível para suas apostas, quando você terá mais informações sobre escalações e condições dos jogos.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="feature-icon bg-info text-white d-flex align-items-center justify-content-center me-3">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h5 class="mb-0">Conheça seus Competidores</h5>
-                        </div>
-                        <p class="text-muted">Antecipar as apostas dos outros participantes pode ser uma estratégia valiosa, especialmente no final de competições acirradas.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="feature-icon bg-warning text-white d-flex align-items-center justify-content-center me-3">
-                                <i class="fas fa-brain"></i>
-                            </div>
-                            <h5 class="mb-0">Evite Decisões Emocionais</h5>
-                        </div>
-                        <p class="text-muted">Não aposte apenas no seu time de coração. Base suas decisões em dados e fatos, não em preferências pessoais ou intuição.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="feature-card card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="feature-icon bg-dark text-white d-flex align-items-center justify-content-center me-3">
-                                <i class="fas fa-history"></i>
-                            </div>
-                            <h5 class="mb-0">Aprenda com o Passado</h5>
-                        </div>
-                        <p class="text-muted">Analise suas apostas anteriores para identificar padrões e erros comuns que você possa estar cometendo.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- Call to Action -->
 {% if not user.is_authenticated %}
-<section class="py-5 bg-gradient-primary text-white">
+<section class="py-5 bg-primary bg-gradient text-white">
     <div class="container text-center">
-        <h2 class="display-4 fw-bold mb-4">Pronto para transformar sua paixão por esportes em diversão e prêmios?</h2>
-        <p class="lead mb-5" style="font-size: 1.5rem;">Junte-se a milhares de apostadores e comece a competir com seus amigos hoje mesmo!</p>
-        <a href="/users/register/" class="btn btn-light btn-lg px-5 py-3 shine-effect">
+        <h2 class="display-4 fw-bold mb-4">Pronto para começar?</h2>
+        <p class="lead mb-5">Junte-se a milhares de apostadores e comece a competir com seus amigos hoje mesmo!</p>
+        <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3">
             <i class="fas fa-user-plus me-2"></i> Criar minha conta gratuita
         </a>
-        <p class="mt-3 text-white-50">É grátis para sempre. Sem taxas escondidas.</p>
+        <p class="mt-3 opacity-75">É grátis para sempre. Sem taxas escondidas.</p>
     </div>
 </section>
 {% endif %}
-{% endblock %}
-{% block extra_js %}
-<script src="{% static 'js/home.js' %}"></script>
 {% endblock %}

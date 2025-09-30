@@ -1,0 +1,943 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Criar Bolão - Passo {{ current_step }} de {{ total_steps }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --warning-gradient: linear-gradient(135deg, #fcb045 0%, #fd1d1d 100%);
+    --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+/* Form Wizard Layout */
+.form-wizard {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Step Indicator */
+.step-indicator {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 2rem 0;
+    position: relative;
+}
+
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+}
+
+.steps-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: 0 2rem;
+    position: relative;
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+    background: white;
+    color: #667eea;
+    border-color: white;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.step.completed .step-number {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.step.completed .step-number::after {
+    content: '✓';
+    font-size: 1.2rem;
+}
+
+.step-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.step-description {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.step-line {
+    position: absolute;
+    top: 30px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 1;
+}
+
+.step-line.completed {
+    background: #28a745;
+}
+
+/* Sticky Sidebar */
+.sticky-sidebar {
+    position: sticky;
+    top: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-left: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+.preview-section {
+    margin-bottom: 2rem;
+}
+
+.preview-section:last-child {
+    margin-bottom: 0;
+}
+
+.preview-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+
+.preview-label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.preview-value {
+    color: #495057;
+    font-weight: 600;
+}
+
+.preview-empty {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Form Container */
+.form-container {
+    padding: 3rem;
+}
+
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+    animation: slideInRight 0.5s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Custom File Upload */
+.input-file-custom {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.input-file-custom input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.file-upload-wrapper {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-wrapper:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.file-upload-wrapper.drag-over {
+    border-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.upload-text {
+    color: #495057;
+    font-weight: 500;
+}
+
+.upload-hint {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.uploaded-file {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+.uploaded-file.show {
+    display: block;
+}
+
+/* Button Navigation */
+.btn-navigation {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-nav {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    min-width: 120px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-nav:hover::before {
+    left: 100%;
+}
+
+.btn-prev {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-prev:hover {
+    background: #5a6268;
+    transform: translateX(-5px);
+}
+
+.btn-next {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-next:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.btn-submit:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+/* Form Controls Enhanced */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+    transform: scale(1.02);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Radio Buttons */
+.form-check-input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.75rem;
+}
+
+.form-check-label {
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.form-check {
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-check:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.form-check input:checked + label {
+    color: #667eea;
+}
+
+/* Success Animation */
+.success-animation {
+    text-align: center;
+    animation: bounceIn 0.6s ease;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.success-icon {
+    font-size: 4rem;
+    color: #28a745;
+    margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sticky-sidebar {
+        position: static;
+        margin-left: 0;
+        margin-top: 2rem;
+    }
+    
+    .form-container {
+        padding: 2rem 1rem;
+    }
+    
+    .steps-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .step {
+        margin: 0;
+    }
+    
+    .step-line {
+        display: none;
+    }
+    
+    .btn-navigation {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-nav {
+        width: 100%;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+/* Validation Styles */
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.is-valid {
+    border-color: #28a745 !important;
+}
+
+.invalid-feedback {
+    display: block !important;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Main Form Area -->
+        <div class="col-lg-8">
+            <div class="form-wizard">
+                <!-- Step Indicator -->
+                <div class="step-indicator">
+                    <div class="steps-container">
+                        <div class="step {% if current_step == 1 %}active{% elif current_step > 1 %}completed{% endif %}">
+                            <div class="step-number">{% if current_step > 1 %}✓{% else %}1{% endif %}</div>
+                            <div class="step-title">Informações Básicas</div>
+                            <div class="step-description">Nome, descrição e competição</div>
+                        </div>
+                        
+                        <div class="step-line {% if current_step > 1 %}completed{% endif %}" style="left: 20%; width: 25%;"></div>
+                        
+                        <div class="step {% if current_step == 2 %}active{% elif current_step > 2 %}completed{% endif %}">
+                            <div class="step-number">{% if current_step > 2 %}✓{% else %}2{% endif %}</div>
+                            <div class="step-title">Configurações</div>
+                            <div class="step-description">Regras e pontuação</div>
+                        </div>
+                        
+                        <div class="step-line {% if current_step > 2 %}completed{% endif %}" style="left: 55%; width: 25%;"></div>
+                        
+                        <div class="step {% if current_step == 3 %}active{% endif %}">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Convites</div>
+                            <div class="step-description">Convidar participantes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Container -->
+                <div class="form-container">
+                    <form method="post" enctype="multipart/form-data" hx-post="" hx-trigger="submit" hx-swap="outerHTML">
+                        {% csrf_token %}
+                        
+                        <!-- Step 1: Basic Information -->
+                        {% if current_step == 1 %}
+                        <div class="form-step active">
+                            <h3 class="mb-4">📋 Informações Básicas do Bolão</h3>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        {{ form.name.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Escolha um nome atrativo e descritivo</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.competition.id_for_label }}" class="form-label">
+                                        {{ form.competition.label }} <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.competition }}
+                                    {% if form.competition.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.competition.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Selecione a competição para as apostas</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">
+                                    {{ form.description.label }}
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Descreva as regras e premiações do seu bolão</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.pool_image.id_for_label }}" class="form-label">
+                                    {{ form.pool_image.label }}
+                                </label>
+                                <div class="input-file-custom">
+                                    {{ form.pool_image }}
+                                    <div class="file-upload-wrapper" onclick="document.getElementById('{{ form.pool_image.id_for_label }}').click();">
+                                        <div class="upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <div class="upload-text">Clique para escolher uma imagem</div>
+                                        <div class="upload-hint">PNG, JPG até 5MB</div>
+                                    </div>
+                                    <div class="uploaded-file" id="uploaded-file">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span id="file-name"></span>
+                                    </div>
+                                </div>
+                                {% if form.pool_image.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.pool_image.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Step 2: Settings -->
+                        {% if current_step == 2 %}
+                        <div class="form-step active">
+                            <h3 class="mb-4">⚙️ Configurações e Regras</h3>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.entry_fee.id_for_label }}" class="form-label">
+                                        {{ form.entry_fee.label }}
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        {{ form.entry_fee }}
+                                    </div>
+                                    {% if form.entry_fee.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.entry_fee.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">R$ 0,00 para bolão gratuito</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.max_participants.id_for_label }}" class="form-label">
+                                        {{ form.max_participants.label }}
+                                    </label>
+                                    {{ form.max_participants }}
+                                    {% if form.max_participants.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.max_participants.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Deixe vazio para ilimitado</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.betting_deadline.id_for_label }}" class="form-label">
+                                    {{ form.betting_deadline.label }}
+                                </label>
+                                {{ form.betting_deadline }}
+                                {% if form.betting_deadline.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.betting_deadline.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Data limite para realizar apostas</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">{{ form.visibility.label }}</label>
+                                <div class="row">
+                                    {% for choice in form.visibility %}
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            {{ choice.tag }}
+                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                <strong>{{ choice.choice_label }}</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% if form.visibility.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.visibility.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <h5 class="mb-3">🎯 Sistema de Pontuação</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.exact_score_points.id_for_label }}" class="form-label">
+                                        {{ form.exact_score_points.label }}
+                                    </label>
+                                    {{ form.exact_score_points }}
+                                    {% if form.exact_score_points.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.exact_score_points.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Acertar placar exato</div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.correct_difference_points.id_for_label }}" class="form-label">
+                                        {{ form.correct_difference_points.label }}
+                                    </label>
+                                    {{ form.correct_difference_points }}
+                                    {% if form.correct_difference_points.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.correct_difference_points.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Diferença de gols correta</div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.correct_winner_points.id_for_label }}" class="form-label">
+                                        {{ form.correct_winner_points.label }}
+                                    </label>
+                                    {{ form.correct_winner_points }}
+                                    {% if form.correct_winner_points.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.correct_winner_points.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Apenas o vencedor</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Step 3: Invitations -->
+                        {% if current_step == 3 %}
+                        <div class="form-step active">
+                            <h3 class="mb-4">👥 Convidar Participantes</h3>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.invite_emails.id_for_label }}" class="form-label">
+                                    {{ form.invite_emails.label }}
+                                </label>
+                                {{ form.invite_emails }}
+                                {% if form.invite_emails.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.invite_emails.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Separe os emails com vírgula</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.custom_message.id_for_label }}" class="form-label">
+                                    {{ form.custom_message.label }}
+                                </label>
+                                {{ form.custom_message }}
+                                {% if form.custom_message.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.custom_message.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Personalize o convite (opcional)</div>
+                            </div>
+                            
+                            <div class="form-check">
+                                {{ form.send_whatsapp_link }}
+                                <label class="form-check-label" for="{{ form.send_whatsapp_link.id_for_label }}">
+                                    {{ form.send_whatsapp_link.label }}
+                                </label>
+                                <div class="form-text">Será gerado um link para compartilhar no WhatsApp</div>
+                            </div>
+                            
+                            <div class="alert alert-info mt-4">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Dica:</strong> Você pode pular esta etapa e convidar participantes depois através da página do bolão.
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Navigation Buttons -->
+                        <div class="btn-navigation">
+                            {% if current_step > 1 %}
+                                <a href="?step={{ current_step|add:"-1" }}" class="btn btn-nav btn-prev">
+                                    <i class="fas fa-arrow-left me-2"></i>Anterior
+                                </a>
+                            {% else %}
+                                <a href="{% url 'pools:list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </a>
+                            {% endif %}
+                            
+                            {% if current_step < total_steps %}
+                                <button type="submit" class="btn btn-nav btn-next">
+                                    Próximo<i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-nav btn-submit">
+                                    <i class="fas fa-check me-2"></i>Criar Bolão
+                                </button>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sticky Sidebar Preview -->
+        <div class="col-lg-4">
+            <div class="sticky-sidebar">
+                <h5 class="mb-3">
+                    <i class="fas fa-eye me-2"></i>Prévia do Bolão
+                </h5>
+                
+                <!-- Basic Info Preview -->
+                <div class="preview-section">
+                    <h6>📋 Informações Básicas</h6>
+                    <div class="preview-item">
+                        <span class="preview-label">Nome:</span>
+                        <span class="preview-value" id="preview-name">
+                            {% if wizard_data.step_1.name %}{{ wizard_data.step_1.name }}{% else %}<span class="preview-empty">A definir</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Competição:</span>
+                        <span class="preview-value" id="preview-competition">
+                            {% if wizard_data.step_1.competition %}{{ wizard_data.step_1.competition }}{% else %}<span class="preview-empty">A selecionar</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Descrição:</span>
+                        <span class="preview-value" id="preview-description">
+                            {% if wizard_data.step_1.description %}{{ wizard_data.step_1.description|truncatechars:50 }}{% else %}<span class="preview-empty">Não informada</span>{% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Settings Preview -->
+                <div class="preview-section">
+                    <h6>⚙️ Configurações</h6>
+                    <div class="preview-item">
+                        <span class="preview-label">Taxa:</span>
+                        <span class="preview-value" id="preview-fee">
+                            {% if wizard_data.step_2.entry_fee %}R$ {{ wizard_data.step_2.entry_fee }}{% else %}<span class="preview-empty">A definir</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Participantes:</span>
+                        <span class="preview-value" id="preview-participants">
+                            {% if wizard_data.step_2.max_participants %}{{ wizard_data.step_2.max_participants }}{% else %}<span class="preview-empty">Ilimitado</span>{% endif %}
+                        </span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Visibilidade:</span>
+                        <span class="preview-value" id="preview-visibility">
+                            {% if wizard_data.step_2.visibility == 'public' %}Público{% elif wizard_data.step_2.visibility == 'private' %}Privado{% else %}<span class="preview-empty">A definir</span>{% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Scoring Preview -->
+                <div class="preview-section">
+                    <h6>🎯 Pontuação</h6>
+                    <div class="preview-item">
+                        <span class="preview-label">Placar exato:</span>
+                        <span class="preview-value">
+                            {% if wizard_data.step_2.exact_score_points %}{{ wizard_data.step_2.exact_score_points }} pts{% else %}10 pts{% endif %}
+                        </span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Diferença:</span>
+                        <span class="preview-value">
+                            {% if wizard_data.step_2.correct_difference_points %}{{ wizard_data.step_2.correct_difference_points }} pts{% else %}5 pts{% endif %}
+                        </span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-label">Vencedor:</span>
+                        <span class="preview-value">
+                            {% if wizard_data.step_2.correct_winner_points %}{{ wizard_data.step_2.correct_winner_points }} pts{% else %}3 pts{% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Progress Indicator -->
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">Progresso</span>
+                        <span class="text-muted">{{ current_step }}/{{ total_steps }}</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-gradient-primary">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time preview updates
+document.addEventListener('DOMContentLoaded', function() {
+    // File upload handling
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const uploadedFile = document.getElementById('uploaded-file');
+            const fileName = document.getElementById('file-name');
+            
+            if (file) {
+                fileName.textContent = file.name;
+                uploadedFile.classList.add('show');
+            }
+        });
+    }
+    
+    // Real-time form validation
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                if (this.hasAttribute('required')) {
+                    this.classList.add('is-invalid');
+                }
+            }
+            
+            // Update preview
+            updatePreview(this);
+        });
+    });
+    
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+function updatePreview(input) {
+    const name = input.name;
+    const value = input.value;
+    
+    // Update preview elements based on input name
+    switch(name) {
+        case 'name':
+            document.getElementById('preview-name').textContent = value || 'A definir';
+            break;
+        case 'entry_fee':
+            document.getElementById('preview-fee').textContent = value ? `R$ ${value}` : 'A definir';
+            break;
+        // Add more cases as needed
+    }
+}
+
+// HTMX configuration
+document.body.addEventListener('htmx:beforeRequest', function(evt) {
+    document.querySelector('.form-container').classList.add('loading');
+});
+
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    document.querySelector('.form-container').classList.remove('loading');
+});
+
+// Form submission handling
+document.querySelector('form').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processando...';
+});
+</script>
+{% endblock %}

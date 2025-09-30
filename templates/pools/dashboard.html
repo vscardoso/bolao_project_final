@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meu Dashboard - Bolão{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Bem-vindo, {{ user.username }}! 👋</h1>
+    
+    <!-- Estatísticas Gerais -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                    <h3 class="text-primary">{{ total_bets }}</h3>
+                    <p class="text-muted mb-0">Apostas Feitas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-trophy fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ total_points }}</h3>
+                    <p class="text-muted mb-0">Pontos Totais</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-bullseye fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ avg_points }}</h3>
+                    <p class="text-muted mb-0">Média por Aposta</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-percentage fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ hit_rate }}%</h3>
+                    <p class="text-muted mb-0">Taxa de Acerto</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Próximas Apostas -->
+    {% if upcoming_matches %}
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white d-flex align-items-center">
+            <i class="fas fa-clock me-2"></i>
+            <h5 class="mb-0">⏰ Aposte Agora - Deadline Próximo!</h5>
+        </div>
+        <div class="card-body">
+            {% for match in upcoming_matches %}
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                <div>
+                    <strong>{{ match.home_team }} vs {{ match.away_team }}</strong><br>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ match.start_time|date:"d/m/Y H:i" }}
+                    </small>
+                    <br>
+                    <small class="text-info">
+                        <i class="fas fa-users me-1"></i>{{ match.pool.name }}
+                    </small>
+                </div>
+                <a href="{% url 'pools:bet_match' match.pool.slug match.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-hand-point-up me-1"></i>Apostar Agora
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Tudo em dia!</strong> Você não tem apostas pendentes no momento.
+    </div>
+    {% endif %}
+    
+    <!-- Meus Bolões -->
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center">
+            <i class="fas fa-trophy me-2"></i>
+            <h5 class="mb-0">🏆 Meus Bolões</h5>
+        </div>
+        <div class="card-body">
+            {% if pool_rankings %}
+            <div class="row">
+                {% for item in pool_rankings %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-start border-5 {% if item.position == 1 %}border-warning{% elif item.position <= 3 %}border-success{% else %}border-primary{% endif %}">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                {% if item.position == 1 %}
+                                    <i class="fas fa-crown text-warning me-1"></i>
+                                {% elif item.position <= 3 %}
+                                    <i class="fas fa-medal text-success me-1"></i>
+                                {% else %}
+                                    <i class="fas fa-user me-1"></i>
+                                {% endif %}
+                                {{ item.pool.name }}
+                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge {% if item.position == 1 %}bg-warning{% elif item.position <= 3 %}bg-success{% else %}bg-primary{% endif %} fs-6">
+                                    {{ item.position }}º de {{ item.total_participants }}
+                                </span>
+                                <span class="text-success fw-bold fs-5">{{ item.points }} pts</span>
+                            </div>
+                            
+                            <!-- Barra de progresso da posição -->
+                            {% with percentage=item.position|floatformat:0 total=item.total_participants %}
+                            <div class="progress mb-2" style="height: 6px;">
+                                <div class="progress-bar {% if item.position == 1 %}bg-warning{% elif item.position <= 3 %}bg-success{% else %}bg-primary{% endif %}" 
+                                     style="width: {% widthratio item.position item.total_participants 100 %}%">
+                                </div>
+                            </div>
+                            {% endwith %}
+                            
+                            <a href="{% url 'pools:detail' item.pool.slug %}" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="fas fa-eye me-1"></i>Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Ações rápidas -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <a href="{% url 'pools:list' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-list me-2"></i>Ver Todos Meus Bolões
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{% url 'pools:discover' %}" class="btn btn-outline-success w-100">
+                        <i class="fas fa-search me-2"></i>Descobrir Novos Bolões
+                    </a>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-sad-tear fa-3x text-muted mb-3"></i>
+                <p class="text-muted">Você ainda não participa de nenhum bolão.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Criar Meu Primeiro Bolão
+                    </a>
+                    <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-search me-2"></i>Procurar Bolões
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Estatísticas Detalhadas -->
+    {% if total_bets > 0 %}
+    <div class="card">
+        <div class="card-header d-flex align-items-center">
+            <i class="fas fa-chart-bar me-2"></i>
+            <h5 class="mb-0">📊 Suas Estatísticas</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="border-end">
+                        <h4 class="text-success">{{ hit_rate }}%</h4>
+                        <p class="text-muted mb-0">Taxa de Acerto</p>
+                        <small class="text-muted">Das suas apostas finalizadas</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border-end">
+                        <h4 class="text-info">{{ avg_points }}</h4>
+                        <p class="text-muted mb-0">Média de Pontos</p>
+                        <small class="text-muted">Por aposta realizada</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h4 class="text-primary">{{ active_pools|length }}</h4>
+                    <p class="text-muted mb-0">Bolões Ativos</p>
+                    <small class="text-muted">Participando atualmente</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- CSS personalizado -->
+<style>
+.border-start {
+    border-left: 4px solid !important;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.progress {
+    background-color: #e9ecef;
+}
+
+.badge {
+    font-size: 0.8rem;
+}
+
+.fa-crown {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 5px #ffc107; }
+    to { text-shadow: 0 0 10px #ffc107, 0 0 15px #ffc107; }
+}
+</style>
+{% endblock %}

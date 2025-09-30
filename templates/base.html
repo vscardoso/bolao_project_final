@@ -1,190 +1,319 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
+    <!-- Prevenir Service Workers em desenvolvimento -->
+    {% if debug %}
+    <meta http-equiv="Permissions-Policy" content="service-worker=()">
+    <script>
+        // Service Worker Blocker - DESENVOLVIMENTO APENAS
+        (function() {
+            'use strict';
+            console.log('🔒 Service Worker bloqueado para desenvolvimento');
+            
+            if ('serviceWorker' in navigator) {
+                // Desregistrar qualquer SW existente
+                navigator.serviceWorker.getRegistrations()
+                    .then(registrations => {
+                        registrations.forEach(registration => {
+                            registration.unregister();
+                            console.log('🗑️ Service Worker removido:', registration.scope);
+                        });
+                    })
+                    .catch(() => {}); // Silenciar erros
+                
+                // Bloquear novos registros
+                navigator.serviceWorker.register = function() {
+                    console.log('🚫 Service Worker registration blocked in development');
+                    return Promise.reject(new Error('Service Worker disabled for development'));
+                };
+            }
+            
+            // Suprimir erros de Service Worker
+            const originalError = window.console.error;
+            window.console.error = function(...args) {
+                const message = args.join(' ');
+                if (message.includes('ServiceWorker') || 
+                    message.includes('InvalidStateError') ||
+                    message.includes('Failed to register')) {
+                    console.log('🔇 SW error suppressed:', message);
+                    return;
+                }
+                originalError.apply(console, args);
+            };
+            
+            // Interceptar erros globais
+            window.addEventListener('error', function(event) {
+                if (event.message && (
+                    event.message.includes('ServiceWorker') ||
+                    event.message.includes('InvalidStateError') ||
+                    event.message.includes('Failed to register')
+                )) {
+                    event.preventDefault();
+                    console.log('🔇 SW error intercepted and suppressed');
+                    return false;
+                }
+            }, true);
+            
+            window.addEventListener('unhandledrejection', function(event) {
+                if (event.reason && event.reason.message && (
+                    event.reason.message.includes('ServiceWorker') ||
+                    event.reason.message.includes('InvalidStateError')
+                )) {
+                    event.preventDefault();
+                    console.log('🔇 SW promise rejection suppressed');
+                }
+            });
+        })();
+    </script>
+    {% endif %}
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de bolão online para competições de futebol">
     <title>{% block title %}Bolão Online{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- CSS Personalizado -->
-    {% load static %}
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'css/ranking.css' %}">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --light: #f9fafb;
+        }
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--light);
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s;
+        }
+        
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        /* Buttons */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Footer */
+        footer {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+        
+        /* Alerts */
+        .alert {
+            border: none;
+            border-radius: 8px;
+        }
+        
+        /* Forms */
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+    </style>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="d-flex flex-column min-vh-100">
-
-    <!-- Header Integrado -->
-    <header class="navbar navbar-expand-lg navbar-dark bg-gradient-primary fixed-top">
-        <div class="container-fluid">
-            <!-- Logo/Brand -->
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <i class="fas fa-trophy text-warning me-2"></i>
-                <span class="fw-bold">Bolão Online</span>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-trophy"></i> Bolão Online
             </a>
-            
-            <!-- Botão Mobile Menu -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" 
-                    data-bs-target="#navbarContent" aria-controls="navbarContent" 
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <i class="fas fa-bars"></i>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
-            
-            <!-- Menu Principal -->
-            <div class="collapse navbar-collapse" id="navbarContent">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'list' %}active{% endif %}" 
-                           href="{% url 'pools:list' %}">
-                            <i class="fas fa-home me-1"></i> Início
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'discover' %}active{% endif %}" 
-                           href="{% url 'pools:discover' %}">
-                            <i class="fas fa-search me-1"></i> Descobrir
-                        </a>
-                    </li>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'users:dashboard' %}">
+                                <i class="fas fa-chart-line me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'pool_list' %}">
+                                <i class="fas fa-list me-1"></i> Bolões
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i> Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Sair</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Entrar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-light btn-sm ms-2" href="{% url 'register' %}">Cadastrar</a>
+                        </li>
+                    {% endif %}
                 </ul>
-                
-                <!-- Menu do Usuário -->
-                {% if user.is_authenticated %}
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
-                           data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="post" action="{% url 'logout' %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2 text-danger"></i> Sair
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="{% url 'pools:all_invitations' %}">
-                            <i class="fas fa-bell"></i>
-                            {% if invitation_count %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ invitation_count }}
-                            </span>
-                            {% endif %}
-                        </a>
-                    </li>
-                </ul>
-                {% else %}
-                <div class="d-flex">
-                    <a href="{% url 'login' %}" class="btn btn-outline-light me-2">
-                        <i class="fas fa-sign-in-alt me-1"></i> Login
-                    </a>
-                    <a href="{% url 'register' %}" class="btn btn-light">
-                        <i class="fas fa-user-plus me-1"></i> Cadastre-se
-                    </a>
-                </div>
-                {% endif %}
             </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- Estrutura Principal com Sidebar -->
-    <div class="container-fluid main-container">
-        <div class="row">
-            <!-- Sidebar - Esconder na home page -->
-            {% if user.is_authenticated and request.path != '/' %}
-            <aside class="sidebar col-lg-3 col-xl-2">
-                <div class="sidebar-sticky">
-                    <!-- Meus Bolões -->
-                    <div class="sidebar-section">
-                        <h6 class="sidebar-heading">
-                            <i class="fas fa-trophy text-primary me-2"></i> Meus Bolões
-                        </h6>
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.resolver_match.url_name == 'my_created' %}active{% endif %}" 
-                                   href="{% url 'pools:my_created' %}">
-                                    <i class="fas fa-star me-2"></i> Bolões que Criei
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.resolver_match.url_name == 'my_joined' %}active{% endif %}" 
-                                   href="{% url 'pools:my_joined' %}">
-                                    <i class="fas fa-users me-2"></i> Bolões que Participo
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Ações -->
-                    <div class="sidebar-section">
-                        <h6 class="sidebar-heading">
-                            <i class="fas fa-cog text-primary me-2"></i> Ações
-                        </h6>
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.resolver_match.url_name == 'create' %}active{% endif %}" 
-                                   href="{% url 'pools:create' %}">
-                                    <i class="fas fa-plus-circle me-2"></i> Criar Novo Bolão
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link position-relative {% if request.resolver_match.url_name == 'invitations' %}active{% endif %}" 
-                                   href="{% url 'pools:all_invitations' %}">
-                                    <i class="fas fa-envelope me-2"></i> Convites
-                                    {% if invitation_count %}
-                                    <span class="badge bg-danger rounded-pill ms-2">{{ invitation_count }}</span>
-                                    {% endif %}
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </aside>
-            {% endif %}
-            
-            <!-- Conteúdo Principal - Ajuste largura baseado na presença do sidebar -->
-            <main class="col-12 {% if user.is_authenticated and request.path != '/' %}col-lg-9 col-xl-10 ms-sm-auto{% endif %} px-4 py-4 content-wrapper">
-                {% if messages %}
-                <div class="messages-container">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                {% block content %}{% endblock %}
-            </main>
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+        {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 
     <!-- Footer -->
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container text-center">
-            <span class="text-muted">© 2025 Bolão Online</span>
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-trophy text-primary"></i> Bolão Online</h5>
+                    <p class="text-muted">Crie bolões e dispute com seus amigos.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-muted">&copy; 2025 Bolão Online. Todos os direitos reservados.</p>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts de desenvolvimento -->
+    {% if debug %}
+    <script src="{% static 'js/sw-cleanup.js' %}"></script>
+    {% endif %}
+    
+    <!-- Limpeza de cache em desenvolvimento -->
+    {% if debug %}
+    <script>
+        // Limpar cache e cookies relacionados a Service Workers
+        (function() {
+            // Limpar localStorage/sessionStorage de SW
+            try {
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.includes('sw') || key.includes('service') || key.includes('worker'))) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log('🧹 Removed localStorage key:', key);
+                });
+                
+                // Limpar sessionStorage também
+                const sessionKeysToRemove = [];
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    if (key && (key.includes('sw') || key.includes('service') || key.includes('worker'))) {
+                        sessionKeysToRemove.push(key);
+                    }
+                }
+                sessionKeysToRemove.forEach(key => {
+                    sessionStorage.removeItem(key);
+                    console.log('🧹 Removed sessionStorage key:', key);
+                });
+                
+                console.log('✅ Cache cleanup completed for development');
+            } catch (e) {
+                console.log('Cache cleanup failed:', e);
+            }
+        })();
+    </script>
+    {% endif %}
     
     {% block extra_js %}{% endblock %}
 </body>

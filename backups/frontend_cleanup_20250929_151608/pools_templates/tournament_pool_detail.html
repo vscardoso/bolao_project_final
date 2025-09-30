@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pool.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Informações do Torneio e Bolão -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center">
+                {% if pool.tournament.logo %}
+                <img src="{{ pool.tournament.logo.url }}" alt="{{ pool.tournament.name }}" class="img-fluid me-3" style="max-height: 60px;">
+                {% endif %}
+                <div>
+                    <h2 class="mb-0">{{ pool.name }}</h2>
+                    <p class="text-muted mb-0">{{ pool.tournament.name }} {{ pool.tournament.season }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="d-flex justify-content-end align-items-center">
+                <div class="text-end me-3">
+                    <span class="d-block">Prêmio Total</span>
+                    <span class="h4 mb-0">R$ {{ pool.total_prize }}</span>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        Ações
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% if user == pool.owner %}
+                        <li><a class="dropdown-item" href="{% url 'pools:edit' pool.slug %}">
+                            <i class="fas fa-edit me-2"></i>Editar Bolão
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'pools:send_invitation' pool.slug %}">
+                            <i class="fas fa-user-plus me-2"></i>Convidar Amigos
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="{% url 'pools:rankings' pool.slug %}">
+                            <i class="fas fa-trophy me-2"></i>Ranking Completo
+                        </a></li>
+                        <li><a class="dropdown-item" href="#regras" data-bs-toggle="tab">
+                            <i class="fas fa-gavel me-2"></i>Regras
+                        </a></li>
+                        {% if user == pool.owner %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'pools:delete' pool.slug %}">
+                            <i class="fas fa-trash-alt me-2"></i>Excluir Bolão
+                        </a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Menu lateral e informações -->
+        <div class="col-md-3">
+            <!-- Abas e Navegação -->
+            <div class="nav flex-column nav-pills mb-4" id="v-pills-tab" role="tablist">
+                <a class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" href="#v-pills-home" role="tab">
+                    <i class="fas fa-home me-2"></i>Visão Geral
+                </a>
+                <a class="nav-link" id="v-pills-matches-tab" data-bs-toggle="pill" href="#v-pills-matches" role="tab">
+                    <i class="fas fa-futbol me-2"></i>Partidas
+                </a>
+                <a class="nav-link" id="v-pills-standings-tab" data-bs-toggle="pill" href="#v-pills-standings" role="tab">
+                    <i class="fas fa-table-list me-2"></i>Classificação
+                </a>
+                <a class="nav-link" id="v-pills-bets-tab" data-bs-toggle="pill" href="#v-pills-bets" role="tab">
+                    <i class="fas fa-ticket-alt me-2"></i>Minhas Apostas
+                </a>
+                <a class="nav-link" id="v-pills-ranking-tab" data-bs-toggle="pill" href="#v-pills-ranking" role="tab">
+                    <i class="fas fa-trophy me-2"></i>Ranking
+                </a>
+                <a class="nav-link" id="v-pills-rules-tab" data-bs-toggle="pill" href="#v-pills-rules" role="tab">
+                    <i class="fas fa-gavel me-2"></i>Regras
+                </a>
+            </div>
+            
+            <!-- Informações do bolão -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Informações</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Participantes:</strong> {{ pool.participants.count }}</p>
+                    <p class="mb-1"><strong>Criado por:</strong> {{ pool.owner.username }}</p>
+                    <p class="mb-1"><strong>Valor:</strong> R$ {{ pool.entry_fee }}</p>
+                    <p class="mb-0"><strong>Esporte:</strong> {{ pool.sport.name }}</p>
+                </div>
+            </div>
+            
+            <!-- Sistema de pontuação -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Sistema de Pontuação</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Acerto exato:</span>
+                        <span class="badge bg-success">{{ pool.exact_score_points }} pontos</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Vencedor e diferença:</span>
+                        <span class="badge bg-primary">{{ pool.correct_difference_points }} pontos</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Apenas vencedor:</span>
+                        <span class="badge bg-info">{{ pool.correct_winner_points }} pontos</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Erro:</span>
+                        <span class="badge bg-secondary">{{ pool.wrong_points }} pontos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conteúdo principal -->
+        <div class="col-md-9">
+            <div class="tab-content" id="v-pills-tabContent">
+                <!-- Visão Geral -->
+                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel">
+                    <!-- Conteúdo semelhante ao que você já tinha no template anterior -->
+                </div>
+                
+                <!-- Partidas -->
+                <div class="tab-pane fade" id="v-pills-matches" role="tabpanel">
+                    <!-- Filtros para as partidas -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Partidas</h4>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                {% if current_round %}Rodada {{ current_round }}{% else %}Todas as Rodadas{% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item {% if not current_round %}active{% endif %}" 
+                                    href="{% url 'pools:tournament_detail' pool.slug %}?tab=matches">Todas</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% for round in available_rounds %}
+                                <li><a class="dropdown-item {% if round == current_round %}active{% endif %}" 
+                                    href="{% url 'pools:tournament_detail' pool.slug %}?tab=matches&round={{ round }}">
+                                    Rodada {{ round }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de partidas filtradas -->
+                    <div class="card">
+                        <div class="list-group list-group-flush">
+                            {% for match in matches %}
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="small text-muted">{{ match.start_time|date:"d/m/Y - H:i" }}</div>
+                                    <div class="badge {% if match.status == 'finished' %}bg-danger{% elif match.status == 'live' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ match.get_status_display }}
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center justify-content-between mt-2">
+                                    <div class="d-flex align-items-center" style="width: 40%;">
+                                        {% if match.tournament_match.home_team.logo %}
+                                        <img src="{{ match.tournament_match.home_team.logo.url }}" class="me-2" width="30" height="30">
+                                        {% endif %}
+                                        <span>{{ match.home_team }}</span>
+                                    </div>
+                                    
+                                    <div class="text-center" style="width: 20%;">
+                                        {% if match.is_finished %}
+                                        <strong class="h5">{{ match.home_score }} - {{ match.away_score }}</strong>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark px-3 py-2">vs</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center justify-content-end" style="width: 40%;">
+                                        <span>{{ match.away_team }}</span>
+                                        {% if match.tournament_match.away_team.logo %}
+                                        <img src="{{ match.tournament_match.away_team.logo.url }}" class="ms-2" width="30" height="30">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Informações/Actions da aposta -->
+                                <div class="mt-3 d-flex align-items-center justify-content-between">
+                                    {% if match.user_bet %}
+                                    <div>
+                                        <span class="badge bg-light text-dark">Sua aposta: {{ match.user_bet.home_bet }} - {{ match.user_bet.away_bet }}</span>
+                                        {% if match.is_finished %}
+                                        <span class="badge 
+                                            {% if match.user_bet.points == pool.exact_score_points %}bg-success
+                                            {% elif match.user_bet.points == pool.correct_difference_points %}bg-primary
+                                            {% elif match.user_bet.points == pool.correct_winner_points %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ match.user_bet.points }} pontos
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <div>
+                                        <span class="badge bg-warning text-dark">Sem aposta</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if not match.is_finished and not match.betting_closed %}
+                                    <a href="{% url 'pools:bet_match' pool.slug match.id %}" class="btn btn-sm btn-outline-primary">
+                                        {% if match.user_bet %}Editar Aposta{% else %}Apostar{% endif %}
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="list-group-item text-center py-4">
+                                <p class="text-muted mb-0">Não há partidas disponíveis para este filtro.</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Classificação do Torneio -->
+                <div class="tab-pane fade" id="v-pills-standings" role="tabpanel">
+                    <h4 class="mb-3">Classificação</h4>
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center" width="40">#</th>
+                                        <th>Time</th>
+                                        <th class="text-center" width="40">PTS</th>
+                                        <th class="text-center" width="40">J</th>
+                                        <th class="text-center" width="40">V</th>
+                                        <th class="text-center" width="40">E</th>
+                                        <th class="text-center" width="40">D</th>
+                                        <th class="text-center" width="40">GP</th>
+                                        <th class="text-center" width="40">GC</th>
+                                        <th class="text-center" width="40">SG</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in standings %}
+                                    <tr>
+                                        <td class="text-center {% if row.position <= 4 %}table-primary{% elif row.position <= 6 %}table-info{% elif row.position >= 17 %}table-danger{% endif %}">
+                                            {{ row.position }}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if row.team.logo %}
+                                                <img src="{{ row.team.logo.url }}" width="24" height="24" class="me-2">
+                                                {% endif %}
+                                                {{ row.team.name }}
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-bold">{{ row.points }}</td>
+                                        <td class="text-center">{{ row.played }}</td>
+                                        <td class="text-center">{{ row.won }}</td>
+                                        <td class="text-center">{{ row.drawn }}</td>
+                                        <td class="text-center">{{ row.lost }}</td>
+                                        <td class="text-center">{{ row.goals_for }}</td>
+                                        <td class="text-center">{{ row.goals_against }}</td>
+                                        <td class="text-center">{{ row.goals_for|subtract:row.goals_against }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="10" class="text-center py-3">
+                                            <p class="text-muted mb-0">Classificação não disponível.</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Minhas Apostas -->
+                <!-- Ranking -->
+                <!-- Regras -->
+                <!-- Implementar os outros conteúdos de abas como no bolao_brasileirao_detail.html -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

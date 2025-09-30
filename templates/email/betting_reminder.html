@@ -1,0 +1,49 @@
+{% extends "email/base_email.html" %}
+
+{% block content %}
+<h2>⏰ Lembrete: Apostas se encerram em breve!</h2>
+
+<p>Olá, <strong>{{ user_name }}</strong>!</p>
+
+<p>Este é um lembrete de que as apostas para os próximos jogos do bolão <strong>"{{ pool_name }}"</strong> se encerram em <strong style="color: #dc3545;">{{ deadline_time }}</strong>!</p>
+
+<div class="highlight">
+    <h3 style="margin-top: 0;">⚽ Jogos Pendentes</h3>
+    {% for match in pending_matches %}
+    <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #ffc107;">
+        <p style="margin: 0;"><strong>{{ match.home_team }} x {{ match.away_team }}</strong></p>
+        <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">
+            📅 {{ match.date }} às {{ match.time }}
+            {% if not match.has_prediction %}
+            <span style="color: #dc3545; font-weight: bold;"> - ⚠️ SEM APOSTA</span>
+            {% else %}
+            <span style="color: #28a745;"> - ✅ APOSTADO</span>
+            {% endif %}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+
+<div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0;">
+    <p style="margin: 0;"><strong>⚠️ Atenção:</strong></p>
+    <p style="margin: 5px 0 0 0;">Você tem <strong>{{ missing_predictions }}</strong> apostas pendentes. Não perca pontos por deixar de apostar!</p>
+</div>
+
+<p style="text-align: center;">
+    <a href="{{ betting_url }}" class="button">
+        🎯 Fazer Apostas Agora
+    </a>
+</p>
+
+<h3>💡 Dicas para Apostar</h3>
+<ul>
+    <li>📊 Analise o histórico dos times</li>
+    <li>🏠 Considere o fator casa</li>
+    <li>⚽ Verifique lesões e suspensões</li>
+    <li>🎲 Quando em dúvida, siga sua intuição!</li>
+</ul>
+
+<p style="text-align: center; margin-top: 30px;">
+    <strong>Não deixe para a última hora! ⏰</strong>
+</p>
+{% endblock %}

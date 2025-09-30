@@ -1,0 +1,1115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ranking - {{ pool.name }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<style>
+:root {
+    --gold: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    --silver: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%);
+    --bronze: linear-gradient(135deg, #cd7f32 0%, #d4946a 100%);
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --warning-gradient: linear-gradient(135deg, #fcb045 0%, #fd1d1d 100%);
+}
+
+/* Page Header */
+.ranking-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ranking-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.ranking-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Filter Section */
+.filter-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.dropdown-filter {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-filter select {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    font-weight: 600;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dropdown-filter select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+    transform: scale(1.02);
+}
+
+/* Podium Custom */
+.podium-custom {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 2rem;
+    margin: 3rem 0;
+    perspective: 1000px;
+}
+
+.podium-place {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transition: transform 0.5s ease;
+}
+
+.podium-place:hover {
+    transform: translateY(-10px) rotateY(5deg);
+}
+
+.podium-platform {
+    border-radius: 15px 15px 0 0;
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.podium-platform::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, transparent 70%);
+}
+
+.first-place .podium-platform {
+    background: var(--gold);
+    height: 120px;
+    width: 150px;
+    position: relative;
+}
+
+.first-place .podium-platform::after {
+    content: '🏆';
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    animation: bounce 2s infinite;
+}
+
+.second-place .podium-platform {
+    background: var(--silver);
+    height: 100px;
+    width: 130px;
+}
+
+.third-place .podium-platform {
+    background: var(--bronze);
+    height: 80px;
+    width: 110px;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+    40% { transform: translateX(-50%) translateY(-10px); }
+    60% { transform: translateX(-50%) translateY(-5px); }
+}
+
+.podium-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    position: relative;
+    border: 4px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    overflow: hidden;
+}
+
+.podium-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.podium-name {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.podium-points {
+    font-size: 1.5rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 2;
+}
+
+/* Medal Badges */
+.medal-badges {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.medal-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.medal-gold {
+    background: var(--gold);
+    color: #8b6914;
+}
+
+.medal-silver {
+    background: var(--silver);
+    color: #4a4a4a;
+}
+
+.medal-bronze {
+    background: var(--bronze);
+    color: #5c3317;
+}
+
+.medal-streak {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.medal-accuracy {
+    background: var(--warning-gradient);
+    color: white;
+}
+
+/* Statistics Cards */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+.stat-subtitle {
+    color: #28a745;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* Chart Container */
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 400px;
+    margin-top: 1rem;
+}
+
+/* Ranking Table */
+.ranking-table-container {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+}
+
+.table-striped {
+    margin-bottom: 0;
+}
+
+.table-striped thead {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.table-striped thead th {
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 1.5rem 1rem;
+}
+
+.table-striped tbody tr {
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.table-striped tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.position-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    margin-right: 1rem;
+}
+
+.position-1 { background: var(--gold); color: #8b6914; }
+.position-2 { background: var(--silver); color: #4a4a4a; }
+.position-3 { background: var(--bronze); color: #5c3317; }
+.position-other { background: #6c757d; }
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    border: 3px solid #e9ecef;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-details h6 {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.user-details small {
+    color: #6c757d;
+}
+
+.accuracy-bar {
+    width: 100px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.accuracy-fill {
+    height: 100%;
+    background: var(--success-gradient);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Animate on Scroll */
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.animate-on-scroll.animated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .podium-custom {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .podium-place {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .first-place .podium-platform,
+    .second-place .podium-platform,
+    .third-place .podium-platform {
+        width: 100%;
+        height: 80px;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-wrapper {
+        height: 300px;
+    }
+    
+    .ranking-title {
+        font-size: 2rem;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Tooltips */
+.tooltip-custom {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip-custom::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.tooltip-custom:hover::after {
+    opacity: 1;
+}
+
+/* Print Styles */
+@media print {
+    .filter-section,
+    .chart-container {
+        display: none !important;
+    }
+    
+    .podium-custom,
+    .ranking-table-container {
+        page-break-inside: avoid;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .stat-card,
+    .chart-container,
+    .ranking-table-container,
+    .filter-section {
+        background: #2d3748;
+        color: #e2e8f0;
+        border-color: #4a5568;
+    }
+    
+    .table-striped tbody tr {
+        border-color: #4a5568;
+    }
+    
+    .table-striped tbody tr:hover {
+        background-color: #3d4852;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="ranking-header animate-on-scroll" data-aos="fade-down">
+        <div class="container text-center">
+            <h1 class="ranking-title">
+                <i class="fas fa-trophy"></i> Ranking do Bolão
+            </h1>
+            <h2 class="h4 mb-3">{{ pool.name }}</h2>
+            <p class="lead mb-0">
+                <i class="fas fa-users me-2"></i>{{ participants.count }} participantes
+                <span class="mx-3">•</span>
+                <i class="fas fa-clock me-2"></i>Atualizado em {{ now|date:"d/m/Y H:i" }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section animate-on-scroll" data-aos="fade-up">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-3 mb-md-0">
+                    <i class="fas fa-filter me-2"></i>Filtros
+                </h5>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3 justify-content-md-end">
+                    <div class="dropdown-filter">
+                        <select id="roundFilter" class="form-select">
+                            <option value="all">Todas as rodadas</option>
+                            <option value="current">Rodada atual</option>
+                            <option value="last">Última rodada</option>
+                            {% for i in round_options %}
+                            <option value="{{ i }}">Rodada {{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="dropdown-filter">
+                        <select id="periodFilter" class="form-select">
+                            <option value="all">Todo período</option>
+                            <option value="week">Última semana</option>
+                            <option value="month">Último mês</option>
+                            <option value="season">Temporada atual</option>
+                        </select>
+                    </div>
+                    
+                    <div class="dropdown-filter">
+                        <select id="statsFilter" class="form-select">
+                            <option value="points">Por pontos</option>
+                            <option value="accuracy">Por taxa de acerto</option>
+                            <option value="streak">Por sequência</option>
+                            <option value="bets">Por apostas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-container animate-on-scroll" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">{{ best_performer.points|default:0 }}</div>
+            <div class="stat-label">Melhor Performance</div>
+            <div class="stat-subtitle">{{ best_performer.user.username|default:"Nenhum" }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">{{ highest_accuracy.accuracy|default:0|floatformat:1 }}%</div>
+            <div class="stat-label">Maior Taxa de Acerto</div>
+            <div class="stat-subtitle">{{ highest_accuracy.user.username|default:"Nenhum" }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">{{ longest_streak.streak|default:0 }}</div>
+            <div class="stat-label">Maior Sequência</div>
+            <div class="stat-subtitle">{{ longest_streak.user.username|default:"Nenhum" }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">{{ total_points|default:0 }}</div>
+            <div class="stat-label">Pontos Totais</div>
+            <div class="stat-subtitle">Distribuídos no bolão</div>
+        </div>
+    </div>
+
+    <!-- Podium for Top 3 -->
+    {% if participants.count >= 3 %}
+    <div class="podium-custom animate-on-scroll" data-aos="zoom-in" data-aos-delay="200">
+        <!-- 2nd Place -->
+        <div class="podium-place second-place">
+            <div class="medal-badges">
+                <span class="medal-badge medal-silver">
+                    <i class="fas fa-medal"></i> 2º Lugar
+                </span>
+            </div>
+            <div class="podium-avatar">
+                {% if participants.1.user.profile.profile_pic %}
+                    <img src="{{ participants.1.user.profile.profile_pic.url }}" alt="{{ participants.1.user.username }}">
+                {% else %}
+                    {{ participants.1.user.username|first|upper }}
+                {% endif %}
+            </div>
+            <div class="podium-platform">
+                <div class="podium-name">{{ participants.1.user.username }}</div>
+                <div class="podium-points">{{ participants.1.points }} pts</div>
+            </div>
+        </div>
+
+        <!-- 1st Place -->
+        <div class="podium-place first-place">
+            <div class="medal-badges">
+                <span class="medal-badge medal-gold">
+                    <i class="fas fa-crown"></i> Campeão
+                </span>
+            </div>
+            <div class="podium-avatar">
+                {% if participants.0.user.profile.profile_pic %}
+                    <img src="{{ participants.0.user.profile.profile_pic.url }}" alt="{{ participants.0.user.username }}">
+                {% else %}
+                    {{ participants.0.user.username|first|upper }}
+                {% endif %}
+            </div>
+            <div class="podium-platform">
+                <div class="podium-name">{{ participants.0.user.username }}</div>
+                <div class="podium-points">{{ participants.0.points }} pts</div>
+            </div>
+        </div>
+
+        <!-- 3rd Place -->
+        <div class="podium-place third-place">
+            <div class="medal-badges">
+                <span class="medal-badge medal-bronze">
+                    <i class="fas fa-medal"></i> 3º Lugar
+                </span>
+            </div>
+            <div class="podium-avatar">
+                {% if participants.2.user.profile.profile_pic %}
+                    <img src="{{ participants.2.user.profile.profile_pic.url }}" alt="{{ participants.2.user.username }}">
+                {% else %}
+                    {{ participants.2.user.username|first|upper }}
+                {% endif %}
+            </div>
+            <div class="podium-platform">
+                <div class="podium-name">{{ participants.2.user.username }}</div>
+                <div class="podium-points">{{ participants.2.points }} pts</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Chart Section -->
+    <div class="chart-container animate-on-scroll" data-aos="fade-up" data-aos-delay="300">
+        <h4 class="mb-3">
+            <i class="fas fa-chart-line me-2"></i>Evolução de Pontos por Rodada
+        </h4>
+        <div class="chart-wrapper">
+            <canvas id="evolutionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Ranking Table -->
+    <div class="ranking-table-container animate-on-scroll" data-aos="fade-up" data-aos-delay="400">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 80px;">Pos.</th>
+                        <th>Participante</th>
+                        <th class="text-center">Pontos</th>
+                        <th class="text-center">Taxa de Acerto</th>
+                        <th class="text-center">Apostas</th>
+                        <th class="text-center">Medalhas</th>
+                        <th class="text-center">Tendência</th>
+                    </tr>
+                </thead>
+                <tbody id="rankingTableBody">
+                    {% for participant in participants %}
+                    <tr class="animate-on-scroll" data-aos="fade-right" data-aos-delay="{{ forloop.counter|add:100 }}">
+                        <td class="text-center">
+                            <span class="position-badge position-{% if forloop.counter <= 3 %}{{ forloop.counter }}{% else %}other{% endif %}">
+                                {{ forloop.counter }}
+                            </span>
+                        </td>
+                        
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    {% if participant.user.profile.profile_pic %}
+                                        <img src="{{ participant.user.profile.profile_pic.url }}" alt="{{ participant.user.username }}">
+                                    {% else %}
+                                        {{ participant.user.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                                <div class="user-details">
+                                    <h6>{{ participant.user.username }}</h6>
+                                    <small class="text-muted">
+                                        Participando desde {{ participant.joined_date|date:"d/m/Y" }}
+                                        {% if participant.user == request.user %}
+                                            <span class="badge bg-primary ms-1">Você</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td class="text-center">
+                            <strong class="fs-5 text-primary">{{ participant.points|default:0 }}</strong>
+                            <br><small class="text-muted">pontos</small>
+                        </td>
+                        
+                        <td class="text-center">
+                            <div class="accuracy-bar mx-auto mb-1">
+                                <div class="accuracy-fill" style="width: {{ participant.accuracy|default:0 }}%"></div>
+                            </div>
+                            <small class="fw-bold">{{ participant.accuracy|default:0|floatformat:1 }}%</small>
+                        </td>
+                        
+                        <td class="text-center">
+                            <span class="badge bg-secondary rounded-pill fs-6">
+                                {{ participant.total_bets|default:0 }}
+                            </span>
+                        </td>
+                        
+                        <td class="text-center">
+                            <div class="medal-badges justify-content-center">
+                                {% if forloop.counter == 1 %}
+                                    <span class="medal-badge medal-gold">🥇</span>
+                                {% elif forloop.counter == 2 %}
+                                    <span class="medal-badge medal-silver">🥈</span>
+                                {% elif forloop.counter == 3 %}
+                                    <span class="medal-badge medal-bronze">🥉</span>
+                                {% endif %}
+                                
+                                {% if participant.accuracy >= 80 %}
+                                    <span class="medal-badge medal-accuracy" 
+                                          data-tooltip="Alta precisão">🎯</span>
+                                {% endif %}
+                                
+                                {% if participant.streak >= 5 %}
+                                    <span class="medal-badge medal-streak" 
+                                          data-tooltip="Sequência de {{ participant.streak }} acertos">🔥</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        
+                        <td class="text-center">
+                            {% if participant.trend == 'up' %}
+                                <i class="fas fa-arrow-trend-up text-success fa-lg" data-tooltip="Em alta"></i>
+                            {% elif participant.trend == 'down' %}
+                                <i class="fas fa-arrow-trend-down text-danger fa-lg" data-tooltip="Em baixa"></i>
+                            {% else %}
+                                <i class="fas fa-minus text-muted" data-tooltip="Estável"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhum participante ainda</h5>
+                            <p class="text-muted">Convide amigos para participar do bolão!</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4 animate-on-scroll" data-aos="fade-up" data-aos-delay="500">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group">
+                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar ao Bolão
+                </a>
+                
+                {% if is_owner %}
+                <button class="btn btn-primary" onclick="exportRanking()">
+                    <i class="fas fa-download me-2"></i>Exportar CSV
+                </button>
+                
+                <button class="btn btn-success" onclick="shareRanking()">
+                    <i class="fas fa-share me-2"></i>Compartilhar
+                </button>
+                {% endif %}
+                
+                <button class="btn btn-info" onclick="printRanking()">
+                    <i class="fas fa-print me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-2">Atualizando dados...</p>
+    </div>
+</div>
+
+<script>
+// Data from Django context
+const chartData = {
+    labels: {{ round_labels|safe }},
+    datasets: [
+        {% for participant in top_participants %}
+        {
+            label: '{{ participant.user.username|escapejs }}',
+            data: {{ participant.points_history|safe }},
+            borderColor: getRandomColor({{ forloop.counter0 }}),
+            backgroundColor: getRandomColor({{ forloop.counter0 }}, 0.1),
+            borderWidth: 3,
+            fill: false,
+            tension: 0.4,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#fff',
+            pointBorderWidth: 2
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    AOS.init({
+        duration: 600,
+        easing: 'ease-in-out',
+        once: true,
+        offset: 100
+    });
+    
+    // Initialize Chart
+    initializeChart();
+    
+    // Initialize Filters
+    initializeFilters();
+    
+    // Initialize Tooltips
+    initializeTooltips();
+    
+    // Animate accuracy bars
+    animateAccuracyBars();
+});
+
+function getRandomColor(index, alpha = 1) {
+    const colors = [
+        `rgba(102, 126, 234, ${alpha})`,
+        `rgba(255, 99, 132, ${alpha})`,
+        `rgba(54, 162, 235, ${alpha})`,
+        `rgba(255, 206, 86, ${alpha})`,
+        `rgba(75, 192, 192, ${alpha})`,
+        `rgba(153, 102, 255, ${alpha})`,
+        `rgba(255, 159, 64, ${alpha})`,
+        `rgba(231, 76, 60, ${alpha})`,
+        `rgba(46, 204, 113, ${alpha})`,
+        `rgba(155, 89, 182, ${alpha})`
+    ];
+    return colors[index % colors.length];
+}
+
+function initializeChart() {
+    const ctx = document.getElementById('evolutionChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Evolução de Pontos - Top 5 Participantes',
+                    font: { size: 16, weight: 'bold' }
+                },
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { weight: '600' }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#667eea',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    displayColors: true
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Rodadas',
+                        font: { weight: 'bold' }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Pontos Acumulados',
+                        font: { weight: 'bold' }
+                    },
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverBorderWidth: 3
+                }
+            }
+        }
+    });
+}
+
+function initializeFilters() {
+    const roundFilter = document.getElementById('roundFilter');
+    const periodFilter = document.getElementById('periodFilter');
+    const statsFilter = document.getElementById('statsFilter');
+    
+    [roundFilter, periodFilter, statsFilter].forEach(filter => {
+        filter.addEventListener('change', function() {
+            updateRanking();
+        });
+    });
+}
+
+function initializeTooltips() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+
+function animateAccuracyBars() {
+    const bars = document.querySelectorAll('.accuracy-fill');
+    bars.forEach((bar, index) => {
+        setTimeout(() => {
+            bar.style.width = bar.style.width || '0%';
+        }, index * 100);
+    });
+}
+
+function updateRanking() {
+    const roundFilter = document.getElementById('roundFilter').value;
+    const periodFilter = document.getElementById('periodFilter').value;
+    const statsFilter = document.getElementById('statsFilter').value;
+    
+    showLoading();
+    
+    // Simulate API call
+    setTimeout(() => {
+        // Here you would make an AJAX call to update the ranking
+        // For now, we'll just hide the loading
+        hideLoading();
+        
+        // Re-animate elements
+        AOS.refresh();
+        animateAccuracyBars();
+    }, 1000);
+}
+
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.querySelector('.ranking-table-container').classList.add('loading');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.querySelector('.ranking-table-container').classList.remove('loading');
+}
+
+function exportRanking() {
+    window.location.href = `{% url 'pools:export_ranking' pool.slug %}`;
+}
+
+function shareRanking() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Ranking - {{ pool.name }}',
+            text: 'Confira o ranking do bolão {{ pool.name }}!',
+            url: window.location.href
+        });
+    } else {
+        // Fallback for browsers that don't support Web Share API
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Link copiado para a área de transferência!');
+        });
+    }
+}
+
+function printRanking() {
+    window.print();
+}
+
+// Real-time updates (websocket simulation)
+function startRealTimeUpdates() {
+    setInterval(() => {
+        // Check for updates every 30 seconds
+        fetch(`{% url 'pools:ranking' pool.slug %}?ajax=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.updated) {
+                    // Update the table with new data
+                    updateTableData(data.participants);
+                }
+            })
+            .catch(error => console.log('Update check failed:', error));
+    }, 30000);
+}
+
+function updateTableData(participants) {
+    // Update table with new participant data
+    const tbody = document.getElementById('rankingTableBody');
+    // Implementation would update the DOM with new data
+}
+
+// Start real-time updates
+// startRealTimeUpdates();
+</script>
+{% endblock %}

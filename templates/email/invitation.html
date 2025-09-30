@@ -1,0 +1,49 @@
+{% extends "email/base_email.html" %}
+
+{% block content %}
+<h2>🎉 Você foi convidado para um bolão!</h2>
+
+<p>Olá!</p>
+
+<p><strong>{{ inviter_name }}</strong> te convidou para participar do bolão <strong>"{{ pool_name }}"</strong>.</p>
+
+<div class="highlight">
+    <h3 style="margin-top: 0;">📋 Detalhes do Bolão</h3>
+    <ul style="background: transparent; padding: 0; border: none;">
+        <li><strong>🏆 Competição:</strong> {{ competition_name }}</li>
+        <li><strong>👥 Participantes:</strong> {{ participants_count }}/{{ max_participants }}</li>
+        <li><strong>📅 Criado em:</strong> {{ start_date }}</li>
+        {% if entry_fee %}
+        <li><strong>💰 Taxa de entrada:</strong> R$ {{ entry_fee }}</li>
+        {% endif %}
+        {% if prize_pool %}
+        <li><strong>🏆 Prêmio total:</strong> R$ {{ prize_pool }}</li>
+        {% endif %}
+    </ul>
+</div>
+
+<p style="text-align: center;">
+    <a href="{{ accept_url }}" class="button">
+        ✅ Aceitar Convite
+    </a>
+</p>
+
+<div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <p style="margin: 0;"><strong>💡 Dica:</strong> Se o botão não funcionar, copie e cole este link no seu navegador:</p>
+    <p style="margin: 10px 0 0 0;"><code>{{ accept_url }}</code></p>
+</div>
+
+<hr style="border: none; border-top: 1px solid #e9ecef; margin: 30px 0;">
+
+<h3>🎯 Como funciona?</h3>
+<ol>
+    <li>Clique no botão "Aceitar Convite" acima</li>
+    <li>Faça suas apostas nos jogos da competição</li>
+    <li>Acompanhe os resultados em tempo real</li>
+    <li>Compete com outros participantes pelo prêmio!</li>
+</ol>
+
+<p style="text-align: center; margin-top: 30px;">
+    <strong>Boa sorte e divirta-se! 🍀⚽</strong>
+</p>
+{% endblock %}

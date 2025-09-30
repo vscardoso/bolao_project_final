@@ -277,8 +277,8 @@ class Match(models.Model):
     """Model for matches in a pool"""
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name='matches')
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE, related_name='matches', null=True)
-    home_team = models.CharField(max_length=100)
-    away_team = models.CharField(max_length=100)
+    home_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='home_matches', null=True, blank=True)
+    away_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='away_matches', null=True, blank=True)
     start_time = models.DateTimeField()
     home_score = models.IntegerField(null=True, blank=True)
     away_score = models.IntegerField(null=True, blank=True)

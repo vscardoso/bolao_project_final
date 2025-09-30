@@ -2,57 +2,280 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView, View
+from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView, View, TemplateView
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Q, Count, Sum, F, Case, When, Value
-from django.http import HttpResponseRedirect, Http404, HttpResponse
-from django.utils.text import slugify
+from django.db.models import Q, Count, Sum, F, Case, When, Value, Avg
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 import logging
 import csv
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from .models import Pool, Participation, Sport, Competition, Bet, Match
-from .forms import PoolForm, PoolJoinForm, BetForm
-from .mixins import PoolOwnerRequiredMixin, PoolParticipantRequiredMixin, PoolUserAccessMixin
+from .models import Pool, Participation, Bet, Match, Sport
+from .forms import PoolForm, PoolJoinForm, BetForm, PoolWizardStepOneForm, PoolWizardStepTwoForm, PoolWizardStepThreeForm
+from .mixins import PoolOwnerRequiredMixin, PoolUserAccessMixin
 from pools.models import Invitation
 from pools.forms import InvitationForm
 from django.db import IntegrityError
+from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+# Obter o modelo de usuário configurado
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
-class PoolListView(LoginRequiredMixin, ListView):
-    model = Pool
-    template_name = 'pools/pool_list.html'
-    context_object_name = 'pools'
+
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'pools/dashboard.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # Bolões que o usuário criou
-        owned_pools = Pool.objects.filter(owner=user)
-        context['owned_pools'] = owned_pools
-        context['owned_pools_count'] = owned_pools.count()
+        # Bolões ativos
+        active_pools = Participation.objects.filter(
+            user=user,
+            pool__status='open'
+        ).select_related('pool')
         
-        # Bolões que o usuário participa (mas não criou)
-        participating_pools = Pool.objects.filter(
-            participation__user=user,
-            participation__payment_status__in=['paid', 'completed']
-        ).exclude(owner=user).distinct()
-        context['participating_pools'] = participating_pools
-        context['joined_pools_count'] = participating_pools.count()  # Adicionando esta variável
-        
-        # Bolões públicos que o usuário pode participar
-        context['available_pools'] = Pool.objects.filter(
-            visibility='public', 
-            status='open'
+        # Próximas partidas para apostar (próximas 48h)
+        upcoming_deadline = timezone.now() + timedelta(hours=48)
+        upcoming_matches = Match.objects.filter(
+            pool__in=[p.pool for p in active_pools],
+            start_time__lte=upcoming_deadline,
+            start_time__gte=timezone.now(),
+            finished=False
         ).exclude(
-            Q(owner=user) | Q(participation__user=user)
-        ).order_by('-created_at')[:5]
+            bet__user=user  # Excluir partidas já apostadas
+        ).order_by('start_time')[:5]
         
-        context['selected_sport'] = self.request.GET.get('sport', '')
-        context['search'] = self.request.GET.get('search', '')
+        # Estatísticas gerais
+        total_bets = Bet.objects.filter(user=user).count()
+        finished_bets = Bet.objects.filter(user=user, match__finished=True)
+        
+        if finished_bets.exists():
+            avg_points = finished_bets.aggregate(Avg('points_earned'))['points_earned__avg']
+            total_points = finished_bets.aggregate(Sum('points_earned'))['points_earned__sum']
+            
+            # Taxa de acerto (apostas com pontos > 0)
+            correct_bets = finished_bets.filter(points_earned__gt=0).count()
+            hit_rate = (correct_bets / finished_bets.count() * 100) if finished_bets.count() > 0 else 0
+        else:
+            avg_points = 0
+            total_points = 0
+            hit_rate = 0
+        
+        # Rankings nos bolões
+        pool_rankings = []
+        for participation in active_pools:
+            pool = participation.pool
+            # Calcular ranking do usuário neste bolão
+            user_points = Bet.objects.filter(
+                user=user,
+                pool=pool,
+                match__finished=True
+            ).aggregate(Sum('points_earned'))['points_earned__sum'] or 0
+            
+            # Total de participantes
+            participants = pool.participation_set.count()
+            
+            # Posição do usuário
+            better_users = Bet.objects.filter(
+                pool=pool,
+                match__finished=True
+            ).values('user').annotate(
+                total=Sum('points_earned')
+            ).filter(total__gt=user_points).count()
+            
+            position = better_users + 1
+            
+            pool_rankings.append({
+                'pool': pool,
+                'position': position,
+                'total_participants': participants,
+                'points': user_points
+            })
+        
+        context.update({
+            'active_pools': active_pools,
+            'upcoming_matches': upcoming_matches,
+            'total_bets': total_bets,
+            'avg_points': round(avg_points, 1) if avg_points else 0,
+            'total_points': total_points or 0,
+            'hit_rate': round(hit_rate, 1),
+            'pool_rankings': pool_rankings,
+        })
+        
+        return context
+
+class PoolListView(LoginRequiredMixin, ListView):
+    model = Pool
+    template_name = 'pools/pool_list.html'
+    context_object_name = 'pools'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        queryset = Pool.objects.select_related(
+            'competition', 
+            'competition__sport', 
+            'owner'
+        ).prefetch_related('participants').annotate(
+            participant_count=Count('participants'),
+            total_bets=Count('bet')
+        )
+        
+        # Filtros
+        search = self.request.GET.get('search', '').strip()
+        sport = self.request.GET.get('sport', '')
+        status = self.request.GET.get('status', '')
+        date_filter = self.request.GET.get('date_filter', '')
+        entry_fee_filter = self.request.GET.get('entry_fee', '')
+        
+        # Filtro de busca por nome
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search) |
+                Q(competition__name__icontains=search) |
+                Q(owner__username__icontains=search)
+            )
+        
+        # Filtro por esporte
+        if sport and sport.isdigit():
+            queryset = queryset.filter(competition__sport__id=sport)
+        
+        # Filtro por status
+        if status:
+            queryset = queryset.filter(status=status)
+        
+        # Filtro por taxa de entrada
+        if entry_fee_filter:
+            if entry_fee_filter == 'free':
+                queryset = queryset.filter(entry_fee=0)
+            elif entry_fee_filter == 'paid':
+                queryset = queryset.filter(entry_fee__gt=0)
+        
+        # Filtro por data de criação
+        if date_filter:
+            today = timezone.now().date()
+            if date_filter == 'today':
+                queryset = queryset.filter(created_at__date=today)
+            elif date_filter == 'week':
+                week_ago = today - timedelta(days=7)
+                queryset = queryset.filter(created_at__date__gte=week_ago)
+            elif date_filter == 'month':
+                month_ago = today - timedelta(days=30)
+                queryset = queryset.filter(created_at__date__gte=month_ago)
+        
+        # Ordenação
+        order_by = self.request.GET.get('order_by', '-created_at')
+        valid_orders = [
+            '-created_at', 'created_at', 'name', '-name', 
+            'status', '-status', 'participant_count', '-participant_count',
+            'entry_fee', '-entry_fee'
+        ]
+        if order_by in valid_orders:
+            queryset = queryset.order_by(order_by)
+        else:
+            queryset = queryset.order_by('-created_at')
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Opções para filtros
+        from .models import Sport
+        context['sports'] = Sport.objects.all().order_by('name')
+        
+        # Valores atuais dos filtros
+        context['current_search'] = self.request.GET.get('search', '')
+        context['current_sport'] = self.request.GET.get('sport', '')
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_date_filter'] = self.request.GET.get('date_filter', '')
+        context['current_entry_fee'] = self.request.GET.get('entry_fee', '')
+        context['current_order'] = self.request.GET.get('order_by', '-created_at')
+        
+        # Estatísticas para o usuário
+        context['user_stats'] = {
+            'owned_pools': Pool.objects.filter(owner=user).count(),
+            'joined_pools': Pool.objects.filter(participants=user).exclude(owner=user).count(),
+            'total_pools': Pool.objects.filter(Q(owner=user) | Q(participants=user)).distinct().count()
+        }
+        
+        # Status choices para o template
+        context['status_choices'] = Pool.STATUS_CHOICES
+        
+        # Entry fee choices
+        context['entry_fee_choices'] = [
+            ('', 'Todas as taxas'),
+            ('free', 'Gratuitos'),
+            ('paid', 'Pagos')
+        ]
+        
+        # Date filter choices
+        context['date_filter_choices'] = [
+            ('', 'Qualquer data'),
+            ('today', 'Hoje'),
+            ('week', 'Última semana'),
+            ('month', 'Último mês')
+        ]
+        
+        # Order choices
+        context['order_choices'] = [
+            ('-created_at', 'Mais recentes'),
+            ('created_at', 'Mais antigos'),
+            ('name', 'Nome A-Z'),
+            ('-name', 'Nome Z-A'),
+            ('-participant_count', 'Mais participantes'),
+            ('participant_count', 'Menos participantes'),
+            ('-entry_fee', 'Maior taxa'),
+            ('entry_fee', 'Menor taxa')
+        ]
+        
+        # Para cada pool, adicionar informações extras
+        pools_with_info = []
+        for pool in context['pools']:
+            # Calcular próximas partidas
+            upcoming_matches = Match.objects.filter(
+                pool=pool,
+                finished=False,
+                start_time__gte=timezone.now()
+            ).count()
+            
+            pool_info = {
+                'pool': pool,
+                'participant_count': pool.participant_count,
+                'user_is_owner': pool.owner == user,
+                'user_is_participant': pool.participants.filter(id=user.id).exists(),
+                'can_join': (
+                    pool.status == 'open' and 
+                    not pool.participants.filter(id=user.id).exists() and 
+                    pool.owner != user and
+                    pool.visibility == 'public'
+                ),
+                'has_image': bool(pool.competition and hasattr(pool.competition, 'logo') and pool.competition.logo),
+                'upcoming_matches': upcoming_matches,
+                'is_full': pool.max_participants and pool.participant_count >= pool.max_participants,
+                'entry_fee_display': f'R$ {pool.entry_fee:.2f}' if pool.entry_fee > 0 else 'Gratuito',
+                'created_days_ago': (timezone.now().date() - pool.created_at.date()).days
+            }
+            pools_with_info.append(pool_info)
+        
+        context['pools_with_info'] = pools_with_info
+        
+        # Contadores para estatísticas
+        total_pools = context['object_list'].count()
+        context['results_count'] = total_pools
+        context['showing_from'] = 1 if total_pools > 0 else 0
+        context['showing_to'] = min(self.paginate_by, total_pools)
+        
+        if context.get('page_obj'):
+            page_obj = context['page_obj']
+            context['showing_from'] = (page_obj.number - 1) * self.paginate_by + 1
+            context['showing_to'] = min(page_obj.number * self.paginate_by, total_pools)
         
         return context
 
@@ -84,6 +307,165 @@ class PoolCreateView(LoginRequiredMixin, CreateView):
         messages.success(self.request, "Bolão criado com sucesso!")
         return response
 
+class PoolCreateWizardView(LoginRequiredMixin, View):
+    """Wizard view for creating pools in 3 steps"""
+    template_name = 'pools/pool_create.html'
+    
+    def get(self, request):
+        # Initialize session data if not exists
+        if 'pool_wizard_data' not in request.session:
+            request.session['pool_wizard_data'] = {
+                'step': 1,
+                'step_1': {},
+                'step_2': {},
+                'step_3': {}
+            }
+        
+        step = request.GET.get('step', 1)
+        try:
+            step = int(step)
+            if step not in [1, 2, 3]:
+                step = 1
+        except ValueError:
+            step = 1
+        
+        request.session['pool_wizard_data']['step'] = step
+        
+        # Get appropriate form for current step
+        if step == 1:
+            form = PoolWizardStepOneForm(initial=request.session['pool_wizard_data']['step_1'])
+        elif step == 2:
+            form = PoolWizardStepTwoForm(initial=request.session['pool_wizard_data']['step_2'])
+        else:
+            form = PoolWizardStepThreeForm(initial=request.session['pool_wizard_data']['step_3'])
+        
+        context = {
+            'form': form,
+            'current_step': step,
+            'wizard_data': request.session['pool_wizard_data'],
+            'total_steps': 3
+        }
+        
+        return render(request, self.template_name, context)
+    
+    def post(self, request):
+        step = request.session.get('pool_wizard_data', {}).get('step', 1)
+        
+        if step == 1:
+            form = PoolWizardStepOneForm(request.POST, request.FILES)
+            if form.is_valid():
+                request.session['pool_wizard_data']['step_1'] = form.cleaned_data
+                request.session['pool_wizard_data']['step'] = 2
+                request.session.modified = True
+                return redirect('pools:create_wizard?step=2')
+        
+        elif step == 2:
+            form = PoolWizardStepTwoForm(request.POST)
+            if form.is_valid():
+                request.session['pool_wizard_data']['step_2'] = form.cleaned_data
+                request.session['pool_wizard_data']['step'] = 3
+                request.session.modified = True
+                return redirect('pools:create_wizard?step=3')
+        
+        elif step == 3:
+            form = PoolWizardStepThreeForm(request.POST)
+            if form.is_valid():
+                request.session['pool_wizard_data']['step_3'] = form.cleaned_data
+                # Create the pool
+                return self.create_pool(request)
+        
+        # If form is not valid, render with errors
+        context = {
+            'form': form,
+            'current_step': step,
+            'wizard_data': request.session['pool_wizard_data'],
+            'total_steps': 3
+        }
+        
+        return render(request, self.template_name, context)
+    
+    def create_pool(self, request):
+        """Create the pool from wizard data"""
+        wizard_data = request.session['pool_wizard_data']
+        
+        try:
+            # Extract data from all steps
+            step_1 = wizard_data['step_1']
+            step_2 = wizard_data['step_2']
+            step_3 = wizard_data['step_3']
+            
+            # Create the pool
+            pool = Pool.objects.create(
+                name=step_1['name'],
+                description=step_1.get('description', ''),
+                competition=step_1['competition'],
+                owner=request.user,
+                entry_fee=step_2.get('entry_fee', 0),
+                max_participants=step_2.get('max_participants', 0),
+                betting_deadline=step_2.get('betting_deadline'),
+                visibility=step_2.get('visibility', 'public'),
+                exact_score_points=step_2.get('exact_score_points', 10),
+                correct_difference_points=step_2.get('correct_difference_points', 5),
+                correct_winner_points=step_2.get('correct_winner_points', 3)
+            )
+            
+            # Add owner as participant
+            Participation.objects.create(
+                user=request.user,
+                pool=pool,
+                payment_status='paid'
+            )
+            
+            # Handle invitations if provided
+            if step_3.get('invite_emails'):
+                self.send_invitations(pool, step_3['invite_emails'], step_3.get('custom_message', ''))
+            
+            # Clear wizard data
+            del request.session['pool_wizard_data']
+            request.session.modified = True
+            
+            messages.success(request, f"Bolão '{pool.name}' criado com sucesso!")
+            return redirect('pools:create_success', slug=pool.slug)
+            
+        except Exception as e:
+            messages.error(request, f"Erro ao criar bolão: {str(e)}")
+            return redirect('pools:create_wizard?step=1')
+    
+    def send_invitations(self, pool, emails_string, custom_message):
+        """Send email invitations"""
+        emails = [email.strip() for email in emails_string.split(',') if email.strip()]
+        
+        for email in emails:
+            try:
+                # Create invitation record
+                Invitation.objects.create(
+                    pool=pool,
+                    email=email,
+                    invited_by=pool.owner,
+                    message=custom_message
+                )
+                # Here you would send the actual email
+                # send_invitation_email(invitation)
+            except Exception as e:
+                print(f"Error sending invitation to {email}: {e}")
+
+class PoolCreateSuccessView(LoginRequiredMixin, TemplateView):
+    """Success page after pool creation"""
+    template_name = 'pools/pool_create_success.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pool = get_object_or_404(Pool, slug=kwargs['slug'], owner=self.request.user)
+        context['pool'] = pool
+        
+        # Generate sharing links
+        context['share_link'] = self.request.build_absolute_uri(
+            reverse('pools:detail', kwargs={'slug': pool.slug})
+        )
+        context['whatsapp_link'] = f"https://wa.me/?text=Participe do meu bolão '{pool.name}'! {context['share_link']}"
+        
+        return context
+
 class PoolDetailView(DetailView):
     model = Pool
     template_name = 'pools/pool_detail.html'
@@ -91,27 +473,114 @@ class PoolDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pool = self.get_object()
+        user = self.request.user
         
         # Informações básicas do bolão
-        context['is_owner'] = pool.owner == self.request.user
+        context['is_owner'] = pool.owner == user
         
-        # Buscar corretamente os participantes através da relação Participation
-        context['participants'] = pool.participation_set.all().select_related('user').order_by('-points')
-        context['participants_count'] = context['participants'].count()
+        # Buscar participações com ranking ordenado por pontos
+        participations = pool.participation_set.all().select_related('user').annotate(
+            total_bets=Count('user__bet', filter=Q(user__bet__match__pool=pool)),
+            accuracy=Case(
+                When(total_bets=0, then=Value(0)),
+                default=(Count('user__bet', filter=Q(
+                    user__bet__match__pool=pool,
+                    user__bet__match__finished=True,
+                    user__bet__points_earned__gt=0
+                )) * 100.0 / Count('user__bet', filter=Q(
+                    user__bet__match__pool=pool,
+                    user__bet__match__finished=True
+                )))
+            )
+        ).order_by('-points')
+        context['participants'] = participations
+        context['participants_count'] = participations.count()
         
         # Verificar se o usuário atual é um participante
-        if self.request.user.is_authenticated:
-            context['is_participant'] = Participation.objects.filter(
-                user=self.request.user, 
-                pool=pool
-            ).exists()
+        user_participation = None
+        if user.is_authenticated:
+            try:
+                user_participation = participations.get(user=user)
+                context['is_participant'] = True
+                context['user_participation'] = user_participation
+                context['user_position'] = list(participations).index(user_participation) + 1
+            except Participation.DoesNotExist:
+                context['is_participant'] = False
         
-        # Partidas da competição
-        context['upcoming_matches'] = Match.objects.filter(
-            competition=pool.competition,
+        # Próximas partidas da competição (próximos 7 dias)
+        upcoming_matches = Match.objects.filter(
+            pool=pool,
             finished=False,
-            start_time__gt=timezone.now()
-        ).order_by('start_time')
+            start_time__gte=timezone.now(),
+            start_time__lte=timezone.now() + timedelta(days=30)  # Aumentado para 30 dias
+        ).select_related('home_team', 'away_team').order_by('start_time')[:10]
+        context['upcoming_matches'] = upcoming_matches
+        
+        # Apostas do usuário (todas)
+        if user.is_authenticated and context['is_participant']:
+            user_bets = Bet.objects.filter(
+                user=user,
+                match__pool=pool
+            ).select_related('match', 'match__home_team', 'match__away_team').order_by('-match__start_time')
+            context['user_bets'] = user_bets
+            
+            # Apostas do usuário indexadas por match_id para template
+            context['user_bets_dict'] = {bet.match_id: bet for bet in user_bets}
+        else:
+            context['user_bets'] = []
+            context['user_bets_dict'] = {}
+        
+        # Estatísticas do pool
+        total_matches = Match.objects.filter(pool=pool).count()
+        finished_matches = Match.objects.filter(pool=pool, finished=True).count()
+        context['pool_stats'] = {
+            'total_matches': total_matches,
+            'finished_matches': finished_matches,
+            'remaining_matches': total_matches - finished_matches,
+            'progress_percentage': (finished_matches / total_matches * 100) if total_matches > 0 else 0
+        }
+        
+        # Estatísticas do usuário (se participante)
+        if user_participation:
+            user_bets_total = Bet.objects.filter(user=user, match__pool=pool).count()
+            user_finished_bets = Bet.objects.filter(
+                user=user, 
+                match__pool=pool, 
+                match__finished=True
+            )
+            user_correct_bets = user_finished_bets.filter(points_earned__gt=0).count()
+            finished_bets_count = user_finished_bets.count()
+            
+            context['user_stats'] = {
+                'total_bets': user_bets_total,
+                'correct_bets': user_correct_bets,
+                'accuracy_rate': (user_correct_bets / finished_bets_count * 100) if finished_bets_count > 0 else 0,
+                'total_points': user_participation.points,
+                'average_points': user_participation.points / finished_bets_count if finished_bets_count > 0 else 0
+            }
+        
+        # Top 3 para destaque
+        context['top_3'] = participations[:3]
+        
+        # Ranking completo com posições
+        ranking_data = []
+        for idx, participation in enumerate(participations):
+            ranking_data.append({
+                'position': idx + 1,
+                'participation': participation,
+                'is_current_user': participation.user == user
+            })
+        context['ranking_data'] = ranking_data
+        
+        # Dados para contadores
+        context['total_points'] = participations.aggregate(
+            total=Sum('points')
+        )['total'] or 0
+        
+        context['total_bets'] = Bet.objects.filter(match__pool=pool).count()
+        
+        # Dados para tabs
+        context['active_tab'] = self.request.GET.get('tab', 'ranking')
         
         context['now'] = timezone.now()
         
@@ -146,7 +615,7 @@ class PoolJoinView(LoginRequiredMixin, View):
         slug = self.kwargs.get('slug')
         return get_object_or_404(Pool, slug=slug)
     
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **_kwargs):
         pool = self.get_pool()
         
         # Verifica se o usuário já participa
@@ -157,7 +626,7 @@ class PoolJoinView(LoginRequiredMixin, View):
         form = PoolJoinForm(initial={'pool': pool})
         return render(request, self.template_name, {'pool': pool, 'form': form})
     
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **_kwargs):
         pool = self.get_pool()
         form = PoolJoinForm(request.POST)
         
@@ -528,8 +997,49 @@ def calculate_bet_points(bet):
     # Não acertou nada (0 pontos)
     return 0
 
+def calculate_user_streak(user, pool):
+    """Calcula a sequência atual de acertos do usuário"""
+    recent_bets = Bet.objects.filter(
+        user=user,
+        pool=pool,
+        match__finished=True
+    ).order_by('-match__start_time')[:10]  # Últimas 10 apostas
+    
+    streak = 0
+    for bet in recent_bets:
+        if bet.points_earned > 0:
+            streak += 1
+        else:
+            break
+    
+    return streak
+
+def calculate_user_trend(user, pool):
+    """Calcula a tendência do usuário (alta, baixa, estável)"""
+    recent_bets = Bet.objects.filter(
+        user=user,
+        pool=pool,
+        match__finished=True
+    ).order_by('-match__start_time')[:6]  # Últimas 6 apostas
+    
+    if len(recent_bets) < 3:
+        return 'stable'
+    
+    first_half = recent_bets[3:]  # 3 mais antigas
+    second_half = recent_bets[:3]  # 3 mais recentes
+    
+    first_half_avg = sum(bet.points_earned for bet in first_half) / len(first_half)
+    second_half_avg = sum(bet.points_earned for bet in second_half) / len(second_half)
+    
+    if second_half_avg > first_half_avg * 1.2:
+        return 'up'
+    elif second_half_avg < first_half_avg * 0.8:
+        return 'down'
+    else:
+        return 'stable'
+
 def pool_ranking(request, slug):
-    """Exibe o ranking geral de participantes do bolão"""
+    """Exibe o ranking geral de participantes do bolão com análise avançada"""
     pool = get_object_or_404(Pool, slug=slug)
     
     # Verifica se o usuário tem acesso
@@ -537,10 +1047,68 @@ def pool_ranking(request, slug):
         messages.error(request, "Você não tem acesso a este bolão.")
         return redirect('pools:discover')
     
-    # Busca todos os participantes com pontuação
-    participants = Participation.objects.filter(pool=pool)\
-        .select_related('user')\
-        .order_by('-points')
+    # Busca todos os participantes com estatísticas detalhadas
+    participants = Participation.objects.filter(pool=pool).select_related('user').annotate(
+        total_bets=Count('user__bet', filter=Q(user__bet__match__pool=pool)),
+        correct_bets=Count('user__bet', filter=Q(
+            user__bet__match__pool=pool,
+            user__bet__match__finished=True,
+            user__bet__points_earned__gt=0
+        )),
+        total_finished_bets=Count('user__bet', filter=Q(
+            user__bet__match__pool=pool,
+            user__bet__match__finished=True
+        )),
+        accuracy=Case(
+            When(total_finished_bets=0, then=Value(0)),
+            default=(F('correct_bets') * 100.0 / F('total_finished_bets'))
+        ),
+        avg_points=Avg('user__bet__points_earned', filter=Q(
+            user__bet__match__pool=pool,
+            user__bet__match__finished=True
+        ))
+    ).order_by('-points')
+    
+    # Calcular estatísticas especiais
+    best_performer = participants.first()
+    highest_accuracy = participants.order_by('-accuracy').first()
+    total_points = participants.aggregate(total=Sum('points'))['total'] or 0
+    
+    # Calcular sequências e tendências
+    for participant in participants:
+        participant.streak = calculate_user_streak(participant.user, pool)
+        participant.trend = calculate_user_trend(participant.user, pool)
+    
+    # Top participantes para o gráfico (máximo 5)
+    top_participants = list(participants[:5])
+    
+    # Dados para gráfico de evolução
+    matches = Match.objects.filter(pool=pool, finished=True).order_by('start_time')
+    round_labels = [f"R{i+1}" for i in range(len(matches))]
+    
+    # Calcular histórico de pontos por rodada para cada participante
+    for participant in top_participants:
+        points_history = []
+        cumulative_points = 0
+        
+        for match in matches:
+            try:
+                bet = Bet.objects.get(user=participant.user, match=match, pool=pool)
+                cumulative_points += bet.points_earned
+            except Bet.DoesNotExist:
+                pass
+            points_history.append(cumulative_points)
+        
+        participant.points_history = points_history
+    
+    # Calcular sequência mais longa
+    longest_streak = {'streak': 0, 'user': None}
+    for participant in participants:
+        if participant.streak > longest_streak['streak']:
+            longest_streak = {'streak': participant.streak, 'user': participant.user}
+    
+    # Opções de rodadas para filtro
+    round_options = list(range(1, len(matches) + 1))
     
     context = {
         'pool': pool,
@@ -549,8 +1117,37 @@ def pool_ranking(request, slug):
         'is_participant': Participation.objects.filter(pool=pool, user=request.user).exists() if request.user.is_authenticated else False,
         'active_tab': 'ranking',
         'now': timezone.now(),
+        
+        # Estatísticas
+        'best_performer': best_performer,
+        'highest_accuracy': highest_accuracy,
+        'longest_streak': longest_streak,
+        'total_points': total_points,
+        
+        # Dados para gráfico
+        'top_participants': top_participants,
+        'round_labels': round_labels,
+        'round_options': round_options,
     }
-    return render(request, 'pools/ranking.html', context)
+    
+    # Se for uma requisição AJAX, retorna apenas os dados
+    if request.GET.get('ajax'):
+        return JsonResponse({
+            'participants': [
+                {
+                    'user': p.user.username,
+                    'points': p.points,
+                    'accuracy': float(p.accuracy or 0),
+                    'total_bets': p.total_bets,
+                    'streak': p.streak,
+                    'trend': p.trend,
+                }
+                for p in participants
+            ],
+            'updated': True
+        })
+    
+    return render(request, 'pools/pool_ranking.html', context)
 
 @login_required
 def weekly_ranking(request, slug):
@@ -570,7 +1167,7 @@ def weekly_ranking(request, slug):
     users_dict = {}
     for bet in weekly_bets:
         if bet['user'] not in users_dict:
-            user = CustomUser.objects.get(id=bet['user'])
+            user = User.objects.get(id=bet['user'])
             users_dict[bet['user']] = {
                 'user': user,
                 'weekly_points': bet['weekly_points'],
@@ -752,89 +1349,111 @@ def decline_invitation(request, code):
     return redirect('home')
 
 def criar_bolao_brasileirao(request):
-    # Obter o campeonato brasileiro mais recente
-    try:
-        brasileirao = Campeonato.objects.filter(nome__icontains='Brasileiro').latest('temporada')
-    except Campeonato.DoesNotExist:
-        messages.error(request, "Campeonato Brasileiro não encontrado no sistema.")
-        return redirect('pools:create')
-    
-    if request.method == 'POST':
-        form = PoolForm(request.POST, request.FILES)
-        if form.is_valid():
-            bolao = form.save(commit=False)
-            bolao.owner = request.user
-            bolao.campeonato = brasileirao
-            bolao.importar_jogos_automaticamente = True
-            bolao.save()
-            form.save_m2m()  # Salva relações ManyToMany
-            
-            # Importar jogos automaticamente
-            num_jogos = bolao.importar_jogos_do_campeonato()
-            
-            messages.success(request, f"Bolão do Brasileirão criado com sucesso! {num_jogos} jogos importados.")
-            return redirect('pools:detail', slug=bolao.slug)
-    else:
-        # Formulário pré-preenchido para o Brasileirão
-        form = PoolForm(initial={
-            'name': f'Brasileirão {brasileirao.temporada}',
-            'description': f'Bolão do Campeonato Brasileiro {brasileirao.temporada}',
-            'entry_fee': 50.00,  # Valor sugerido
-            'sport': Sport.objects.get(name='Futebol')
-        })
-    
-    return render(request, 'pools/criar_bolao_brasileirao.html', {
-        'form': form,
-        'campeonato': brasileirao
-    })
+    # Funcionalidade desabilitada temporariamente
+    messages.error(request, "Funcionalidade temporariamente indisponível.")
+    return redirect('pools:create')
 
 def create_tournament_pool(request, tournament_slug):
     """Cria um bolão para um torneio específico"""
-    
-    tournament = get_object_or_404(Tournament, slug=tournament_slug)
-    
-    if request.method == 'POST':
-        form = PoolForm(request.POST, request.FILES)
-        if form.is_valid():
-            pool = form.save(commit=False)
-            pool.owner = request.user
-            pool.tournament = tournament
-            pool.import_matches_automatically = form.cleaned_data.get('import_matches_automatically', True)
-            
-            # Configurar sistema de pontuação
-            pool.exact_score_points = form.cleaned_data.get('exact_score_points', 10)
-            pool.correct_difference_points = form.cleaned_data.get('correct_difference_points', 5)
-            pool.correct_winner_points = form.cleaned_data.get('correct_winner_points', 3)
-            pool.wrong_points = form.cleaned_data.get('wrong_points', 0)
-            
-            pool.save()
-            form.save_m2m()
-            
-            # Importar jogos se configurado
-            matches_imported = 0
-            if pool.import_matches_automatically:
-                matches_imported = pool.import_tournament_matches()
-            
-            messages.success(
-                request, 
-                f"Bolão {pool.name} criado com sucesso! {matches_imported} jogos importados."
-            )
-            return redirect('pools:detail', slug=pool.slug)
+    # Funcionalidade desabilitada temporariamente
+    # O parâmetro tournament_slug não é usado nesta implementação simplificada
+    _ = tournament_slug  # Evita warning de variável não utilizada
+    messages.error(request, "Funcionalidade temporariamente indisponível.")
+    return redirect('pools:create')
+
+
+@login_required
+def test_bet_form(request, match_id=None, pool_id=None):
+    """
+    View de teste para o formulário de apostas aprimorado
+    """
+    # Se não foi fornecido match_id, pegar uma partida de exemplo
+    if match_id:
+        match = get_object_or_404(Match, id=match_id)
     else:
-        # Formulário pré-preenchido
-        form = PoolForm(initial={
-            'name': f"{tournament.name} {tournament.season}",
-            'description': f"Bolão do {tournament.name} {tournament.season}",
-            'entry_fee': 50.00,  # Valor sugerido
-            'sport': tournament.sport,
-            'import_matches_automatically': True,
-            'exact_score_points': 10,
-            'correct_difference_points': 5,
-            'correct_winner_points': 3,
-            'wrong_points': 0,
-        })
+        # Pegar uma partida futura para teste
+        match = Match.objects.filter(
+            start_time__gte=timezone.now(),
+            finished=False
+        ).first()
+        
+        if not match:
+            # Se não há partidas futuras, usar uma existente para demonstração
+            match = Match.objects.first()
+            if match:
+                # Ajustar data para futuro
+                match.start_time = timezone.now() + timedelta(hours=24)
+                match.finished = False
+                match.save()
     
-    return render(request, 'pools/create_tournament_pool.html', {
+    # Pool opcional para teste
+    pool = None
+    if pool_id:
+        pool = get_object_or_404(Pool, id=pool_id)
+    
+    # Verificar se o usuário já tem uma aposta nesta partida
+    existing_bet = None
+    if pool and match:
+        try:
+            existing_bet = Bet.objects.get(
+                user=request.user,
+                match=match,
+                participation__pool=pool
+            )
+        except Bet.DoesNotExist:
+            pass
+    
+    if request.method == 'POST' and match:
+        form = BetForm(
+            request.POST, 
+            instance=existing_bet,
+            match=match,
+            pool=pool,
+            user=request.user
+        )
+        
+        if form.is_valid():
+            bet = form.save(commit=False)
+            bet.user = request.user
+            bet.match = match
+            
+            # Se há um pool, associar à participação
+            if pool:
+                try:
+                    participation = Participation.objects.get(
+                        user=request.user,
+                        pool=pool
+                    )
+                    bet.participation = participation
+                except Participation.DoesNotExist:
+                    messages.error(request, 'Você precisa participar do bolão primeiro.')
+                    return redirect('pools:pool_detail', pool_id=pool.id)
+            
+            bet.save()
+            
+            if existing_bet:
+                messages.success(request, '✅ Aposta atualizada com sucesso!')
+            else:
+                messages.success(request, '🎉 Aposta realizada com sucesso!')
+            
+            # Redirecionar para o dashboard
+            return redirect('pools:dashboard')
+        else:
+            messages.error(request, '❌ Erro ao processar a aposta. Verifique os dados.')
+    else:
+        form = BetForm(
+            instance=existing_bet,
+            match=match,
+            pool=pool,
+            user=request.user
+        ) if match else None
+    
+    context = {
         'form': form,
-        'tournament': tournament
-    })
+        'match': match,
+        'pool': pool,
+        'existing_bet': existing_bet,
+        'now': timezone.now(),
+    }
+    
+    return render(request, 'pools/bet_form_simple.html', context)

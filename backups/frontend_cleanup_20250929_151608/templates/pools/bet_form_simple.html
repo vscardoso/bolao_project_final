@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
+    <meta http-equiv="Permissions-Policy" content="service-worker=()">
+    <title>Teste - Formulário de Apostas</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS do Formulário de Apostas -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/bet_form.css' %}">
+    
+    <!-- Browser Compatibility -->
+    <script src="{% static 'js/compatibility.js' %}"></script>>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .container-fluid {
+            max-width: 1200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header da Página -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0">
+                        <i class="fas fa-futbol me-3"></i>
+                        Formulário de Apostas
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75">Sistema aprimorado de apostas em tempo real</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <a href="/pools/dashboard/" class="back-btn">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Voltar ao Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="container-fluid">
+        {% if messages %}
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-8">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {% if not match %}
+                <!-- Mensagem de Erro -->
+                <div class="bet-form-container">
+                    <div class="bet-form-card text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                        </div>
+                        <h3 class="text-muted mb-3">Nenhuma Partida Disponível</h3>
+                        <p class="text-muted mb-4">
+                            Não há partidas disponíveis para apostas no momento. 
+                            Isso pode acontecer quando:
+                        </p>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Todas as partidas já foram finalizadas</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Não há partidas futuras cadastradas</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Sistema em manutenção</li>
+                        </ul>
+                        <div class="mt-4">
+                            <a href="/pools/dashboard/" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>
+                                Ir para o Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Container do Formulário de Aposta -->
+                <div class="bet-form-container">
+                    <div class="bet-form-card">
+                        <!-- Título -->
+                        <h2 class="bet-form-title">
+                            <i class="fas fa-futbol"></i>
+                            Fazer Aposta
+                        </h2>
+                        
+                        <!-- Informações da Partida -->
+                        <div class="match-info mb-4">
+                            <div class="text-center mb-3">
+                                <h5 class="text-muted">{{ match.competition.name|default:"Competição" }}</h5>
+                                <p class="text-muted mb-1">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ match.start_time|date:"d/m/Y"|default:"Data não definida" }}
+                                </p>
+                                <p class="text-muted">
+                                    <i class="fas fa-clock"></i>
+                                    {{ match.start_time|time:"H:i"|default:"Horário não definido" }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Cronômetro (se a partida não começou) -->
+                        {% if match and not match.finished and match.start_time > now %}
+                        <div class="countdown-container">
+                            <h6><i class="fas fa-hourglass-half"></i> Tempo restante para apostar</h6>
+                            <div class="countdown-timer" data-match-time="{{ match.start_time|date:'c' }}">
+                                <div class="countdown-item">
+                                    <span class="countdown-number days">00</span>
+                                    <small class="countdown-label">Dias</small>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-number hours">00</span>
+                                    <small class="countdown-label">Horas</small>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-number minutes">00</span>
+                                    <small class="countdown-label">Min</small>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-number seconds">00</span>
+                                    <small class="countdown-label">Seg</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Formulário de Aposta -->
+                        {% if form %}
+                        <form method="post" class="bet-form" novalidate>
+                            {% csrf_token %}
+                            
+                            <!-- Container dos Times -->
+                            <div class="teams-container">
+                                <!-- Time da Casa -->
+                                <div class="team-section">
+                                    <div class="team-logo">
+                                        {{ match.home_team.name|first|default:"H" }}
+                                    </div>
+                                    <h6 class="team-name home">{{ match.home_team.name|default:"Time da Casa" }}</h6>
+                                    <small class="text-muted">(Casa)</small>
+                                    
+                                    <div class="mb-3 mt-3">
+                                        <label for="{{ form.home_score_bet.id_for_label }}" class="form-label">
+                                            {{ form.home_score_bet.label }}
+                                        </label>
+                                        {{ form.home_score_bet }}
+                                        {% if form.home_score_bet.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.home_score_bet.errors.0 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- VS -->
+                                <div class="vs-separator">
+                                    VS
+                                </div>
+                                
+                                <!-- Time Visitante -->
+                                <div class="team-section">
+                                    <div class="team-logo">
+                                        {{ match.away_team.name|first|default:"A" }}
+                                    </div>
+                                    <h6 class="team-name away">{{ match.away_team.name|default:"Time Visitante" }}</h6>
+                                    <small class="text-muted">(Visitante)</small>
+                                    
+                                    <div class="mb-3 mt-3">
+                                        <label for="{{ form.away_score_bet.id_for_label }}" class="form-label">
+                                            {{ form.away_score_bet.label }}
+                                        </label>
+                                        {{ form.away_score_bet }}
+                                        {% if form.away_score_bet.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.away_score_bet.errors.0 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Erros Gerais do Formulário -->
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger mt-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {% for error in form.non_field_errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Total de Gols (será preenchido pelo JavaScript) -->
+                            <div id="total-goals"></div>
+                            
+                            <!-- Análise de Predição (será preenchida pelo JavaScript) -->
+                            <div id="prediction-analysis"></div>
+                            
+                            <!-- Botão de Envio -->
+                            <div class="text-center mt-4">
+                                {% if match.finished %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        Esta partida já terminou. Não é possível fazer apostas.
+                                    </div>
+                                {% elif match.start_time <= now %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-clock"></i>
+                                        Esta partida já começou. Não é possível fazer apostas.
+                                    </div>
+                                {% else %}
+                                    <button type="submit" class="btn btn-submit-bet btn-lg">
+                                        <i class="fas fa-check-circle"></i>
+                                        Confirmar Aposta
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Formulário não disponível no momento.
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Informações Adicionais -->
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <h6><i class="fas fa-info-circle text-info"></i> Informações Importantes</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="fas fa-check text-success"></i> Apostas podem ser feitas até o início da partida</li>
+                                <li><i class="fas fa-check text-success"></i> Você pode alterar sua aposta antes do prazo</li>
+                                <li><i class="fas fa-check text-success"></i> Placares devem ser números inteiros de 0 a 20</li>
+                                <li><i class="fas fa-check text-success"></i> Resultados são atualizados automaticamente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript do Formulário -->
+    <script src="{% static 'js/bet_form.js' %}"></script>
+    
+    <script>
+        // Configurações específicas para esta página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focar no primeiro campo ao carregar
+            const firstInput = document.querySelector('.score-input');
+            if (firstInput && !firstInput.disabled) {
+                setTimeout(() => firstInput.focus(), 500);
+            }
+            
+            // Adicionar informações da partida ao contexto
+            {% if match %}
+            window.matchInfo = {
+                homeTeam: '{{ match.home_team.name|escapejs }}',
+                awayTeam: '{{ match.away_team.name|escapejs }}',
+                startTime: '{{ match.start_time|date:"c" }}',
+                competition: '{{ match.competition.name|escapejs }}'
+            };
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

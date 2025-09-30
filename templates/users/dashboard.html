@@ -3,367 +3,507 @@
 
 {% block title %}Dashboard | Bolão Online{% endblock %}
 
-{% block content %}
-<div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="h3 mb-0">Olá, {{ user.username }}!</h1>
-            <p class="text-muted">Bem-vindo ao seu painel de controle.</p>
-        </div>
-        <div class="col-md-4 text-md-end">
-            <div class="btn-group">
-                <!-- Vinculando à criação de bolão -->
-                <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-2"></i> Criar Bolão
-                </a>
-                <!-- Vinculando à descoberta de bolões -->
-                <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-search me-2"></i> Descobrir Bolões
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cards de informações -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-3">
-            <div class="card border-0 bg-primary text-white shadow-sm h-100">
-                <div class="card-body text-center py-4">
-                    <div class="display-4 mb-2">{{ total_pools }}</div>
-                    <h5 class="card-title mb-0">Total de Bolões</h5>
-                </div>
-                <div class="card-footer bg-primary-dark border-0 py-3">
-                    <!-- Vinculando à listagem de bolões -->
-                    <a href="{% url 'pools:list' %}" class="text-white d-block">
-                        Ver todos <i class="fas fa-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Mais cards aqui... -->
-        
-        <div class="col-md-3">
-            <div class="card border-0 bg-warning text-dark shadow-sm h-100">
-                <div class="card-body text-center py-4">
-                    <div class="display-4 mb-2">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <h5 class="card-title mb-0">Convites</h5>
-                </div>
-                <div class="card-footer bg-warning-dark border-0 py-3">
-                    <!-- Vinculando à gestão de convites -->
-                    <a href="{% url 'pools:all_invitations' %}" class="text-dark d-block">
-                        Gerenciar <i class="fas fa-arrow-right ms-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gerenciar Bolões -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="card-title m-0">Gerenciar Bolões</h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 bg-light border-0 text-center">
-                        <div class="card-body d-flex flex-column">
-                            <div class="icon-circle bg-primary text-white mx-auto mb-3">
-                                <i class="fas fa-list"></i>
-                            </div>
-                            <h6>Meus Bolões</h6>
-                            <p class="text-muted small mb-3">Acesse todos os seus bolões</p>
-                            <a href="{% url 'pools:list' %}" class="btn btn-sm btn-primary mt-auto">Acessar</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 bg-light border-0 text-center">
-                        <div class="card-body d-flex flex-column">
-                            <div class="icon-circle bg-success text-white mx-auto mb-3">
-                                <i class="fas fa-plus"></i>
-                            </div>
-                            <h6>Criar Bolão</h6>
-                            <p class="text-muted small mb-3">Monte um novo bolão</p>
-                            <a href="{% url 'pools:create' %}" class="btn btn-sm btn-success mt-auto">Criar</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 bg-light border-0 text-center">
-                        <div class="card-body d-flex flex-column">
-                            <div class="icon-circle bg-info text-white mx-auto mb-3">
-                                <i class="fas fa-compass"></i>
-                            </div>
-                            <h6>Descobrir</h6>
-                            <p class="text-muted small mb-3">Encontre bolões para participar</p>
-                            <a href="{% url 'pools:discover' %}" class="btn btn-sm btn-info mt-auto">Explorar</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="card h-100 bg-light border-0 text-center">
-                        <div class="card-body d-flex flex-column">
-                            <div class="icon-circle bg-warning text-white mx-auto mb-3">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <h6>Convites</h6>
-                            <p class="text-muted small mb-3">Gerenciar seus convites</p>
-                            <a href="{% url 'pools:all_invitations' %}" class="btn btn-sm btn-warning mt-auto">Ver</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <style>
-    .icon-circle {
-        width: 50px;
-        height: 50px;
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    .gradient-card {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+    }
+    
+    .gradient-success {
+        background: var(--success-gradient);
+    }
+    
+    .gradient-warning {
+        background: var(--warning-gradient);
+    }
+    
+    .gradient-info {
+        background: var(--info-gradient);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+        animation: countUp 1s ease-out;
+    }
+    
+    @keyframes countUp {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    
+    .card-hover {
+        transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    
+    .match-card {
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .match-card:hover {
+        border-left-color: #764ba2;
+        background-color: #f8f9fa;
+    }
+    
+    .ranking-position {
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-weight: bold;
+        color: white;
     }
-    </style>
+    
+    .ranking-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #000; }
+    .ranking-2 { background: linear-gradient(135deg, #c0c0c0, #e6e6e6); color: #000; }
+    .ranking-3 { background: linear-gradient(135deg, #cd7f32, #daa520); }
+    .ranking-other { background: linear-gradient(135deg, #6c757d, #495057); }
+    
+    .performance-chart {
+        height: 300px;
+    }
+</style>
+{% endblock %}
 
-    <!-- Bolões que participa -->
-    <div class="card border-0 shadow-sm mb-5">
-        <div class="card-header bg-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0">Meus Bolões</h2>
-                <!-- Vinculando à lista completa -->
-                <a href="{% url 'pools:list' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            {% if participating_pools %}
-            <div class="list-group list-group-flush">
-                {% for pool in participating_pools %}
-                <div class="list-group-item list-group-item-action p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-1">{{ pool.name }}</h5>
-                            <p class="text-muted small mb-0">{{ pool.competition.name }}</p>
-                        </div>
-                        <div class="btn-group btn-group-sm">
-                            <!-- Vinculando ao detalhe do bolão -->
-                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary">
-                                <i class="fas fa-eye me-1"></i> Detalhes
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="text-center py-5">
-                <img src="{% static 'img/empty-pools.svg' %}" alt="Nenhum bolão" class="img-fluid mb-3" style="max-width: 150px;">
-                <h4>Você ainda não participa de nenhum bolão</h4>
-                <p class="text-muted mb-3">Crie seu próprio bolão ou participe de bolões existentes.</p>
-                <div class="d-flex justify-content-center gap-2">
-                    <!-- Vinculando à criação e descoberta -->
-                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle me-2"></i> Criar Bolão
-                    </a>
-                    <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary">
-                        <i class="fas fa-search me-2"></i> Descobrir Bolões
-                    </a>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
+{% block content %}
+<!-- Breadcrumb -->
+<div class="container-fluid py-3 bg-light">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+        </ol>
+    </nav>
+</div>
 
-    <!-- Bolões que você criou -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3">
-            <div class="d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
-                <!-- Título à esquerda -->
-                <h2 class="h5 mb-md-0">Bolões que você criou</h2>
-                
-                <!-- Barra de pesquisa no centro -->
-                <div class="position-relative flex-grow-1 mx-md-3" style="max-width: 400px;">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-light border-end-0">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" id="poolSearchInput" class="form-control border-start-0" 
-                               placeholder="Pesquisar bolão...">
-                        <button type="button" id="clearSearchBtn" class="btn btn-outline-secondary" 
-                                style="display: none;">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Botão à direita -->
-                <a href="{% url 'pools:create' %}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-plus me-1"></i> Novo bolão
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="h2 mb-1">Olá, {{ user.first_name|default:user.username }}! 👋</h1>
+            <p class="text-muted mb-0">Bem-vindo ao seu painel de controle. Aqui está um resumo das suas atividades.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <div class="btn-group" role="group">
+                <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i> Criar Bolão
+                </a>
+                <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-search me-2"></i> Descobrir
                 </a>
             </div>
         </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-4 col-md-6">
+            <div class="card gradient-card card-hover h-100">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-trophy fa-2x opacity-75 me-3"></i>
+                        <div>
+                            <div class="stat-number">{{ total_pools }}</div>
+                            <h5 class="card-title mb-0">Bolões Ativos</h5>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="fs-5 fw-bold">{{ owned_pools }}</div>
+                            <small class="opacity-75">Criados</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="fs-5 fw-bold">{{ joined_pools }}</div>
+                            <small class="opacity-75">Participando</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        <div class="card-body p-3">
-            {% if owned_pools %}
-                
-                <!-- Área com rolagem interna -->
-                <div class="scrollable-pools-container">
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2" id="poolsContainer">
-                        {% for pool in owned_pools %}
-                        <div class="col pool-item" data-pool-name="{{ pool.name|lower }}" data-competition="{{ pool.competition.name|lower }}">
-                            <div class="card h-100 border-light">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between">
-                                        <h6 class="card-title mb-1 text-truncate">{{ pool.name }}</h6>
-                                        <span class="badge bg-{% if pool.is_public %}success{% else %}secondary{% endif %} rounded-pill">
-                                            {% if pool.is_public %}Público{% else %}Privado{% endif %}
-                                        </span>
+        <div class="col-lg-4 col-md-6">
+            <div class="card gradient-success card-hover h-100">
+                <div class="card-body text-center text-white">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-chart-line fa-2x opacity-75 me-3"></i>
+                        <div>
+                            <div class="stat-number">{{ total_points }}</div>
+                            <h5 class="card-title mb-0">Pontos Totais</h5>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="fs-5 fw-bold">{{ accuracy_rate }}%</div>
+                            <small class="opacity-75">Precisão</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="fs-5 fw-bold">{{ correct_bets }}</div>
+                            <small class="opacity-75">Acertos</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6">
+            <div class="card gradient-warning card-hover h-100">
+                <div class="card-body text-center text-white">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-futbol fa-2x opacity-75 me-3"></i>
+                        <div>
+                            <div class="stat-number">{{ total_bets }}</div>
+                            <h5 class="card-title mb-0">Apostas Feitas</h5>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="fs-5 fw-bold">{{ upcoming_matches|length }}</div>
+                            <small class="opacity-75">Próximos</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="fs-5 fw-bold">{{ active_pools|length }}</div>
+                            <small class="opacity-75">Em Andamento</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Próximas Partidas -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-calendar-alt text-primary me-2"></i>
+                            Próximas Partidas
+                        </h5>
+                        <span class="badge bg-primary">{{ upcoming_matches|length }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if upcoming_matches %}
+                        <div class="list-group list-group-flush">
+                            {% for match in upcoming_matches %}
+                            <div class="list-group-item match-card p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold small text-primary">{{ match.pool.name }}</div>
+                                        <div class="small text-muted">
+                                            {% if match.home_team and match.away_team %}
+                                                {{ match.home_team.name }} vs {{ match.away_team.name }}
+                                            {% else %}
+                                                Partida {{ match.id }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="small text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ match.start_time|date:"d/m H:i" }}
+                                        </div>
                                     </div>
-                                    <p class="text-muted small mb-2">{{ pool.competition.name }}</p>
-                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                        <small class="text-muted"><i class="fas fa-users me-1"></i> {{ pool.participants.count }}</small>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-eye me-1"></i> Ver
-                                            </a>
-                                            <a href="{% url 'pools:update' pool.slug %}" class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-edit me-1"></i> Editar
-                                            </a>
+                                    <div class="text-end">
+                                        <a href="{% url 'pools:detail' match.pool.slug %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhuma partida programada</p>
+                            <small class="text-muted">para os próximos 7 dias</small>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{% url 'pools:list' %}" class="btn btn-sm btn-primary w-100">
+                        Ver Todos os Bolões
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ranking Atual -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-medal text-warning me-2"></i>
+                        Meu Ranking
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user_rankings %}
+                        {% for ranking in user_rankings %}
+                        <div class="d-flex align-items-center mb-3 p-2 rounded">
+                            <div class="ranking-position 
+                                {% if ranking.position == 1 %}ranking-1
+                                {% elif ranking.position == 2 %}ranking-2
+                                {% elif ranking.position == 3 %}ranking-3
+                                {% else %}ranking-other{% endif %} me-3">
+                                {% if ranking.position != '-' %}{{ ranking.position }}º{% else %}-{% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">{{ ranking.pool.name }}</div>
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>
+                                    {{ ranking.total_participants }} participantes
+                                </small>
+                            </div>
+                            <a href="{% url 'pools:ranking' ranking.pool.slug %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-list"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">Nenhum ranking disponível</p>
+                            <small class="text-muted">Participe de bolões para ver sua posição</small>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{% url 'pools:discover' %}" class="btn btn-sm btn-warning w-100">
+                        <i class="fas fa-search me-2"></i>Encontrar Bolões
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Performance -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area text-success me-2"></i>
+                        Performance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="performance-chart">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="fw-bold text-success">{{ total_points }}</div>
+                            <small class="text-muted">Pontos</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold text-primary">{{ accuracy_rate }}%</div>
+                            <small class="text-muted">Precisão</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold text-warning">{{ total_bets }}</div>
+                            <small class="text-muted">Apostas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bolões Ativos -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-trophy text-primary me-2"></i>
+                            Meus Bolões Ativos
+                        </h5>
+                        <a href="{% url 'pools:list' %}" class="btn btn-sm btn-outline-primary">
+                            Ver Todos
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if active_pools %}
+                        <div class="row g-3">
+                            {% for pool in active_pools %}
+                            <div class="col-lg-4 col-md-6">
+                                <div class="card border card-hover">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0">{{ pool.name }}</h6>
+                                            <span class="badge bg-{% if pool.visibility == 'public' %}success{% else %}secondary{% endif %}">
+                                                {{ pool.get_visibility_display }}
+                                            </span>
+                                        </div>
+                                        <p class="text-muted small mb-2">
+                                            {% if pool.competition %}{{ pool.competition.name }}{% else %}Competição{% endif %}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="fas fa-users me-1"></i>
+                                                {{ pool.participants.count }} participantes
+                                            </small>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if pool.owner == user %}
+                                                <a href="{% url 'pools:update' pool.slug %}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                    
-                    <!-- Mensagem quando não há resultados -->
-                    <div id="noResultsMessage" class="text-center py-4" style="display: none;">
-                        <p class="text-muted">Nenhum bolão encontrado com esse nome.</p>
-                        <button id="resetSearchBtn" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-sync-alt me-1"></i> Mostrar todos
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Contador de bolões no rodapé -->
-                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                    <small class="text-muted">
-                        <span id="visiblePoolsCount">{{ owned_pools.count }}</span> de {{ owned_pools.count }} bolão(ões)
-                    </small>
-                    {% if owned_pools.count > 6 %}
-                    <a href="{% url 'pools:list' %}?filter=created" class="btn btn-sm btn-link">Ver todos</a>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-trophy fa-4x text-muted mb-4"></i>
+                            <h4>Nenhum bolão ativo</h4>
+                            <p class="text-muted mb-4">Crie seu primeiro bolão ou participe de bolões existentes.</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'pools:create' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle me-2"></i> Criar Bolão
+                                </a>
+                                <a href="{% url 'pools:discover' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-search me-2"></i> Descobrir Bolões
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
-                
-                <!-- JavaScript para filtrar bolões -->
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Declaração de variável aqui é válida
-                        const totalPools = parseInt('{{ owned_pools.count|default:0 }}') || 0;
-                        
-                        const searchInput = document.getElementById('poolSearchInput');
-                        const clearBtn = document.getElementById('clearSearchBtn');
-                        const resetBtn = document.getElementById('resetSearchBtn');
-                        const poolItems = document.querySelectorAll('.pool-item');
-                        const noResultsMsg = document.getElementById('noResultsMessage');
-                        const visiblePoolsCount = document.getElementById('visiblePoolsCount');
-                        
-                        // Função para filtrar os bolões
-                        function filterPools() {
-                            const searchTerm = searchInput.value.toLowerCase().trim();
-                            let visibleCount = 0;
-                            
-                            // Mostrar/esconder o botão de limpar
-                            clearBtn.style.display = searchTerm ? 'block' : 'none';
-                            
-                            // Filtrar cada item
-                            poolItems.forEach(item => {
-                                const poolName = item.dataset.poolName;
-                                const competition = item.dataset.competition;
-                                const matchesSearch = poolName.includes(searchTerm) || 
-                                                    competition.includes(searchTerm);
-                                
-                                item.style.display = matchesSearch ? '' : 'none';
-                                
-                                if (matchesSearch) {
-                                    visibleCount++;
-                                }
-                            });
-                            
-                            // Atualizar contador
-                            visiblePoolsCount.textContent = visibleCount;
-                            
-                            // Mostrar mensagem de "nenhum resultado" se necessário
-                            noResultsMsg.style.display = (visibleCount === 0 && searchTerm) ? 'block' : 'none';
-                        }
-                        
-                        // Event listeners
-                        searchInput.addEventListener('input', filterPools);
-                        
-                        clearBtn.addEventListener('click', function() {
-                            searchInput.value = '';
-                            filterPools();
-                            searchInput.focus();
-                        });
-                        
-                        resetBtn.addEventListener('click', function() {
-                            searchInput.value = '';
-                            filterPools();
-                        });
-                    });
-                </script>
-                
-            {% else %}
-                <div class="text-center py-4">
-                    <p class="text-muted">Você ainda não criou nenhum bolão.</p>
-                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle me-2"></i> Criar meu primeiro bolão
-                    </a>
-                </div>
-            {% endif %}
+            </div>
         </div>
     </div>
-
-    <!-- Estilos adicionais -->
-    <style>
-    .scrollable-pools-container {
-        max-height: 400px;
-        overflow-y: auto;
-        overflow-x: hidden; /* Impedir rolagem horizontal */
-        padding-right: 5px; /* Espaço para a barra de rolagem */
-    }
-
-    /* Estilizando a barra de rolagem */
-    .scrollable-pools-container::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .scrollable-pools-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-
-    .scrollable-pools-container::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 10px;
-    }
-
-    .scrollable-pools-container::-webkit-scrollbar-thumb:hover {
-        background: #a0a0a0;
-    }
-
-    /* Estilo para o campo de pesquisa */
-    #poolSearchInput:focus {
-        box-shadow: none;
-        border-color: var(--bs-primary);
-    }
-    </style>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dados de performance do Django
+    const performanceData = {{ performance_data|safe }};
+    
+    if (performanceData && performanceData.length > 0) {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: performanceData.map(item => item.match),
+                datasets: [{
+                    label: 'Pontos Acumulados',
+                    data: performanceData.map(item => item.cumulative),
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                }, {
+                    label: 'Pontos por Jogo',
+                    data: performanceData.map(item => item.points),
+                    borderColor: '#764ba2',
+                    backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointBackgroundColor: '#764ba2',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                elements: {
+                    point: {
+                        hoverRadius: 8
+                    }
+                }
+            }
+        });
+    } else {
+        // Se não há dados, mostrar mensagem
+        document.getElementById('performanceChart').style.display = 'none';
+        document.querySelector('.performance-chart').innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-0">Dados insuficientes</p>
+                <small class="text-muted">Faça algumas apostas para ver seu gráfico</small>
+            </div>
+        `;
+    }
+    
+    // Animação para os números das estatísticas
+    const statNumbers = document.querySelectorAll('.stat-number');
+    statNumbers.forEach(number => {
+        const targetValue = parseInt(number.textContent);
+        if (targetValue > 0) {
+            let currentValue = 0;
+            const increment = targetValue / 20;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= targetValue) {
+                    currentValue = targetValue;
+                    clearInterval(timer);
+                }
+                number.textContent = Math.floor(currentValue);
+            }, 50);
+        }
+    });
+});
+</script>
 {% endblock %}

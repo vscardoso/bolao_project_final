@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <!-- Service Worker Blocker - DEVE SER O PRIMEIRO SCRIPT -->
+    {% load static %}
+    <script src="{% static 'js/sw-blocker.js' %}"></script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Permissions-Policy" content="service-worker=()">
+    <meta name="design-system" content="modern">
+    <title>{% block title %}Bolão Online - A Nova Era dos Palpites{% endblock %}</title>
+    
+    <!-- Fonts Modernos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons Modernos -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Sistema de Design Moderno -->
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    
+    <!-- CSS Adicional -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- JavaScript Base -->
+    <script>
+        // Configurações globais
+        window.BOLAO_CONFIG = {
+            DEBUG: true,
+            API_BASE_URL: '/api/',
+            WEBSOCKET_URL: 'ws://localhost:8080/ws/',
+            THEME: 'modern'
+        };
+    </script>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Redirecionamento para a nova home -->
+    <script>
+        // Se estiver na home antiga, redirecionar para a nova
+        if (window.location.pathname === '/' && !window.location.search.includes('modern=false')) {
+            // Aguardar carregamento completo e então inicializar
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
+        }
+    </script>
+    
+    <!-- Conteúdo será renderizado pelo template específico -->
+    {% block content %}
+        <!-- Fallback para templates antigos -->
+        <div class="container mx-auto px-4 py-20 text-center">
+            <div class="max-w-2xl mx-auto">
+                <div class="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-content mx-auto mb-6">
+                    <i data-lucide="trophy" class="w-8 h-8 text-white mx-auto"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                    Bolão Online
+                </h1>
+                <p class="text-xl text-gray-600 mb-8">
+                    A nova era dos palpites esportivos está chegando!
+                </p>
+                <a href="{% url 'core:home' %}" class="btn-primary-modern btn-lg-modern">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    Ir para Home
+                </a>
+            </div>
+        </div>
+    {% endblock %}
+    
+    <script>
+        // Inicializar Lucide icons
+        if (typeof lucide !== 'undefined') {
+            document.addEventListener('DOMContentLoaded', function() {
+                lucide.createIcons();
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

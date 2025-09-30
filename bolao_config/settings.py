@@ -177,7 +177,7 @@ INTERNAL_IPS = [
 ]
 
 # Chave da API Football-Data.org
-FOOTBALL_DATA_API_KEY = config('FOOTBALL_DATA_API_KEY')
+FOOTBALL_API_KEY = config('FOOTBALL_API_KEY', default='')
 
 # ========================================
 # CONFIGURAÇÕES DE SEGURANÇA (Produção)

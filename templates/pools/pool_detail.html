@@ -1,443 +1,1253 @@
-{% extends 'pools/base_pools.html' %}
+{% extends 'base.html' %}
 {% load static %}
+{% load pool_extras %}
 
 {% block title %}{{ pool.name }} | Bolão Online{% endblock %}
 
-{% block pool_content %}
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
-        <div>
-            <h1 class="h3 mb-0">{{ pool.name }}</h1>
-            <div class="small d-flex align-items-center">
-                <span class="badge bg-light text-dark me-2">{{ pool.get_visibility_display }}</span>
-                <span class="badge {% if pool.status == 'open' %}bg-success{% elif pool.status == 'locked' %}bg-warning text-dark{% else %}bg-secondary{% endif %} me-2">
-                    {{ pool.get_status_display }}
-                </span>
-                <span class="me-2">•</span>
-                <span>Criado por: {{ pool.owner.username }}</span>
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --info-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --gold: #FFD700;
+        --silver: #C0C0C0;
+        --bronze: #CD7F32;
+    }
+    
+    /* Header com Cover Image */
+    .pool-header {
+        position: relative;
+        height: 300px;
+        background: var(--primary-gradient);
+        border-radius: 20px 20px 0 0;
+        overflow: hidden;
+        color: white;
+    }
+    
+    .pool-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+        z-index: 1;
+    }
+    
+    .pool-header-content {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .pool-logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .pool-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .pool-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+    }
+    
+    .pool-stats-header {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .pool-stat-item {
+        text-align: center;
+    }
+    
+    .pool-stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: block;
+    }
+    
+    .pool-stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    
+    /* Navigation Tabs */
+    .nav-tabs {
+        border-bottom: 3px solid #e9ecef;
+        margin-bottom: 2rem;
+        background: white;
+        border-radius: 15px 15px 0 0;
+        overflow: hidden;
+    }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        padding: 1rem 1.5rem;
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: #667eea;
+        background: #f8f9fa;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #667eea;
+        background: transparent;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .nav-tabs .nav-link i {
+        margin-right: 0.5rem;
+    }
+    
+    /* Tab Content */
+    .tab-content {
+        background: white;
+        border-radius: 0 0 15px 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    /* Ranking Table */
+    .ranking-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .ranking-table .table {
+        margin-bottom: 0;
+    }
+    
+    .ranking-table .table thead {
+        background: var(--primary-gradient);
+        color: white;
+    }
+    
+    .ranking-table .table thead th {
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+    }
+    
+    .ranking-table .table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .ranking-table .table tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+    }
+    
+    .ranking-table .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-color: #f1f3f4;
+    }
+    
+    .position-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: white;
+    }
+    
+    .position-badge.gold {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+    }
+    
+    .position-badge.silver {
+        background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+    }
+    
+    .position-badge.bronze {
+        background: linear-gradient(135deg, #CD7F32, #B8860B);
+    }
+    
+    .position-badge.other {
+        background: linear-gradient(135deg, #6c757d, #495057);
+    }
+    
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 1rem;
+    }
+    
+    .user-info h6 {
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .user-info small {
+        color: #6c757d;
+    }
+    
+    /* Timeline de Partidas */
+    .timeline-custom {
+        position: relative;
+    }
+    
+    .timeline-custom::before {
+        content: '';
+        position: absolute;
+        left: 30px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding: 1.5rem 0 1.5rem 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 24px;
+        top: 2rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #667eea;
+        border: 3px solid white;
+        box-shadow: 0 0 0 3px #e9ecef;
+    }
+    
+    .timeline-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+    }
+    
+    .timeline-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .match-teams {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .match-info {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .match-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    /* Progress Bars */
+    .progress-custom {
+        height: 8px;
+        border-radius: 10px;
+        background: #e9ecef;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+    
+    .progress-custom .progress-bar {
+        background: var(--primary-gradient);
+        transition: width 1s ease-in-out;
+    }
+    
+    /* Floating Action Button */
+    .floating-bet-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+    
+    .floating-bet-btn:hover {
+        transform: scale(1.1);
+        color: white;
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    }
+    
+    /* Modal Customization */
+    .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .bet-form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .bet-input {
+        width: 80px;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .bet-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .vs-separator {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin: 0 1rem;
+    }
+    
+    /* Loading States */
+    .loading-spinner {
+        display: none;
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 8px;
+    }
+    
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .pool-header {
+            height: 250px;
+        }
+        
+        .pool-title {
+            font-size: 2rem;
+        }
+        
+        .pool-stats-header {
+            gap: 1rem;
+        }
+        
+        .pool-stat-number {
+            font-size: 1.4rem;
+        }
+        
+        .nav-tabs .nav-link {
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .tab-content {
+            padding: 1rem;
+        }
+        
+        .floating-bet-btn {
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+        
+        .timeline-item {
+            padding-left: 3rem;
+        }
+        
+        .timeline-custom::before {
+            left: 20px;
+        }
+        
+        .timeline-item::before {
+            left: 14px;
+        }
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .status-badge.open {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-badge.closed {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-badge.finished {
+        background: #d6d8db;
+        color: #383d41;
+    }
+    
+    /* Bet Status */
+    .bet-status {
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .bet-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .bet-status.confirmed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .bet-status.missed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<!-- Pool Header com Cover Image -->
+<div class="container-fluid mb-4">
+    <div class="pool-header">
+        <div class="pool-header-content">
+            <div class="pool-logo">
+                {% if pool.competition.logo %}
+                    <img src="{{ pool.competition.logo.url }}" alt="{{ pool.competition.name }}" style="width: 60px; height: 60px; object-fit: contain; border-radius: 50%;">
+                {% else %}
+                    <i class="fas fa-trophy fa-2x"></i>
+                {% endif %}
             </div>
+            
+            <h1 class="pool-title">{{ pool.name }}</h1>
+            <p class="pool-subtitle">{{ pool.competition.name }}</p>
+            
+            <div class="pool-stats-header">
+                <div class="pool-stat-item">
+                    <span class="pool-stat-number">{{ participants_count }}</span>
+                    <span class="pool-stat-label">Participantes</span>
+                </div>
+                <div class="pool-stat-item">
+                    <span class="pool-stat-number">{{ total_points|default:0 }}</span>
+                    <span class="pool-stat-label">Pontos Totais</span>
+                </div>
+                <div class="pool-stat-item">
+                    <span class="pool-stat-number">{{ upcoming_matches|length }}</span>
+                    <span class="pool-stat-label">Próximas</span>
+                </div>
+                <div class="pool-stat-item">
+                    <span class="pool-stat-number">{{ pool_stats.progress_percentage|floatformat:0 }}%</span>
+                    <span class="pool-stat-label">Progresso</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status e Ações no Header -->
+        <div class="position-absolute top-0 end-0 m-3">
+            <span class="status-badge {{ pool.status }}">
+                {% if pool.status == 'open' %}
+                    <i class="fas fa-unlock me-1"></i>Aberto
+                {% elif pool.status == 'closed' %}
+                    <i class="fas fa-lock me-1"></i>Fechado
+                {% else %}
+                    <i class="fas fa-flag-checkered me-1"></i>Finalizado
+                {% endif %}
+            </span>
         </div>
         
         {% if is_owner %}
-        <div class="dropdown">
-            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="poolActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-cog me-1"></i> Gerenciar
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="poolActionsDropdown">
-                <li><a class="dropdown-item" href="{% url 'pools:update' pool.slug %}">
-                    <i class="fas fa-edit me-2"></i> Editar Bolão
-                </a></li>
-                <li><a class="dropdown-item" href="{% url 'pools:invitations' pool.slug %}">
-                    <i class="fas fa-user-plus me-2"></i> Convidar Participantes
-                </a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="{% url 'pools:delete' pool.slug %}">
-                    <i class="fas fa-trash-alt me-2"></i> Excluir Bolão
-                </a></li>
-                {% if pool.is_owner_or_admin %}
-                <div class="dropdown-divider"></div>
-                <a href="{% url 'pools:send_invitation' pool.slug %}" class="dropdown-item">
-                    <i class="fas fa-user-plus fa-fw me-2"></i> Convidar Participantes
-                </a>
-                <a href="{% url 'pools:invitations' pool.slug %}" class="dropdown-item">
-                    <i class="fas fa-envelope fa-fw me-2"></i> Gerenciar Convites
-                </a>
-                {% endif %}
-            </ul>
+        <div class="position-absolute top-0 start-0 m-3">
+            <div class="dropdown">
+                <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="poolActionsDropdown" data-bs-toggle="dropdown">
+                    <i class="fas fa-cog me-1"></i> Gerenciar
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'pools:update' pool.slug %}">
+                        <i class="fas fa-edit me-2"></i> Editar Bolão
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                        <i class="fas fa-user-plus me-2"></i> Convidar Participantes
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete()">
+                        <i class="fas fa-trash-alt me-2"></i> Excluir Bolão
+                    </a></li>
+                </ul>
+            </div>
         </div>
         {% endif %}
     </div>
-    
-    <div class="card-body">
-        <!-- Informações básicas -->
-        <div class="mb-4">
-            <h5 class="mb-3">Informações do Bolão</h5>
-            <p>{{ pool.description|linebreaks }}</p>
-        </div>
+</div>
 
-        <!-- Cards de estatísticas em 4 colunas -->
-        <div class="row g-3 mb-4">
-            <div class="col-sm-6 col-lg-3">
-                <div class="card h-100 border-0 bg-light">
-                    <div class="card-body text-center">
-                        <div class="text-primary mb-2">
-                            <i class="fas fa-trophy fa-2x"></i>
-                        </div>
-                        <div class="text-muted small">Competição</div>
-                        <div class="fw-bold">{{ pool.competition.name }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card h-100 border-0 bg-light">
-                    <div class="card-body text-center">
-                        <div class="text-success mb-2">
-                            <i class="fas fa-money-bill-wave fa-2x"></i>
-                        </div>
-                        <div class="text-muted small">Valor de entrada</div>
-                        <div class="fw-bold">{{ pool.entry_fee|floatformat:2 }} R$</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card h-100 border-0 bg-light">
-                    <div class="card-body text-center">
-                        <div class="text-info mb-2">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
-                        <div class="text-muted small">Participantes</div>
-                        <div class="fw-bold">{{ participants|length }}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card h-100 border-0 bg-light">
-                    <div class="card-body text-center">
-                        <div class="text-warning mb-2">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                        <div class="text-muted small">Prazo para apostas</div>
-                        <div class="fw-bold">{{ pool.betting_deadline|date:"d/m/Y H:i" }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="container-fluid">
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="poolTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="ranking-tab" data-bs-toggle="tab" data-bs-target="#ranking" type="button" role="tab">
+                <i class="fas fa-trophy"></i> Ranking
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="bets-tab" data-bs-toggle="tab" data-bs-target="#bets" type="button" role="tab">
+                <i class="fas fa-dice"></i> Minhas Apostas
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab">
+                <i class="fas fa-calendar-alt"></i> Próximas Partidas
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab">
+                <i class="fas fa-book"></i> Regras
+            </button>
+        </li>
+    </ul>
 
-        <!-- Layout reorganizado em 2 linhas com 2 colunas cada -->
-        <div class="row">
-            <!-- PRIMEIRA LINHA: Próximos Jogos e Ranking -->
-            <!-- Coluna 1: Próximos Jogos -->
-            <div class="col-md-6 mb-4">
-                {% if upcoming_matches %}
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h3 class="h5 mb-0">Próximos Jogos</h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            {% for match in upcoming_matches %}
-                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
-                                <div class="match-info" style="max-width: 70%;">
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-light text-dark me-2">{{ match.start_time|date:"d/m" }}</span>
-                                        <span class="badge bg-light text-dark me-2">{{ match.start_time|date:"H:i" }}</span>
-                                        <!-- Adicionando tooltip e limitando o tamanho visível -->
-                                        <strong class="match-teams text-truncate" data-bs-toggle="tooltip" data-bs-placement="top" 
-                                                title="{{ match.home_team }} vs {{ match.away_team }}">
-                                            {{ match.home_team }} vs {{ match.away_team }}
-                                        </strong>
-                                    </div>
-                                    <small class="text-muted text-truncate d-block" style="max-width: 100%;" data-bs-toggle="tooltip" 
-                                           data-bs-placement="bottom" title="{{ match.venue }}">
-                                        {{ match.venue }}
-                                    </small>
-                                </div>
-                                
-                                {% if request.user in pool.participants.all or request.user == pool.owner %}
-                                    {% if pool.is_open_for_betting and match.start_time|date:'YmdHi' > now|date:'YmdHi' %}
-                                        <a href="{% url 'pools:bet_match' pool.slug match.id %}" class="btn btn-sm btn-primary ms-2">
-                                            <i class="fas fa-dice me-1"></i> Apostar
-                                        </a>
+    <!-- Tab Content -->
+    <div class="tab-content" id="poolTabsContent">
+        <!-- Ranking Tab -->
+        <div class="tab-pane fade show active" id="ranking" role="tabpanel">
+            <div class="ranking-table table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Posição</th>
+                            <th>Participante</th>
+                            <th style="width: 100px;" class="text-center">Pontos</th>
+                            <th style="width: 120px;" class="text-center">Aproveitamento</th>
+                            <th style="width: 100px;" class="text-center">Apostas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ranking_item in ranking_data %}
+                        <tr {% if ranking_item.is_current_user %}class="table-primary"{% endif %}>
+                            <td>
+                                <div class="position-badge 
+                                    {% if ranking_item.position == 1 %}gold
+                                    {% elif ranking_item.position == 2 %}silver
+                                    {% elif ranking_item.position == 3 %}bronze
+                                    {% else %}other{% endif %}">
+                                    {% if ranking_item.position <= 3 %}
+                                        <i class="fas fa-trophy"></i>
                                     {% else %}
-                                        <button class="btn btn-sm btn-outline-secondary ms-2" disabled>
-                                            <i class="fas fa-lock me-1"></i> Fechado
-                                        </button>
+                                        {{ ranking_item.position }}
                                     {% endif %}
-                                {% endif %}
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar">
+                                        {{ ranking_item.participation.user.username|first|upper }}
+                                    </div>
+                                    <div class="user-info">
+                                        <h6>{{ ranking_item.participation.user.username }}</h6>
+                                        <small>
+                                            {% if ranking_item.participation.user == pool.owner %}
+                                                <i class="fas fa-crown text-warning"></i> Criador
+                                            {% elif ranking_item.is_current_user %}
+                                                <i class="fas fa-user text-primary"></i> Você
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <strong class="fs-5">{{ ranking_item.participation.points|default:0 }}</strong>
+                            </td>
+                            <td class="text-center">
+                                <div class="progress-custom">
+                                    <div class="progress-bar" style="width: {{ ranking_item.participation.accuracy|default:0 }}%"></div>
+                                </div>
+                                <small>{{ ranking_item.participation.accuracy|default:0|floatformat:1 }}%</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">{{ ranking_item.participation.total_bets|default:0 }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Nenhum participante ainda</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            
-            <!-- Coluna 2: Ranking -->
-            <div class="col-md-6 mb-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                        <h3 class="h5 mb-0"><i class="fas fa-trophy me-2 text-warning"></i> Ranking</h3>
-                        {% if participants|length > 3 %}
-                        <a href="{% url 'pools:ranking' pool.slug %}" class="btn btn-sm btn-outline-light">
-                            Ver todos <i class="fas fa-chevron-right ms-1"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                    <div class="card-body p-0">
-                        {% if participants %}
-                            <div class="ranking-mini">
-                                <!-- Pódio para os 3 primeiros (apenas em desktop) -->
-                                {% if participants|length >= 3 %}
-                                <div class="podium-mini d-none d-md-flex justify-content-center my-3 px-3">
-                                    <!-- 2º Lugar -->
-                                    <div class="podium-mini-place second-place text-center">
-                                        <div class="podium-mini-avatar">
-                                            <div class="avatar-placeholder-sm rounded-circle border border-2 border-silver">
-                                                {{ participants.1.user.username|first|upper }}
-                                            </div>
-                                        </div>
-                                        <div class="podium-mini-platform silver">
-                                            <div class="podium-mini-name">{{ participants.1.user.username|truncatechars:10 }}</div>
-                                            <div class="podium-mini-points">{{ participants.1.points }} pts</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- 1º Lugar -->
-                                    <div class="podium-mini-place first-place text-center">
-                                        <div class="winner-mini-crown"><i class="fas fa-crown"></i></div>
-                                        <div class="podium-mini-avatar">
-                                            <div class="avatar-placeholder-sm rounded-circle border border-2 border-gold">
-                                                {{ participants.0.user.username|first|upper }}
-                                            </div>
-                                        </div>
-                                        <div class="podium-mini-platform gold">
-                                            <div class="podium-mini-name">{{ participants.0.user.username|truncatechars:10 }}</div>
-                                            <div class="podium-mini-points">{{ participants.0.points }} pts</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- 3º Lugar -->
-                                    <div class="podium-mini-place third-place text-center">
-                                        <div class="podium-mini-avatar">
-                                            <div class="avatar-placeholder-sm rounded-circle border border-2 border-bronze">
-                                                {{ participants.2.user.username|first|upper }}
-                                            </div>
-                                        </div>
-                                        <div class="podium-mini-platform bronze">
-                                            <div class="podium-mini-name">{{ participants.2.user.username|truncatechars:10 }}</div>
-                                            <div class="podium-mini-points">{{ participants.2.points }} pts</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endif %}
-                            
-                                <!-- Tabela de classificação para todos os participantes -->
-                                <div class="table-responsive">
-                                    <table class="table table-hover ranking-mini-table mb-0">
-                                        <thead class="bg-light">
-                                            <tr>
-                                                <th style="width: 50px;" class="text-center">#</th>
-                                                <th>Participante</th>
-                                                <th class="text-center" style="width: 80px;">Pontos</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for participation in participants|slice:":5" %}
-                                            <tr {% if participation.user == request.user %}class="table-primary"{% endif %}>
-                                                <td class="text-center">
-                                                    {% if forloop.counter == 1 %}
-                                                        <span class="position-mini-badge gold">1</span>
-                                                    {% elif forloop.counter == 2 %}
-                                                        <span class="position-mini-badge silver">2</span>
-                                                    {% elif forloop.counter == 3 %}
-                                                        <span class="position-mini-badge bronze">3</span>
-                                                    {% else %}
-                                                        {{ forloop.counter }}
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar-mini me-2">
-                                                            <div class="avatar-placeholder-sm rounded-circle bg-primary text-white">
-                                                                {{ participation.user.username|first|upper }}
-                                                            </div>
-                                                        </div>
-                                                        <span class="username-truncate">{{ participation.user.username }}</span>
-                                                        {% if participation.user == pool.owner %}
-                                                            <span class="badge bg-warning text-dark ms-1">Admin</span>
-                                                        {% endif %}
+        </div>
+
+        <!-- Minhas Apostas Tab -->
+        <div class="tab-pane fade" id="bets" role="tabpanel">
+            {% if is_participant %}
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="mb-3">Suas Apostas</h5>
+                        {% if user_bets %}
+                            <div class="timeline-custom">
+                                {% for bet in user_bets %}
+                                <div class="timeline-item">
+                                    <div class="timeline-card">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="match-teams">
+                                                    {{ bet.match.home_team.name }} vs {{ bet.match.away_team.name }}
+                                                </div>
+                                                <div class="match-info">
+                                                    <div class="match-info-item">
+                                                        <i class="fas fa-calendar"></i>
+                                                        {{ bet.match.start_time|date:"d/m/Y" }}
                                                     </div>
-                                                </td>
-                                                <td class="text-center fw-bold">{{ participation.points }}</td>
-                                            </tr>
-                                            {% endfor %}
-                                            
-                                            {% if participants|length > 5 %}
-                                            <!-- Linha de reticências para indicar mais participantes -->
-                                            <tr>
-                                                <td colspan="3" class="text-center py-2">
-                                                    <i class="fas fa-ellipsis-h text-muted"></i>
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            
-                                            <!-- Se o usuário atual está além das 5 primeiras posições, mostrar sua posição também -->
-                                            {% if request.user.is_authenticated %}
-                                                {% for participation in participants %}
-                                                    {% if participation.user == request.user and forloop.counter > 5 %}
-                                                    <tr class="table-primary">
-                                                        <td class="text-center">{{ forloop.counter }}</td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="avatar-mini me-2">
-                                                                    <div class="avatar-placeholder-sm rounded-circle bg-primary text-white">
-                                                                        {{ participation.user.username|first|upper }}
-                                                                    </div>
-                                                                </div>
-                                                                <span class="username-truncate">{{ participation.user.username }}</span>
-                                                                <span class="badge bg-info ms-1">Você</span>
-                                                            </div>
-                                                        </td>
-                                                        <td class="text-center fw-bold">{{ participation.points }}</td>
-                                                    </tr>
+                                                    <div class="match-info-item">
+                                                        <i class="fas fa-clock"></i>
+                                                        {{ bet.match.start_time|date:"H:i" }}
+                                                    </div>
+                                                    <div class="match-info-item">
+                                                        <i class="fas fa-map-marker-alt"></i>
+                                                        {{ bet.match.venue|default:"Estádio TBD" }}
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="bet-prediction">
+                                                        <strong>Sua aposta:</strong>
+                                                        <span class="fs-5 mx-2">{{ bet.home_score_bet }}</span>
+                                                        <span class="vs-separator">×</span>
+                                                        <span class="fs-5 mx-2">{{ bet.away_score_bet }}</span>
+                                                    </div>
+                                                    {% if bet.match.finished %}
+                                                        <div class="match-result">
+                                                            <strong>Resultado:</strong>
+                                                            <span class="fs-5 mx-2">{{ bet.match.home_score }}</span>
+                                                            <span class="vs-separator">×</span>
+                                                            <span class="fs-5 mx-2">{{ bet.match.away_score }}</span>
+                                                        </div>
                                                     {% endif %}
-                                                {% endfor %}
-                                            {% endif %}
-                                        </tbody>
-                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                {% if bet.match.finished %}
+                                                    <div class="badge bg-success fs-6 mb-2">
+                                                        +{{ bet.points_earned|default:0 }} pts
+                                                    </div>
+                                                {% else %}
+                                                    <span class="bet-status pending">
+                                                        <i class="fas fa-clock me-1"></i>Aguardando
+                                                    </span>
+                                                {% endif %}
+                                                
+                                                {% if not bet.match.finished and bet.match.start_time > now %}
+                                                    <div class="mt-2">
+                                                        <button class="btn btn-sm btn-outline-primary" onclick="editBet('{{ bet.match.id }}')">
+                                                            <i class="fas fa-edit"></i> Editar
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+                                {% endfor %}
                             </div>
                         {% else %}
-                            <div class="text-center py-4">
-                                <i class="fas fa-users fa-2x text-muted mb-3"></i>
-                                <p class="text-muted mb-0">Nenhum participante no momento</p>
+                            <div class="text-center py-5">
+                                <i class="fas fa-dice fa-4x text-muted mb-3"></i>
+                                <h4>Nenhuma aposta ainda</h4>
+                                <p class="text-muted">Faça sua primeira aposta nas próximas partidas!</p>
+                                <button class="btn btn-primary" data-bs-toggle="tab" data-bs-target="#matches">
+                                    <i class="fas fa-plus me-2"></i>Ver Próximas Partidas
+                                </button>
                             </div>
                         {% endif %}
                     </div>
-                    <div class="card-footer bg-white text-center py-3">
-                        <a href="{% url 'pools:ranking' pool.slug %}" class="btn btn-primary">
-                            <i class="fas fa-trophy me-2"></i> Ver Ranking Completo
+                    
+                    <div class="col-md-4">
+                        <h5 class="mb-3">Suas Estatísticas</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Total de Pontos</span>
+                                        <strong>{{ user_stats.total_points|default:0 }}</strong>
+                                    </div>
+                                    <div class="progress-custom">
+                                        <div class="progress-bar" style="width: {{ user_stats.accuracy_rate|default:0 }}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Apostas Feitas</span>
+                                        <strong>{{ user_stats.total_bets|default:0 }}</strong>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Apostas Corretas</span>
+                                        <strong>{{ user_stats.correct_bets|default:0 }}</strong>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Taxa de Acerto</span>
+                                        <strong>{{ user_stats.accuracy_rate|default:0|floatformat:1 }}%</strong>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-0">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Média de Pontos</span>
+                                        <strong>{{ user_stats.average_points|default:0|floatformat:1 }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-lock fa-4x text-muted mb-3"></i>
+                    <h4>Participe para ver suas apostas</h4>
+                    <p class="text-muted">Junte-se ao bolão para começar a apostar!</p>
+                    {% if pool.status == 'open' %}
+                        <a href="{% url 'pools:join' pool.slug %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Participar do Bolão
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Próximas Partidas Tab -->
+        <div class="tab-pane fade" id="matches" role="tabpanel">
+            <h5 class="mb-4">Próximas Partidas</h5>
+            {% if upcoming_matches %}
+                <div class="timeline-custom">
+                    {% for match in upcoming_matches %}
+                    <div class="timeline-item">
+                        <div class="timeline-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="match-teams">
+                                        {{ match.home_team.name }} vs {{ match.away_team.name }}
+                                    </div>
+                                    <div class="match-info">
+                                        <div class="match-info-item">
+                                            <i class="fas fa-calendar"></i>
+                                            {{ match.start_time|date:"d/m/Y" }}
+                                        </div>
+                                        <div class="match-info-item">
+                                            <i class="fas fa-clock"></i>
+                                            {{ match.start_time|date:"H:i" }}
+                                        </div>
+                                        <div class="match-info-item">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            {{ match.venue|default:"Estádio TBD" }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% if match.id in user_bets_dict %}
+                                        {% with bet=user_bets_dict|get_item:match.id %}
+                                        <div class="mt-2">
+                                            <span class="bet-status confirmed">
+                                                <i class="fas fa-check me-1"></i>
+                                                Aposta: {{ bet.home_score_bet }} × {{ bet.away_score_bet }}
+                                            </span>
+                                        </div>
+                                        {% endwith %}
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="text-end">
+                                    {% if is_participant and match.start_time > now %}
+                                        {% if match.id in user_bets_dict %}
+                                            <button class="btn btn-outline-primary btn-sm" onclick="editBet('{{ match.id }}')">
+                                                <i class="fas fa-edit me-1"></i>Editar Aposta
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-primary btn-sm" onclick="makeBet('{{ match.id }}')">
+                                                <i class="fas fa-plus me-1"></i>Fazer Aposta
+                                            </button>
+                                        {% endif %}
+                                    {% elif match.start_time <= now %}
+                                        <span class="bet-status missed">
+                                            <i class="fas fa-times me-1"></i>Prazo Encerrado
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h4>Nenhuma partida programada</h4>
+                    <p class="text-muted">As próximas partidas aparecerão aqui em breve.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Regras Tab -->
+        <div class="tab-pane fade" id="rules" role="tabpanel">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="mb-4">Regras do Bolão</h5>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações Básicas</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if pool.description %}
+                                <p>{{ pool.description|linebreaks }}</p>
+                            {% else %}
+                                <p>Bolão da competição {{ pool.competition.name }}.</p>
+                            {% endif %}
+                            
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <strong>Taxa de Entrada:</strong>
+                                    {% if pool.entry_fee > 0 %}
+                                        R$ {{ pool.entry_fee|floatformat:2 }}
+                                    {% else %}
+                                        Gratuito
+                                    {% endif %}
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Visibilidade:</strong>
+                                    {{ pool.get_visibility_display }}
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Criado em:</strong>
+                                    {{ pool.created_at|date:"d/m/Y H:i" }}
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Criado por:</strong>
+                                    {{ pool.owner.username }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Sistema de Pontuação</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-success bg-opacity-10 rounded">
+                                        <div>
+                                            <strong>Placar Exato</strong>
+                                            <br><small class="text-muted">Acertar o placar completo</small>
+                                        </div>
+                                        <span class="badge bg-success fs-6">10 pontos</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-primary bg-opacity-10 rounded">
+                                        <div>
+                                            <strong>Saldo de Gols</strong>
+                                            <br><small class="text-muted">Acertar diferença e vencedor</small>
+                                        </div>
+                                        <span class="badge bg-primary fs-6">5 pontos</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-warning bg-opacity-10 rounded">
+                                        <div>
+                                            <strong>Vencedor</strong>
+                                            <br><small class="text-muted">Acertar apenas o vencedor</small>
+                                        </div>
+                                        <span class="badge bg-warning fs-6">3 pontos</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-danger bg-opacity-10 rounded">
+                                        <div>
+                                            <strong>Erro</strong>
+                                            <br><small class="text-muted">Não acertar nada</small>
+                                        </div>
+                                        <span class="badge bg-danger fs-6">0 pontos</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-gavel me-2"></i>Regras Gerais</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    As apostas devem ser feitas antes do início de cada partida
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Você pode editar suas apostas até 30 minutos antes do jogo
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Os pontos são calculados automaticamente após o resultado
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    O ranking é atualizado em tempo real
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Em caso de empate, todos os participantes empatados recebem a mesma colocação
+                                </li>
+                                <li class="mb-0">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    O vencedor é determinado pela maior pontuação total
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Estatísticas do Bolão</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Progresso</span>
+                                    <span>{{ pool_stats.progress_percentage|floatformat:0 }}%</span>
+                                </div>
+                                <div class="progress-custom">
+                                    <div class="progress-bar" style="width: {{ pool_stats.progress_percentage }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ pool_stats.finished_matches }} de {{ pool_stats.total_matches }} partidas</small>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>Total de Participantes</span>
+                                    <strong>{{ participants_count }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>Partidas Restantes</span>
+                                    <strong>{{ pool_stats.remaining_matches }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>Apostas Totais</span>
+                                    <strong>{{ total_bets|default:0 }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+{% if is_participant and upcoming_matches %}
+<button class="floating-bet-btn" onclick="showQuickBetModal()" data-bs-toggle="tooltip" data-bs-placement="left" title="Fazer Aposta Rápida">
+    <i class="fas fa-dice"></i>
+</button>
+{% endif %}
+
+<!-- Modal de Aposta Rápida -->
+<div class="modal fade" id="quickBetModal" tabindex="-1" aria-labelledby="quickBetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickBetModalLabel">
+                    <i class="fas fa-dice me-2"></i>Fazer Aposta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="quickBetContent">
+                <!-- Conteúdo carregado dinamicamente -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p class="mt-2">Carregando partidas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Convite -->
+{% if is_owner %}
+<div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inviteModalLabel">
+                    <i class="fas fa-user-plus me-2"></i>Convidar Participantes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="inviteLink" class="form-label">Link de Convite</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="inviteLink" value="{{ request.build_absolute_uri }}" readonly>
+                        <button class="btn btn-outline-secondary" onclick="copyInviteLink()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <small class="form-text text-muted">Compartilhe este link para que outros possam participar</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Compartilhar via:</label>
+                    <div class="d-grid gap-2">
+                        <a href="https://wa.me/?text=Participe do meu bolão '{{ pool.name }}' - {{ request.build_absolute_uri|urlencode }}" 
+                           target="_blank" class="btn btn-success">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                        </a>
+                        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text=Participe do bolão {{ pool.name }}" 
+                           target="_blank" class="btn btn-info">
+                            <i class="fab fa-telegram me-2"></i>Telegram
+                        </a>
+                        <a href="mailto:?subject=Convite para o bolão {{ pool.name }}&body=Olá!%0A%0AConvido você a participar do meu bolão '{{ pool.name }}'.%0A%0AClique no link para participar: {{ request.build_absolute_uri }}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-envelope me-2"></i>Email
                         </a>
                     </div>
                 </div>
             </div>
-            
-            <!-- SEGUNDA LINHA: Ações e Convite para amigos -->
-            <!-- Coluna 1: Ações -->
-            <div class="col-md-6 mb-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-light py-3">
-                        <h5 class="mb-0">Ações</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            {% if not request.user in pool.participants.all and not request.user == pool.owner %}
-                            <a href="{% url 'pools:join' pool.slug %}" class="btn btn-primary">
-                                <i class="fas fa-plus-circle me-2"></i> Participar
-                            </a>
-                            {% endif %}
-                            
-                            <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#shareModal">
-                                <i class="fas fa-share-alt me-2"></i> Compartilhar bolão
-                            </a>
-                            
-                            {% if request.user in pool.participants.all or request.user == pool.owner %}
-                            <a href="#" class="btn btn-outline-success">
-                                <i class="fas fa-table me-2"></i> Ver tabela completa
-                            </a>
-                            <a href="{% url 'pools:ranking' pool.slug %}" class="btn btn-outline-primary">
-                                <i class="bi bi-trophy"></i> Ver Classificação
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Coluna 2: Convite para amigos -->
-            <div class="col-md-6 mb-4">
-                {% if is_owner or request.user in pool.participants.all %}
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-light py-3">
-                        <h5 class="mb-0">Convide amigos para este bolão</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" value="{{ request.build_absolute_uri }}" id="inviteLink" readonly>
-                            <button class="btn btn-primary" onclick="copyInviteLink()">
-                                <i class="fas fa-copy me-1"></i> Copiar
-                            </button>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="#" class="btn btn-outline-success flex-grow-1 mx-1" 
-                               data-share-type="whatsapp" 
-                               data-share-link="{{ request.build_absolute_uri }}" 
-                               data-share-name="{{ pool.name }}">
-                                <i class="fab fa-whatsapp me-1"></i> WhatsApp
-                            </a>
-                            <a href="#" class="btn btn-outline-info flex-grow-1 mx-1" 
-                               data-share-type="telegram" 
-                               data-share-link="{{ request.build_absolute_uri }}" 
-                               data-share-name="{{ pool.name }}">
-                                <i class="fab fa-telegram me-1"></i> Telegram
-                            </a>
-                            <a href="#" class="btn btn-outline-secondary flex-grow-1 mx-1" 
-                               data-share-type="email" 
-                               data-share-link="{{ request.build_absolute_uri }}" 
-                               data-share-name="{{ pool.name }}">
-                                <i class="fas fa-envelope me-1"></i> Email
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
         </div>
     </div>
 </div>
-
-<!-- Modal de compartilhamento -->
-<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="shareModalLabel">Compartilhar Bolão</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label for="modalInviteLink" class="form-label">Link do Bolão</label>
-          <div class="input-group">
-            <input type="text" class="form-control" id="modalInviteLink" value="{{ request.build_absolute_uri }}" readonly>
-            <button class="btn btn-primary" onclick="copyInviteLink('modalInviteLink')">
-              <i class="fas fa-copy"></i>
-            </button>
-          </div>
-        </div>
-        
-        <div class="d-flex justify-content-between mt-4">
-          <a href="https://wa.me/?text=Junte-se%20ao%20meu%20bolão%20{{ pool.name }}%20em%20{{ request.build_absolute_uri|urlencode }}" 
-             target="_blank" class="btn btn-success">
-            <i class="fab fa-whatsapp me-2"></i> WhatsApp
-          </a>
-          <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text=Junte-se%20ao%20meu%20bolão%20{{ pool.name }}" 
-             target="_blank" class="btn btn-info">
-            <i class="fab fa-telegram me-2"></i> Telegram
-          </a>
-          <a href="mailto:?subject=Convite%20para%20bolão%20{{ pool.name }}&body=Olá,%0A%0AQuer%20participar%20do%20meu%20bolão%20{{ pool.name }}?%0A%0AClique%20aqui%20para%20se%20juntar:%20{{ request.build_absolute_uri }}" 
-             class="btn btn-secondary">
-            <i class="fas fa-envelope me-2"></i> Email
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+{% endif %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializa todos os tooltips na página
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-        
-        // Função para copiar o link de convite
-        window.copyInviteLink = function(elementId) {
-            const copyText = document.getElementById(elementId || 'inviteLink');
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            document.execCommand("copy");
-            
-            // Feedback para o usuário
-            const originalBtn = event.target.closest('button');
-            const originalHtml = originalBtn.innerHTML;
-            originalBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-            
-            setTimeout(function() {
-                originalBtn.innerHTML = originalHtml;
-            }, 2000);
-        };
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // Persistir tab ativa no localStorage
+    const lastActiveTab = localStorage.getItem('activePoolTab');
+    if (lastActiveTab) {
+        const tabTrigger = document.querySelector(`[data-bs-target="${lastActiveTab}"]`);
+        if (tabTrigger) {
+            const tab = new bootstrap.Tab(tabTrigger);
+            tab.show();
+        }
+    }
+    
+    // Salvar tab ativa quando mudada
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(tabEl) {
+        tabEl.addEventListener('shown.bs.tab', function (event) {
+            localStorage.setItem('activePoolTab', event.target.getAttribute('data-bs-target'));
+        });
+    });
+});
+
+// Função para copiar link de convite
+function copyInviteLink() {
+    const copyText = document.getElementById('inviteLink');
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value).then(function() {
+        // Feedback visual
+        const button = event.target.closest('button');
+        const originalHtml = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-secondary');
+        
+        setTimeout(function() {
+            button.innerHTML = originalHtml;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    }).catch(function() {
+        // Fallback para navegadores mais antigos
+        document.execCommand("copy");
+    });
+}
+
+// Função para mostrar modal de aposta rápida
+function showQuickBetModal() {
+    const modal = new bootstrap.Modal(document.getElementById('quickBetModal'));
+    
+    // Carregar conteúdo do modal
+    fetch(`{% url 'pools:detail' pool.slug %}?ajax=quick_bet`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('quickBetContent').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('quickBetContent').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Erro ao carregar partidas. Tente novamente.
+                </div>
+            `;
+        });
+    
+    modal.show();
+}
+
+// Função para editar aposta
+function editBet(matchId) {
+    // Implementar lógica de edição de aposta
+    const baseUrl = '{% url "pools:detail" pool.slug %}';
+    window.location.href = baseUrl.replace('/detail/', `/bet/${matchId}/edit/`);
+}
+
+// Função para fazer nova aposta
+function makeBet(matchId) {
+    // Implementar lógica de nova aposta
+    const baseUrl = '{% url "pools:detail" pool.slug %}';
+    window.location.href = baseUrl.replace('/detail/', `/bet/${matchId}/`);
+}
+
+// Função para confirmar exclusão do bolão
+function confirmDelete() {
+    if (confirm('Tem certeza que deseja excluir este bolão? Esta ação não pode ser desfeita.')) {
+        window.location.href = `{% url 'pools:detail' pool.slug %}`.replace('detail', 'delete');
+    }
+}
+
+// Animação de entrada gradual para cards
+function animateCards() {
+    const cards = document.querySelectorAll('.timeline-card, .ranking-table tbody tr');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+}
+
+// Executar animações quando as tabs forem mostradas
+document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(tabEl) {
+    tabEl.addEventListener('shown.bs.tab', function (event) {
+        setTimeout(animateCards, 100);
+    });
+});
+
+// Executar animação inicial
+setTimeout(animateCards, 300);
+
+// Auto-refresh para dados dinâmicos (opcional)
+setInterval(function() {
+    // Atualizar apenas se a página estiver visível
+    if (!document.hidden) {
+        // Implementar lógica de refresh automático se necessário
+        console.log('Auto-refresh check...');
+    }
+}, 30000); // 30 segundos
 </script>
+
 {% endblock %}

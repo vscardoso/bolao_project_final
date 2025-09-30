@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembrete de Apostas</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+        .urgent-box { background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #ffc107; }
+        .match-item { background: white; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 3px solid #007bff; }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #666; }
+        .btn { display: inline-block; background: #ffc107; color: #212529; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 5px; font-weight: bold; }
+        .countdown { font-size: 1.2em; font-weight: bold; color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ Última Chance!</h1>
+            <h2>Deadline de Apostas Próximo</h2>
+        </div>
+        
+        <div class="content">
+            <h3>Oi, {{ user.username }}!</h3>
+            
+            <div class="urgent-box">
+                <h4>🚨 Você tem partidas próximas para apostar!</h4>
+                <p>Não perca a chance de pontuar no bolão <strong>{{ pool.name }}</strong>.</p>
+            </div>
+            
+            {% if upcoming_matches %}
+            <h4>📅 Próximas Partidas:</h4>
+            {% for match in upcoming_matches %}
+            <div class="match-item">
+                <h5>{{ match.home_team }} vs {{ match.away_team }}</h5>
+                <p><strong>Data:</strong> {{ match.start_time|date:"d/m/Y H:i" }}</p>
+                <p class="countdown">⏱️ 
+                    {% with time_left=match.start_time|timeuntil %}
+                    {{ time_left }} restantes
+                    {% endwith %}
+                </p>
+            </div>
+            {% endfor %}
+            {% endif %}
+            
+            <p><strong>⚡ Aposte agora mesmo!</strong> Quanto mais cedo você apostar, mais tempo terá para analisar as próximas partidas.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ pool.get_absolute_url }}" class="btn">Apostar Agora</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Sistema de Bolão Online</p>
+            <p><small>Você recebeu este email porque participa do bolão "{{ pool.name }}"</small></p>
+        </div>
+    </div>
+</body>
+</html>

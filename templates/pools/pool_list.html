@@ -1,258 +1,1693 @@
-{% extends 'pools/base_pools.html' %}
-{% load static %}
+{% extends 'base.html' %}{% extends 'base.html' %}
 
-{% block title %}
-  {% if view_type == 'created' %}
-    Bolões que Criei
-  {% else %}
-    Bolões que Participo  
-  {% endif %}
-  | Bolão Online
-{% endblock %}
+{% load static %}{% load static %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/main.css' %}">
-<style>
-    /* Header compacto em linha única */
-    .page-header {
-        padding: 0.75rem 0;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-        margin-bottom: 1rem;
-    }
-    
-    .page-header h1 {
-        font-size: 1.4rem;  /* Aumentado de 1.25rem */
-        margin-bottom: 0;
-        color: #212529;
-        white-space: nowrap;
-    }
-    
-    /* Stats inline compacto */
-    .header-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: nowrap;
-    }
-    
-    .stats-wrapper {
-        display: inline-flex;
-        align-items: center;
-        margin-left: 1.25rem;  /* Aumentado para dar mais espaço */
-        flex-wrap: nowrap;
-        white-space: nowrap;
-    }
-    
-    .stat-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.35rem 0.8rem;  /* Aumentado para acomodar a fonte maior */
-        border-radius: 30px;
-        margin-right: 8px;  /* Aumentado para separar melhor os badges */
-        font-weight: 500;
-        font-size: 0.85rem;  /* Aumentado de 0.75rem */
-        transition: all 0.2s;
-    }
-    
-    .stat-badge:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-    }
-    
-    .stat-badge i {
-        margin-right: 6px;  /* Aumentado para melhor legibilidade */
-        font-size: 0.9rem;  /* Aumentado o tamanho dos ícones */
-    }
-    
-    /* Cores dos badges */
-    .stat-badge.primary {
-        background-color: rgba(13, 110, 253, 0.12);
-        color: #0d6efd;
-    }
-    
-    .stat-badge.success {
-        background-color: rgba(25, 135, 84, 0.12);
-        color: #198754;
-    }
-    
-    .stat-badge.info {
-        background-color: rgba(13, 202, 240, 0.12);
-        color: #0dcaf0;
-    }
-    
-    /* Botão de criar bolão */
-    .page-header .btn-primary {
-        padding: 0.4rem 0.9rem;
-        font-size: 0.9rem;  /* Aumentando a fonte do botão */
-    }
-    
-    /* Resto dos estilos permanece igual */
-    .pool-section {
-        margin-bottom: 1.5rem;
-    }
-    
-    .section-title {
-        margin-bottom: 1rem;
-    }
-    
-    .pool-card .card-header {
-        padding: 0.75rem 1rem;
-    }
-    
-    .pool-card .card-body {
-        padding: 1rem;
-    }
-    
-    .content-area {
-        min-height: calc(100vh - 200px);
-        padding-top: 1rem;
-    }
-    
-    .g-4 {
-        --bs-gutter-y: 1rem !important;
-    }
-    
-    .create-btn {
-        padding: 0.5rem 1rem;
-    }
-</style>
-{% endblock %}
 
-{% block pool_content %}
-<div class="container-xl px-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0">
-            {% if view_type == 'created' %}
-                <i class="fas fa-trophy me-2 text-primary"></i> Bolões que Criei
-            {% else %}
-                <i class="fas fa-handshake me-2 text-success"></i> Bolões que Participo
-            {% endif %}
-        </h1>
+
+{% block title %}Bolões | Bolão Online{% endblock %}{% block title %}Lista de Bolões | Bolão Online{% endblock %}
+
+
+
+{% block extra_css %}{% block extra_css %}
+
+<style><style>
+
+    :root {    :root {
+
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+
+        --info-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);        --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+        --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    }        --card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+        }
+
+    .btn-gradient {    
+
+        background: var(--primary-gradient);    /* Header */
+
+        border: none;    .page-header {
+
+        color: white;        background: var(--primary-gradient);
+
+        transition: all 0.3s ease;        color: white;
+
+    }        padding: 2rem 0;
+
+            margin-bottom: 2rem;
+
+    .btn-gradient:hover {    }
+
+        transform: translateY(-2px);    
+
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);    .page-header h1 {
+
+        color: white;        font-size: 2.5rem;
+
+    }        font-weight: 700;
+
+            margin-bottom: 0.5rem;
+
+    .btn-success-gradient {    }
+
+        background: var(--success-gradient);    
+
+        border: none;    .stats-row {
+
+        color: white;        margin-top: 1.5rem;
+
+    }    }
+
         
-        <a href="{% url 'pools:create' %}" class="btn btn-primary">
-            <i class="fas fa-plus-circle me-1"></i> Criar Novo Bolão
-        </a>
-    </div>
-    
-    <!-- Filtros -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-2 align-items-center">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Buscar bolão..." value="{{ request.GET.search|default:'' }}">
-                    </div>
-                </div>
-                
-                <div class="col-md-3">
-                    <select name="sport" class="form-select">
-                        <option value="">Todos os Esportes</option>
-                        <!-- Adicionar opções de esportes aqui se necessário -->
-                    </select>
-                </div>
-                
-                <div class="col-md-3">
-                    <select name="status" class="form-select">
-                        <option value="">Todos os Status</option>
-                        <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>Aberto</option>
-                        <option value="locked" {% if request.GET.status == 'locked' %}selected{% endif %}>Fechado</option>
-                        <option value="finished" {% if request.GET.status == 'finished' %}selected{% endif %}>Encerrado</option>
-                    </select>
-                </div>
-                
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    {% if pools %}
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-            {% for pool in pools %}
-                <div class="col">
-                    <div class="card h-100 shadow-sm hover-shadow border-0">
-                        <div class="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="badge bg-light text-dark">{{ pool.sport.name }}</span>
-                                <span class="badge {% if pool.status == 'open' %}bg-success{% elif pool.status == 'locked' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                                    {{ pool.get_status_display }}
-                                </span>
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownPool{{ pool.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownPool{{ pool.id }}">
-                                    <li><a class="dropdown-item" href="{% url 'pools:detail' pool.slug %}">
-                                        <i class="fas fa-eye me-2 text-primary"></i> Ver Detalhes
-                                    </a></li>
-                                    
-                                    {% if view_type == 'created' %}
-                                    <li><a class="dropdown-item" href="{% url 'pools:update' pool.slug %}">
-                                        <i class="fas fa-edit me-2 text-warning"></i> Editar
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="{% url 'pools:delete' pool.slug %}">
-                                        <i class="fas fa-trash-alt me-2"></i> Excluir
-                                    </a></li>
-                                    {% endif %}
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ pool.name }}</h5>
-                            <p class="card-text small text-muted">{{ pool.description|truncatechars:100 }}</p>
-                            
-                            <div class="mt-auto">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="text-muted small"><i class="fas fa-trophy me-1"></i> {{ pool.competition.name }}</span>
-                                    <span class="text-success fw-bold">R$ {{ pool.entry_fee|floatformat:2 }}</span>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <i class="fas fa-users me-1"></i> {{ pool.participants.count }} participantes
-                                    </small>
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar-alt me-1"></i> {{ pool.created_at|date:"d/m/Y" }}
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card-footer bg-white text-center p-2">
-                            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-sm btn-outline-primary w-100">
-                                <i class="fas fa-arrow-right me-1"></i> Acessar Bolão
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="card shadow-sm">
-            <div class="card-body text-center py-5">
-                {% if view_type == 'created' %}
-                    <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
-                    <h4 class="mb-3">Você ainda não criou nenhum bolão</h4>
-                    <p class="text-muted mb-4">Clique no botão abaixo para criar seu primeiro bolão e convidar seus amigos!</p>
-                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle me-1"></i> Criar Meu Primeiro Bolão
-                    </a>
-                {% else %}
-                    <i class="fas fa-users fa-4x text-muted mb-3"></i>
-                    <h4 class="mb-3">Você ainda não participa de nenhum bolão</h4>
-                    <p class="text-muted mb-4">Descubra bolões disponíveis ou aguarde convites de seus amigos!</p>
-                    <a href="{% url 'pools:discover' %}" class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i> Descobrir Bolões
-                    </a>
-                {% endif %}
+    .btn-success-gradient:hover {    .stat-card {
+
+        transform: translateY(-2px);        background: rgba(255, 255, 255, 0.1);
+
+        box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);        border: 1px solid rgba(255, 255, 255, 0.2);
+
+        color: white;        border-radius: 12px;
+
+    }        padding: 1rem;
+
+            text-align: center;
+
+    .pool-card {        backdrop-filter: blur(10px);
+
+        transition: all 0.3s ease;        transition: all 0.3s ease;
+
+        border: none;    }
+
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);    
+
+        height: 100%;    .stat-card:hover {
+
+        position: relative;        transform: translateY(-2px);
+
+        overflow: hidden;        background: rgba(255, 255, 255, 0.15);
+
+    }    }
+
+        
+
+    .pool-card:hover {    .stat-number {
+
+        transform: translateY(-8px);        font-size: 1.8rem;
+
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);        font-weight: 700;
+
+    }        margin-bottom: 0.25rem;
+
+        }
+
+    .pool-card-header {    
+
+        position: relative;    .stat-label {
+
+        height: 200px;        font-size: 0.9rem;
+
+        background: linear-gradient(45deg, #667eea, #764ba2);        opacity: 0.9;
+
+        display: flex;    }
+
+        align-items: center;    
+
+        justify-content: center;    /* Sidebar de Filtros */
+
+        overflow: hidden;    .filters-sidebar {
+
+    }        background: white;
+
+            border-radius: 12px;
+
+    .pool-logo {        box-shadow: var(--card-shadow);
+
+        max-width: 80px;        padding: 1.5rem;
+
+        max-height: 80px;        margin-bottom: 2rem;
+
+        object-fit: contain;        position: sticky;
+
+        filter: brightness(1.2);        top: 2rem;
+
+    }    }
+
+        
+
+    .pool-card-body {    .filters-title {
+
+        padding: 1.5rem;        font-size: 1.2rem;
+
+        flex: 1;        font-weight: 600;
+
+        display: flex;        margin-bottom: 1.5rem;
+
+        flex-direction: column;        color: #333;
+
+    }        display: flex;
+
+            align-items: center;
+
+    .pool-title {    }
+
+        font-size: 1.25rem;    
+
+        font-weight: 600;    .filter-group {
+
+        margin-bottom: 0.5rem;        margin-bottom: 1.5rem;
+
+        color: #2d3748;    }
+
+        line-height: 1.3;    
+
+    }    .filter-label {
+
+            font-weight: 500;
+
+    .pool-description {        margin-bottom: 0.5rem;
+
+        color: #718096;        color: #555;
+
+        font-size: 0.95rem;        font-size: 0.9rem;
+
+        margin-bottom: 1rem;    }
+
+        flex: 1;    
+
+        display: -webkit-box;    .form-control, .form-select {
+
+        -webkit-line-clamp: 2;        border-radius: 8px;
+
+        -webkit-box-orient: vertical;        border: 1px solid #e1e5e9;
+
+        overflow: hidden;        padding: 0.75rem;
+
+    }        transition: all 0.3s ease;
+
+        }
+
+    .pool-stats {    
+
+        display: flex;    .form-control:focus, .form-select:focus {
+
+        justify-content: space-between;        border-color: #667eea;
+
+        align-items: center;        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+
+        margin-bottom: 1rem;    }
+
+        padding: 0.75rem;    
+
+        background: #f7fafc;    .btn-gradient {
+
+        border-radius: 8px;        background: var(--primary-gradient);
+
+    }        border: none;
+
+            color: white;
+
+    .pool-stat {        padding: 0.75rem 1.5rem;
+
+        text-align: center;        border-radius: 8px;
+
+        flex: 1;        font-weight: 500;
+
+    }        transition: all 0.3s ease;
+
+        }
+
+    .pool-stat-number {    
+
+        font-size: 1.1rem;    .btn-gradient:hover {
+
+        font-weight: 700;        transform: translateY(-2px);
+
+        color: #2d3748;        box-shadow: var(--card-shadow-hover);
+
+    }        color: white;
+
+        }
+
+    .pool-stat-label {    
+
+        font-size: 0.8rem;    .btn-clear {
+
+        color: #718096;        background: #f8f9fa;
+
+        margin-top: 2px;        border: 1px solid #e1e5e9;
+
+    }        color: #6c757d;
+
+            padding: 0.75rem 1.5rem;
+
+    .pool-badges {        border-radius: 8px;
+
+        display: flex;        transition: all 0.3s ease;
+
+        gap: 0.5rem;    }
+
+        margin-bottom: 1rem;    
+
+        flex-wrap: wrap;    .btn-clear:hover {
+
+    }        background: #e9ecef;
+
+            color: #495057;
+
+    .badge-status {    }
+
+        font-size: 0.75rem;    
+
+        padding: 0.4rem 0.8rem;    /* Cards de Bolões */
+
+        border-radius: 20px;    .pool-card {
+
+        font-weight: 500;        background: white;
+
+    }        border-radius: 16px;
+
+            box-shadow: var(--card-shadow);
+
+    .badge-open {        transition: all 0.3s ease;
+
+        background: var(--success-gradient);        margin-bottom: 1.5rem;
+
+        color: white;        overflow: hidden;
+
+    }        border: none;
+
+        }
+
+    .badge-closed {    
+
+        background: var(--danger-gradient);    .pool-card:hover {
+
+        color: white;        transform: translateY(-5px);
+
+    }        box-shadow: var(--card-shadow-hover);
+
+        }
+
+    .badge-entry-fee {    
+
+        background: var(--info-gradient);    .pool-card-horizontal {
+
+        color: white;        display: flex;
+
+    }        align-items: stretch;
+
+            min-height: 140px;
+
+    .badge-free {    }
+
+        background: #48bb78;    
+
+        color: white;    .pool-image {
+
+    }        width: 120px;
+
+            background: var(--primary-gradient);
+
+    .pool-actions {        display: flex;
+
+        margin-top: auto;        align-items: center;
+
+        display: flex;        justify-content: center;
+
+        gap: 0.5rem;        color: white;
+
+    }        font-size: 2rem;
+
+            flex-shrink: 0;
+
+    .filters-sidebar {    }
+
+        background: white;    
+
+        border-radius: 12px;    .pool-image img {
+
+        padding: 1.5rem;        width: 100%;
+
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);        height: 100%;
+
+        height: fit-content;        object-fit: cover;
+
+        position: sticky;    }
+
+        top: 20px;    
+
+    }    .pool-content {
+
+            flex: 1;
+
+    .filters-title {        padding: 1.5rem;
+
+        font-size: 1.1rem;        display: flex;
+
+        font-weight: 600;        flex-direction: column;
+
+        color: #2d3748;    }
+
+        margin-bottom: 1rem;    
+
+        display: flex;    .pool-header {
+
+        align-items: center;        display: flex;
+
+        gap: 0.5rem;        justify-content: between;
+
+    }        align-items: flex-start;
+
+            margin-bottom: 1rem;
+
+    .filter-group {    }
+
+        margin-bottom: 1.5rem;    
+
+    }    .pool-title {
+
+            font-size: 1.25rem;
+
+    .filter-label {        font-weight: 600;
+
+        font-size: 0.9rem;        color: #333;
+
+        font-weight: 500;        margin-bottom: 0.5rem;
+
+        color: #4a5568;        line-height: 1.3;
+
+        margin-bottom: 0.5rem;    }
+
+        display: block;    
+
+    }    .pool-description {
+
+            color: #6c757d;
+
+    .search-header {        font-size: 0.9rem;
+
+        background: var(--primary-gradient);        margin-bottom: 1rem;
+
+        color: white;        line-height: 1.4;
+
+        padding: 2rem 0;    }
+
+        margin-bottom: 2rem;    
+
+        border-radius: 0 0 20px 20px;    .pool-badges {
+
+    }        display: flex;
+
+            gap: 0.5rem;
+
+    .search-input {        flex-wrap: wrap;
+
+        border: none;        margin-bottom: 1rem;
+
+        border-radius: 25px;    }
+
+        padding: 0.75rem 1.25rem;    
+
+        font-size: 1rem;    .badge {
+
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);        padding: 0.4rem 0.8rem;
+
+        transition: all 0.3s ease;        border-radius: 20px;
+
+    }        font-size: 0.75rem;
+
+            font-weight: 500;
+
+    .search-input:focus {    }
+
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);    
+
+        transform: translateY(-2px);    .badge-status-open {
+
+    }        background: #d4edda;
+
+            color: #155724;
+
+    .results-header {    }
+
+        display: flex;    
+
+        justify-content: space-between;    .badge-status-locked {
+
+        align-items: center;        background: #fff3cd;
+
+        margin-bottom: 1.5rem;        color: #856404;
+
+        flex-wrap: wrap;    }
+
+        gap: 1rem;    
+
+    }    .badge-status-finished {
+
+            background: #d6d8db;
+
+    .results-count {        color: #383d41;
+
+        color: #718096;    }
+
+        font-size: 0.95rem;    
+
+    }    .badge-sport {
+
+            background: #e3f2fd;
+
+    .sort-dropdown {        color: #1565c0;
+
+        border-radius: 8px;    }
+
+        border: 1px solid #e2e8f0;    
+
+        padding: 0.5rem 1rem;    .pool-meta {
+
+        font-size: 0.9rem;        display: flex;
+
+    }        justify-content: space-between;
+
+            align-items: center;
+
+    .empty-state {        margin-top: auto;
+
+        text-align: center;    }
+
+        padding: 4rem 2rem;    
+
+        color: #718096;    .pool-stats {
+
+    }        display: flex;
+
+            gap: 1rem;
+
+    .empty-icon {        font-size: 0.85rem;
+
+        font-size: 4rem;        color: #6c757d;
+
+        margin-bottom: 1rem;    }
+
+        opacity: 0.5;    
+
+    }    .pool-stat {
+
+            display: flex;
+
+    .skeleton-card {        align-items: center;
+
+        height: 400px;        gap: 0.25rem;
+
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);    }
+
+        background-size: 200% 100%;    
+
+        animation: loading 1.5s infinite;    .pool-actions {
+
+        border-radius: 12px;        display: flex;
+
+    }        gap: 0.5rem;
+
+        }
+
+    @keyframes loading {    
+
+        0% { background-position: 200% 0; }    .btn-sm {
+
+        100% { background-position: -200% 0; }        padding: 0.4rem 0.8rem;
+
+    }        font-size: 0.8rem;
+
+            border-radius: 6px;
+
+    .mobile-filters-btn {    }
+
+        display: none;    
+
+    }    .btn-primary {
+
+            background: #667eea;
+
+    @media (max-width: 768px) {        border-color: #667eea;
+
+        .filters-sidebar {    }
+
+            position: fixed;    
+
+            top: 0;    .btn-primary:hover {
+
+            left: -100%;        background: #5a6fd8;
+
+            width: 280px;        border-color: #5a6fd8;
+
+            height: 100vh;    }
+
+            z-index: 1050;    
+
+            transition: left 0.3s ease;    .btn-success {
+
+            overflow-y: auto;        background: #28a745;
+
+        }        border-color: #28a745;
+
+            }
+
+        .filters-sidebar.show {    
+
+            left: 0;    .btn-outline-secondary {
+
+        }        border-color: #e1e5e9;
+
+                color: #6c757d;
+
+        .mobile-filters-btn {    }
+
+            display: block;    
+
+        }    .btn-outline-secondary:hover {
+
+                background: #f8f9fa;
+
+        .pool-card-header {        border-color: #d3d9df;
+
+            height: 150px;        color: #495057;
+
+        }    }
+
+            
+
+        .pool-stats {    /* Skeleton Loading */
+
+            flex-direction: column;    .skeleton {
+
+            gap: 0.5rem;        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+
+        }        background-size: 200% 100%;
+
+                animation: loading 1.5s infinite;
+
+        .pool-stat {    }
+
+            display: flex;    
+
+            justify-content: space-between;    @keyframes loading {
+
+            align-items: center;        0% { background-position: 200% 0; }
+
+        }        100% { background-position: -200% 0; }
+
+    }    }
+
+        
+
+    .overlay {    .skeleton-card {
+
+        display: none;        height: 140px;
+
+        position: fixed;        border-radius: 16px;
+
+        top: 0;        margin-bottom: 1.5rem;
+
+        left: 0;    }
+
+        width: 100%;    
+
+        height: 100%;    /* Paginação */
+
+        background: rgba(0,0,0,0.5);    .pagination {
+
+        z-index: 1040;        margin-top: 2rem;
+
+    }        justify-content: center;
+
+        }
+
+    .overlay.show {    
+
+        display: block;    .page-link {
+
+    }        border-radius: 8px;
+
+            margin: 0 0.125rem;
+
+    .pagination {        border: 1px solid #e1e5e9;
+
+        margin-top: 3rem;        color: #667eea;
+
+    }        padding: 0.5rem 0.75rem;
+
+        }
+
+    .pagination .page-link {    
+
+        border: none;    .page-link:hover {
+
+        color: #667eea;        background: #667eea;
+
+        font-weight: 500;        border-color: #667eea;
+
+        padding: 0.75rem 1rem;        color: white;
+
+        margin: 0 0.25rem;    }
+
+        border-radius: 8px;    
+
+        transition: all 0.3s ease;    .page-item.active .page-link {
+
+    }        background: #667eea;
+
+            border-color: #667eea;
+
+    .pagination .page-link:hover {    }
+
+        background: var(--primary-gradient);    
+
+        color: white;    /* Filtros Mobile */
+
+        transform: translateY(-2px);    .filters-mobile {
+
+    }        display: none;
+
+        }
+
+    .pagination .page-item.active .page-link {    
+
+        background: var(--primary-gradient);    @media (max-width: 991.98px) {
+
+        border: none;        .filters-sidebar {
+
+        color: white;            position: static;
+
+    }            margin-bottom: 1rem;
+
+</style>        }
+
+{% endblock %}        
+
+        .filters-mobile {
+
+{% block content %}            display: block;
+
+<!-- Search Header -->        }
+
+<div class="search-header">        
+
+    <div class="container-fluid">        .filters-desktop {
+
+        <div class="row justify-content-center">            display: none;
+
+            <div class="col-lg-8">        }
+
+                <h1 class="text-center mb-4">        
+
+                    <i class="fas fa-trophy me-2"></i>        .pool-card-horizontal {
+
+                    Descubra Bolões Incríveis            flex-direction: column;
+
+                </h1>        }
+
+                <form method="get" class="d-flex gap-3" id="searchForm">        
+
+                    <div class="flex-grow-1">        .pool-image {
+
+                        <input type="text"             width: 100%;
+
+                               class="form-control search-input"             height: 100px;
+
+                               name="search"         }
+
+                               value="{{ current_search }}"        
+
+                               placeholder="Buscar por nome, descrição ou competição..."        .pool-meta {
+
+                               autocomplete="off">            flex-direction: column;
+
+                    </div>            align-items: flex-start;
+
+                    <button type="submit" class="btn btn-light btn-lg px-4">            gap: 1rem;
+
+                        <i class="fas fa-search"></i>        }
+
+                    </button>        
+
+                </form>        .pool-actions {
+
+            </div>            width: 100%;
+
+        </div>            justify-content: space-between;
+
+    </div>        }
+
+</div>        
+
+        .page-header h1 {
+
+<div class="container-fluid">            font-size: 2rem;
+
+    <!-- Mobile Filters Button -->        }
+
+    <div class="d-md-none mb-3">    }
+
+        <button class="btn btn-outline-primary mobile-filters-btn w-100" onclick="toggleMobileFilters()">    
+
+            <i class="fas fa-filter me-2"></i>    /* Empty State */
+
+            Filtros    .empty-state {
+
+        </button>        text-align: center;
+
+    </div>        padding: 3rem 1rem;
+
+        color: #6c757d;
+
+    <div class="row">    }
+
+        <!-- Filters Sidebar -->    
+
+        <div class="col-md-3 mb-4">    .empty-state i {
+
+            <div class="filters-sidebar" id="filtersSidebar">        font-size: 4rem;
+
+                <div class="d-flex justify-content-between align-items-center d-md-none mb-3">        margin-bottom: 1rem;
+
+                    <h5 class="mb-0">Filtros</h5>        opacity: 0.5;
+
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleMobileFilters()">    }
+
+                        <i class="fas fa-times"></i>    
+
+                    </button>    .empty-state h3 {
+
+                </div>        margin-bottom: 1rem;
+
+                        color: #495057;
+
+                <div class="filters-title">    }
+
+                    <i class="fas fa-sliders-h"></i>    
+
+                    Filtros    /* Search Bar */
+
+                </div>    .search-wrapper {
+
+        position: relative;
+
+                <form method="get" id="filtersForm">    }
+
+                    <input type="hidden" name="search" value="{{ current_search }}">    
+
+                        .search-wrapper i {
+
+                    <!-- Sport Filter -->        position: absolute;
+
+                    <div class="filter-group">        left: 1rem;
+
+                        <label class="filter-label">Esporte</label>        top: 50%;
+
+                        <select name="sport" class="form-select" onchange="submitFilters()">        transform: translateY(-50%);
+
+                            <option value="">Todos os esportes</option>        color: #6c757d;
+
+                            {% for sport in sports %}        z-index: 10;
+
+                            <option value="{{ sport.id }}" {% if current_sport == sport.id|stringformat:"s" %}selected{% endif %}>    }
+
+                                {{ sport.name }}    
+
+                            </option>    .search-input {
+
+                            {% endfor %}        padding-left: 2.5rem;
+
+                        </select>    }
+
+                    </div>    
+
+    /* Responsive adjustments */
+
+                    <!-- Status Filter -->    @media (max-width: 576px) {
+
+                    <div class="filter-group">        .page-header {
+
+                        <label class="filter-label">Status</label>            padding: 1rem 0;
+
+                        <select name="status" class="form-select" onchange="submitFilters()">        }
+
+                            <option value="">Todos os status</option>        
+
+                            {% for value, display in status_choices %}        .stats-row {
+
+                            <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>            margin-top: 1rem;
+
+                                {{ display }}        }
+
+                            </option>        
+
+                            {% endfor %}        .stat-card {
+
+                        </select>            margin-bottom: 0.5rem;
+
+                    </div>        }
+
+    }
+
+                    <!-- Entry Fee Filter --></style>
+
+                    <div class="filter-group">{% endblock %}
+
+                        <label class="filter-label">Taxa de Entrada</label>
+
+                        <select name="entry_fee" class="form-select" onchange="submitFilters()">{% block content %}
+
+                            {% for value, display in entry_fee_choices %}<!-- Header -->
+
+                            <option value="{{ value }}" {% if current_entry_fee == value %}selected{% endif %}><div class="page-header">
+
+                                {{ display }}    <div class="container-fluid">
+
+                            </option>        <div class="row">
+
+                            {% endfor %}            <div class="col-lg-8">
+
+                        </select>                <h1><i class="fas fa-trophy me-3"></i>Bolões Disponíveis</h1>
+
+                    </div>                <p class="mb-0 opacity-75">Descubra e participe dos melhores bolões esportivos</p>
+
             </div>
-        </div>
-    {% endif %}
-</div>
+
+                    <!-- Date Filter -->            <div class="col-lg-4 text-lg-end">
+
+                    <div class="filter-group">                <a href="{% url 'pools:create' %}" class="btn btn-light btn-lg">
+
+                        <label class="filter-label">Data de Criação</label>                    <i class="fas fa-plus-circle me-2"></i> Criar Bolão
+
+                        <select name="date_filter" class="form-select" onchange="submitFilters()">                </a>
+
+                            {% for value, display in date_filter_choices %}            </div>
+
+                            <option value="{{ value }}" {% if current_date_filter == value %}selected{% endif %}>        </div>
+
+                                {{ display }}        
+
+                            </option>        <!-- Stats Row -->
+
+                            {% endfor %}        <div class="row stats-row g-3">
+
+                        </select>            <div class="col-md-4">
+
+                    </div>                <div class="stat-card">
+
+                    <div class="stat-number">{{ user_stats.total_pools }}</div>
+
+                    <div class="d-grid">                    <div class="stat-label">Meus Bolões</div>
+
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">                </div>
+
+                            <i class="fas fa-undo me-2"></i>            </div>
+
+                            Limpar Filtros            <div class="col-md-4">
+
+                        </button>                <div class="stat-card">
+
+                    </div>                    <div class="stat-number">{{ user_stats.owned_pools }}</div>
+
+                </form>                    <div class="stat-label">Criados por Mim</div>
+
+                </div>
+
+                <!-- User Stats -->            </div>
+
+                <div class="mt-4 pt-3 border-top">            <div class="col-md-4">
+
+                    <h6 class="text-muted mb-3">Suas Estatísticas</h6>                <div class="stat-card">
+
+                    <div class="d-flex justify-content-between mb-2">                    <div class="stat-number">{{ user_stats.joined_pools }}</div>
+
+                        <small class="text-muted">Bolões criados:</small>                    <div class="stat-label">Participando</div>
+
+                        <span class="badge bg-primary">{{ user_stats.owned_pools }}</span>                </div>
+
+                    </div>            </div>
+
+                    <div class="d-flex justify-content-between mb-2">        </div>
+
+                        <small class="text-muted">Participando:</small>    </div>
+
+                        <span class="badge bg-success">{{ user_stats.joined_pools }}</span></div>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between"><div class="container-fluid">
+
+                        <small class="text-muted">Total:</small>    <div class="row">
+
+                        <span class="badge bg-info">{{ user_stats.total_pools }}</span>        <!-- Sidebar de Filtros (Desktop) -->
+
+                    </div>        <div class="col-lg-3 filters-desktop">
+
+                </div>            <div class="filters-sidebar">
+
+            </div>                <h5 class="filters-title">
+
+        </div>                    <i class="fas fa-filter me-2 text-primary"></i>
+
+                    Filtros
+
+        <!-- Main Content -->                </h5>
+
+        <div class="col-md-9">                
+
+            <!-- Results Header -->                <form method="get" id="filtersForm">
+
+            <div class="results-header">                    <!-- Busca -->
+
+                <div class="results-count">                    <div class="filter-group">
+
+                    {% if results_count > 0 %}                        <label class="filter-label">Buscar</label>
+
+                        Mostrando {{ showing_from }}-{{ showing_to }} de {{ results_count }} bolões                        <div class="search-wrapper">
+
+                    {% else %}                            <i class="fas fa-search"></i>
+
+                        Nenhum bolão encontrado                            <input type="text" name="search" class="form-control search-input" 
+
+                    {% endif %}                                   placeholder="Nome do bolão..." value="{{ current_search }}">
+
+                </div>                        </div>
+
+                                    </div>
+
+                <div class="d-flex align-items-center gap-3">                    
+
+                    <label class="form-label mb-0 small text-muted">Ordenar por:</label>                    <!-- Esporte -->
+
+                    <select name="order_by" class="form-select sort-dropdown" style="width: auto;" onchange="changeOrder(this.value)">                    <div class="filter-group">
+
+                        {% for value, display in order_choices %}                        <label class="filter-label">Esporte</label>
+
+                        <option value="{{ value }}" {% if current_order == value %}selected{% endif %}>                        <select name="sport" class="form-select">
+
+                            {{ display }}                            <option value="">Todos os Esportes</option>
+
+                        </option>                            {% for sport in sports %}
+
+                        {% endfor %}                            <option value="{{ sport.id }}" {% if current_sport == sport.id|stringformat:"s" %}selected{% endif %}>
+
+                    </select>                                {{ sport.name }}
+
+                </div>                            </option>
+
+            </div>                            {% endfor %}
+
+                        </select>
+
+            <!-- Pool Cards -->                    </div>
+
+            {% if pools_with_info %}                    
+
+                <div class="row g-4" id="poolsContainer">                    <!-- Status -->
+
+                    {% for item in pools_with_info %}                    <div class="filter-group">
+
+                    <div class="col-lg-4 col-md-6 pool-item">                        <label class="filter-label">Status</label>
+
+                        <div class="card pool-card">                        <select name="status" class="form-select">
+
+                            <!-- Card Header with Logo -->                            <option value="">Todos os Status</option>
+
+                            <div class="pool-card-header">                            {% for status_code, status_name in status_choices %}
+
+                                {% if item.has_image %}                            <option value="{{ status_code }}" {% if current_status == status_code %}selected{% endif %}>
+
+                                    <img src="{{ item.pool.competition.logo.url }}" alt="{{ item.pool.competition.name }}" class="pool-logo">                                {{ status_name }}
+
+                                {% else %}                            </option>
+
+                                    <i class="fas fa-trophy fa-3x text-white"></i>                            {% endfor %}
+
+                                {% endif %}                        </select>
+
+                                                    </div>
+
+                                <!-- Status Badge in Header -->                    
+
+                                <div class="position-absolute top-0 end-0 m-3">                    <!-- Data de Criação -->
+
+                                    <span class="badge badge-status badge-{{ item.pool.status }}">                    <div class="filter-group">
+
+                                        {% if item.pool.status == 'open' %}                        <label class="filter-label">Criado em</label>
+
+                                            <i class="fas fa-unlock me-1"></i>Aberto                        <select name="date_filter" class="form-select">
+
+                                        {% elif item.pool.status == 'closed' %}                            <option value="">Qualquer data</option>
+
+                                            <i class="fas fa-lock me-1"></i>Fechado                            <option value="today" {% if current_date_filter == 'today' %}selected{% endif %}>Hoje</option>
+
+                                        {% else %}                            <option value="week" {% if current_date_filter == 'week' %}selected{% endif %}>Última semana</option>
+
+                                            {{ item.pool.get_status_display }}                            <option value="month" {% if current_date_filter == 'month' %}selected{% endif %}>Último mês</option>
+
+                                        {% endif %}                        </select>
+
+                                    </span>                    </div>
+
+                                </div>                    
+
+                            </div>                    <!-- Ordenação -->
+
+                    <div class="filter-group">
+
+                            <div class="pool-card-body">                        <label class="filter-label">Ordenar por</label>
+
+                                <!-- Title and Description -->                        <select name="order_by" class="form-select">
+
+                                <h5 class="pool-title">{{ item.pool.name }}</h5>                            <option value="-created_at" {% if current_order == '-created_at' %}selected{% endif %}>Mais recentes</option>
+
+                                <p class="pool-description">                            <option value="created_at" {% if current_order == 'created_at' %}selected{% endif %}>Mais antigos</option>
+
+                                    {% if item.pool.description %}                            <option value="name" {% if current_order == 'name' %}selected{% endif %}>Nome A-Z</option>
+
+                                        {{ item.pool.description|truncatewords:15 }}                            <option value="-name" {% if current_order == '-name' %}selected{% endif %}>Nome Z-A</option>
+
+                                    {% else %}                        </select>
+
+                                        Bolão de {{ item.pool.competition.name }}                    </div>
+
+                                    {% endif %}                    
+
+                                </p>                    <!-- Botões -->
+
+                    <div class="d-grid gap-2">
+
+                                <!-- Pool Stats -->                        <button type="submit" class="btn btn-gradient">
+
+                                <div class="pool-stats">                            <i class="fas fa-search me-2"></i> Aplicar Filtros
+
+                                    <div class="pool-stat">                        </button>
+
+                                        <div class="pool-stat-number">{{ item.participant_count }}</div>                        <a href="{% url 'pools:list' %}" class="btn btn-clear">
+
+                                        <div class="pool-stat-label">Participantes</div>                            <i class="fas fa-times me-2"></i> Limpar
+
+                                    </div>                        </a>
+
+                                    <div class="pool-stat">                    </div>
+
+                                        <div class="pool-stat-number">{{ item.upcoming_matches }}</div>                </form>
+
+                                        <div class="pool-stat-label">Próximos</div>            </div>
+
+                                    </div>        </div>
+
+                                    <div class="pool-stat">        
+
+                                        <div class="pool-stat-number">{{ item.created_days_ago }}d</div>        <!-- Conteúdo Principal -->
+
+                                        <div class="pool-stat-label">Criado há</div>        <div class="col-lg-9">
+
+                                    </div>            <!-- Filtros Mobile -->
+
+                                </div>            <div class="filters-mobile mb-3">
+
+                <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="collapse" 
+
+                                <!-- Badges -->                        data-bs-target="#mobileFilters" aria-expanded="false">
+
+                                <div class="pool-badges">                    <i class="fas fa-filter me-2"></i> Filtros
+
+                                    {% if item.pool.entry_fee > 0 %}                </button>
+
+                                        <span class="badge badge-entry-fee">                <div class="collapse mt-2" id="mobileFilters">
+
+                                            <i class="fas fa-coins me-1"></i>{{ item.entry_fee_display }}                    <div class="card">
+
+                                        </span>                        <div class="card-body">
+
+                                    {% else %}                            <form method="get">
+
+                                        <span class="badge badge-free">                                <div class="row g-2">
+
+                                            <i class="fas fa-gift me-1"></i>Gratuito                                    <div class="col-12">
+
+                                        </span>                                        <input type="text" name="search" class="form-control" 
+
+                                    {% endif %}                                               placeholder="Buscar bolão..." value="{{ current_search }}">
+
+                                                                        </div>
+
+                                    {% if item.is_full %}                                    <div class="col-6">
+
+                                        <span class="badge bg-warning text-dark">                                        <select name="sport" class="form-select">
+
+                                            <i class="fas fa-users me-1"></i>Lotado                                            <option value="">Esporte</option>
+
+                                        </span>                                            {% for sport in sports %}
+
+                                    {% endif %}                                            <option value="{{ sport.id }}" {% if current_sport == sport.id|stringformat:"s" %}selected{% endif %}>
+
+                                                                                    {{ sport.name }}
+
+                                    {% if item.pool.visibility == 'private' %}                                            </option>
+
+                                        <span class="badge bg-secondary">                                            {% endfor %}
+
+                                            <i class="fas fa-eye-slash me-1"></i>Privado                                        </select>
+
+                                        </span>                                    </div>
+
+                                    {% endif %}                                    <div class="col-6">
+
+                                </div>                                        <select name="status" class="form-select">
+
+                                            <option value="">Status</option>
+
+                                <!-- Pool Owner -->                                            {% for status_code, status_name in status_choices %}
+
+                                <div class="d-flex align-items-center mb-3">                                            <option value="{{ status_code }}" {% if current_status == status_code %}selected{% endif %}>
+
+                                    <div class="avatar-sm me-2">                                                {{ status_name }}
+
+                                        <i class="fas fa-user-circle fa-lg text-muted"></i>                                            </option>
+
+                                    </div>                                            {% endfor %}
+
+                                    <small class="text-muted">                                        </select>
+
+                                        Criado por <strong>{{ item.pool.owner.username }}</strong>                                    </div>
+
+                                    </small>                                    <div class="col-12">
+
+                                </div>                                        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+
+                                    </div>
+
+                                <!-- Actions -->                                </div>
+
+                                <div class="pool-actions">                            </form>
+
+                                    {% if item.user_is_owner %}                        </div>
+
+                                        <a href="{% url 'pools:detail' item.pool.slug %}" class="btn btn-gradient flex-fill">                    </div>
+
+                                            <i class="fas fa-cog me-2"></i>Gerenciar                </div>
+
+                                        </a>            </div>
+
+                                    {% elif item.user_is_participant %}            
+
+                                        <a href="{% url 'pools:detail' item.pool.slug %}" class="btn btn-success-gradient flex-fill">            <!-- Resultados -->
+
+                                            <i class="fas fa-eye me-2"></i>Ver Ranking            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                        </a>                <h6 class="mb-0 text-muted">
+
+                                    {% elif item.can_join %}                    {% if page_obj %}
+
+                                        <div class="d-flex gap-2 w-100">                        Exibindo {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} bolões
+
+                                            <a href="{% url 'pools:detail' item.pool.slug %}" class="btn btn-outline-primary flex-fill">                    {% else %}
+
+                                                <i class="fas fa-info-circle me-2"></i>Detalhes                        Nenhum bolão encontrado
+
+                                            </a>                    {% endif %}
+
+                                            <a href="{% url 'pools:join' item.pool.slug %}" class="btn btn-gradient flex-fill">                </h6>
+
+                                                <i class="fas fa-plus me-2"></i>Participar                {% if current_search or current_sport or current_status or current_date_filter %}
+
+                                            </a>                <a href="{% url 'pools:list' %}" class="btn btn-sm btn-outline-secondary">
+
+                                        </div>                    <i class="fas fa-times me-1"></i> Limpar filtros
+
+                                    {% else %}                </a>
+
+                                        <a href="{% url 'pools:detail' item.pool.slug %}" class="btn btn-outline-primary flex-fill">                {% endif %}
+
+                                            <i class="fas fa-eye me-2"></i>Ver Detalhes            </div>
+
+                                        </a>            
+
+                                    {% endif %}            <!-- Lista de Bolões -->
+
+                                </div>            {% if pools_with_info %}
+
+                            </div>                <div class="pools-list">
+
+                        </div>                    {% for pool_info in pools_with_info %}
+
+                    </div>                    <div class="card pool-card">
+
+                    {% endfor %}                        <div class="pool-card-horizontal">
+
+                </div>                            <!-- Imagem do Bolão -->
+
+            {% else %}                            <div class="pool-image">
+
+                <!-- Empty State -->                                {% if pool_info.has_image %}
+
+                <div class="empty-state">                                    <img src="{{ pool_info.pool.competition.logo.url }}" alt="{{ pool_info.pool.competition.name }}">
+
+                    <div class="empty-icon">                                {% else %}
+
+                        <i class="fas fa-search"></i>                                    <i class="fas fa-trophy"></i>
+
+                    </div>                                {% endif %}
+
+                    <h4>Nenhum bolão encontrado</h4>                            </div>
+
+                    <p class="mb-4">                            
+
+                        {% if current_search or current_sport or current_status or current_date_filter or current_entry_fee %}                            <!-- Conteúdo -->
+
+                            Tente ajustar os filtros para encontrar mais bolões.                            <div class="pool-content">
+
+                        {% else %}                                <div class="pool-header">
+
+                            Ainda não há bolões disponíveis. Que tal criar o primeiro?                                    <div class="flex-grow-1">
+
+                        {% endif %}                                        <h4 class="pool-title">{{ pool_info.pool.name }}</h4>
+
+                    </p>                                        <div class="pool-badges">
+
+                    <div class="d-flex justify-content-center gap-3">                                            <span class="badge badge-sport">
+
+                        {% if current_search or current_sport or current_status or current_date_filter or current_entry_fee %}                                                <i class="{{ pool_info.pool.competition.sport.icon|default:'fas fa-trophy' }} me-1"></i>
+
+                            <button class="btn btn-outline-primary" onclick="clearFilters()">                                                {{ pool_info.pool.competition.sport.name }}
+
+                                <i class="fas fa-undo me-2"></i>Limpar Filtros                                            </span>
+
+                            </button>                                            <span class="badge badge-status-{{ pool_info.pool.status }}">
+
+                        {% endif %}                                                {% if pool_info.pool.status == 'open' %}
+
+                        <a href="{% url 'pools:create' %}" class="btn btn-gradient">                                                    <i class="fas fa-unlock me-1"></i> Aberto
+
+                            <i class="fas fa-plus me-2"></i>Criar Bolão                                                {% elif pool_info.pool.status == 'locked' %}
+
+                        </a>                                                    <i class="fas fa-lock me-1"></i> Fechado
+
+                    </div>                                                {% else %}
+
+                </div>                                                    <i class="fas fa-flag-checkered me-1"></i> Encerrado
+
+            {% endif %}                                                {% endif %}
+
+                                            </span>
+
+            <!-- Pagination -->                                            {% if pool_info.user_is_owner %}
+
+            {% if is_paginated %}                                            <span class="badge" style="background: #e8f5e8; color: #2d7d32;">
+
+                <nav aria-label="Navegação de páginas" class="d-flex justify-content-center">                                                <i class="fas fa-crown me-1"></i> Meu Bolão
+
+                    <ul class="pagination">                                            </span>
+
+                        {% if page_obj.has_previous %}                                            {% elif pool_info.user_is_participant %}
+
+                            <li class="page-item">                                            <span class="badge" style="background: #e3f2fd; color: #1565c0;">
+
+                                <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_sport %}sport={{ current_sport }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}{% if current_date_filter %}date_filter={{ current_date_filter }}&{% endif %}{% if current_entry_fee %}entry_fee={{ current_entry_fee }}&{% endif %}{% if current_order %}order_by={{ current_order }}&{% endif %}page=1">                                                <i class="fas fa-check-circle me-1"></i> Participando
+
+                                    <i class="fas fa-angle-double-left"></i>                                            </span>
+
+                                </a>                                            {% endif %}
+
+                            </li>                                        </div>
+
+                            <li class="page-item">                                    </div>
+
+                                <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_sport %}sport={{ current_sport }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}{% if current_date_filter %}date_filter={{ current_date_filter }}&{% endif %}{% if current_entry_fee %}entry_fee={{ current_entry_fee }}&{% endif %}{% if current_order %}order_by={{ current_order }}&{% endif %}page={{ page_obj.previous_page_number }}">                                </div>
+
+                                    <i class="fas fa-angle-left"></i>                                
+
+                                </a>                                {% if pool_info.pool.description %}
+
+                            </li>                                <p class="pool-description">{{ pool_info.pool.description|truncatechars:120 }}</p>
+
+                        {% endif %}                                {% endif %}
+
+                                
+
+                        {% for num in page_obj.paginator.page_range %}                                <div class="pool-meta">
+
+                            {% if page_obj.number == num %}                                    <div class="pool-stats">
+
+                                <li class="page-item active">                                        <div class="pool-stat">
+
+                                    <span class="page-link">{{ num }}</span>                                            <i class="fas fa-users text-primary"></i>
+
+                                </li>                                            <span>{{ pool_info.participant_count }} participantes</span>
+
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}                                        </div>
+
+                                <li class="page-item">                                        <div class="pool-stat">
+
+                                    <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_sport %}sport={{ current_sport }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}{% if current_date_filter %}date_filter={{ current_date_filter }}&{% endif %}{% if current_entry_fee %}entry_fee={{ current_entry_fee }}&{% endif %}{% if current_order %}order_by={{ current_order }}&{% endif %}page={{ num }}">{{ num }}</a>                                            <i class="fas fa-trophy text-warning"></i>
+
+                                </li>                                            <span>{{ pool_info.pool.competition.name }}</span>
+
+                            {% endif %}                                        </div>
+
+                        {% endfor %}                                        <div class="pool-stat">
+
+                                            <i class="fas fa-calendar text-info"></i>
+
+                        {% if page_obj.has_next %}                                            <span>{{ pool_info.pool.created_at|date:"d/m/Y" }}</span>
+
+                            <li class="page-item">                                        </div>
+
+                                <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_sport %}sport={{ current_sport }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}{% if current_date_filter %}date_filter={{ current_date_filter }}&{% endif %}{% if current_entry_fee %}entry_fee={{ current_entry_fee }}&{% endif %}{% if current_order %}order_by={{ current_order }}&{% endif %}page={{ page_obj.next_page_number }}">                                        {% if pool_info.pool.entry_fee %}
+
+                                    <i class="fas fa-angle-right"></i>                                        <div class="pool-stat">
+
+                                </a>                                            <i class="fas fa-dollar-sign text-success"></i>
+
+                            </li>                                            <span>R$ {{ pool_info.pool.entry_fee|floatformat:2 }}</span>
+
+                            <li class="page-item">                                        </div>
+
+                                <a class="page-link" href="?{% if current_search %}search={{ current_search }}&{% endif %}{% if current_sport %}sport={{ current_sport }}&{% endif %}{% if current_status %}status={{ current_status }}&{% endif %}{% if current_date_filter %}date_filter={{ current_date_filter }}&{% endif %}{% if current_entry_fee %}entry_fee={{ current_entry_fee }}&{% endif %}{% if current_order %}order_by={{ current_order }}&{% endif %}page={{ page_obj.paginator.num_pages }}">                                        {% endif %}
+
+                                    <i class="fas fa-angle-double-right"></i>                                    </div>
+
+                                </a>                                    
+
+                            </li>                                    <div class="pool-actions">
+
+                        {% endif %}                                        {% if pool_info.can_join %}
+
+                    </ul>                                            <a href="{% url 'pools:join' pool_info.pool.slug %}" class="btn btn-success btn-sm">
+
+                </nav>                                                <i class="fas fa-plus-circle me-1"></i> Participar
+
+            {% endif %}                                            </a>
+
+        </div>                                        {% elif pool_info.pool.status == 'finished' %}
+
+    </div>                                            <a href="{% url 'pools:ranking' pool_info.pool.slug %}" class="btn btn-primary btn-sm">
+
+</div>                                                <i class="fas fa-medal me-1"></i> Ver Ranking
+
+                                            </a>
+
+<!-- Mobile Overlay -->                                        {% else %}
+
+<div class="overlay" id="mobileOverlay" onclick="toggleMobileFilters()"></div>                                            <a href="{% url 'pools:detail' pool_info.pool.slug %}" class="btn btn-primary btn-sm">
+
+                                                <i class="fas fa-eye me-1"></i> Ver Detalhes
+
+<!-- Loading Skeletons (hidden by default) -->                                            </a>
+
+<div class="row g-4 d-none" id="loadingSkeletons">                                        {% endif %}
+
+    {% for i in "123456789" %}                                        
+
+    <div class="col-lg-4 col-md-6">                                        {% if pool_info.user_is_owner %}
+
+        <div class="skeleton-card"></div>                                        <a href="{% url 'pools:update' pool_info.pool.slug %}" class="btn btn-outline-secondary btn-sm">
+
+    </div>                                            <i class="fas fa-edit me-1"></i> Editar
+
+    {% endfor %}                                        </a>
+
+</div>                                        {% endif %}
+
+{% endblock %}                                    </div>
+
+                                </div>
+
+{% block extra_js %}                            </div>
+
+<script>                        </div>
+
+document.addEventListener('DOMContentLoaded', function() {                    </div>
+
+    // Auto-submit search form after typing stops                    {% endfor %}
+
+    let searchTimeout;                </div>
+
+    const searchInput = document.querySelector('input[name="search"]');                
+
+                    <!-- Paginação -->
+
+    if (searchInput) {                {% if is_paginated %}
+
+        searchInput.addEventListener('input', function() {                <nav aria-label="Paginação de bolões">
+
+            clearTimeout(searchTimeout);                    <ul class="pagination">
+
+            searchTimeout = setTimeout(() => {                        {% if page_obj.has_previous %}
+
+                document.getElementById('searchForm').submit();                            <li class="page-item">
+
+            }, 800);                                <a class="page-link" href="?{{ request.GET.urlencode }}&page=1" aria-label="Primeira">
+
+        });                                    <i class="fas fa-angle-double-left"></i>
+
+    }                                </a>
+
+                                </li>
+
+    // Smooth animations for cards                            <li class="page-item">
+
+    const cards = document.querySelectorAll('.pool-card');                                <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+
+    cards.forEach((card, index) => {                                    <i class="fas fa-angle-left"></i>
+
+        card.style.animationDelay = `${index * 0.1}s`;                                </a>
+
+        card.classList.add('animate__animated', 'animate__fadeInUp');                            </li>
+
+    });                        {% endif %}
+
+});                        
+
+                        {% for num in page_obj.paginator.page_range %}
+
+function submitFilters() {                            {% if page_obj.number == num %}
+
+    showLoadingState();                                <li class="page-item active">
+
+    document.getElementById('filtersForm').submit();                                    <span class="page-link">{{ num }}</span>
+
+}                                </li>
+
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+
+function changeOrder(value) {                                <li class="page-item">
+
+    const url = new URL(window.location);                                    <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ num }}">{{ num }}</a>
+
+    url.searchParams.set('order_by', value);                                </li>
+
+    url.searchParams.set('page', '1'); // Reset to first page                            {% endif %}
+
+    showLoadingState();                        {% endfor %}
+
+    window.location.href = url.toString();                        
+
+}                        {% if page_obj.has_next %}
+
+                            <li class="page-item">
+
+function clearFilters() {                                <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" aria-label="Próxima">
+
+    const url = new URL(window.location);                                    <i class="fas fa-angle-right"></i>
+
+    // Keep only the search parameter if it exists                                </a>
+
+    const search = url.searchParams.get('search');                            </li>
+
+    url.search = '';                            <li class="page-item">
+
+    if (search) {                                <a class="page-link" href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+
+        url.searchParams.set('search', search);                                    <i class="fas fa-angle-double-right"></i>
+
+    }                                </a>
+
+    showLoadingState();                            </li>
+
+    window.location.href = url.toString();                        {% endif %}
+
+}                    </ul>
+
+                </nav>
+
+function toggleMobileFilters() {                {% endif %}
+
+    const sidebar = document.getElementById('filtersSidebar');                
+
+    const overlay = document.getElementById('mobileOverlay');            {% else %}
+
+                    <!-- Estado Vazio -->
+
+    sidebar.classList.toggle('show');                <div class="empty-state">
+
+    overlay.classList.toggle('show');                    <i class="fas fa-search"></i>
+
+                        <h3>Nenhum bolão encontrado</h3>
+
+    // Prevent body scroll when sidebar is open                    {% if current_search or current_sport or current_status or current_date_filter %}
+
+    if (sidebar.classList.contains('show')) {                        <p>Tente ajustar os filtros ou</p>
+
+        document.body.style.overflow = 'hidden';                        <a href="{% url 'pools:list' %}" class="btn btn-primary">
+
+    } else {                            <i class="fas fa-times me-2"></i> Limpar filtros
+
+        document.body.style.overflow = '';                        </a>
+
+    }                    {% else %}
+
+}                        <p>Não há bolões disponíveis no momento.</p>
+
+                        <a href="{% url 'pools:create' %}" class="btn btn-primary">
+
+function showLoadingState() {                            <i class="fas fa-plus-circle me-2"></i> Criar o primeiro bolão
+
+    const poolsContainer = document.getElementById('poolsContainer');                        </a>
+
+    const loadingSkeletons = document.getElementById('loadingSkeletons');                    {% endif %}
+
+                    </div>
+
+    if (poolsContainer) {            {% endif %}
+
+        poolsContainer.style.opacity = '0.5';        </div>
+
+        poolsContainer.style.pointerEvents = 'none';    </div>
+
+    }</div>
+
+    
+
+    // Show loading indicator<!-- Skeleton Loading Template (hidden by default) -->
+
+    if (loadingSkeletons) {<div class="d-none" id="skeletonTemplate">
+
+        loadingSkeletons.classList.remove('d-none');    <div class="skeleton skeleton-card"></div>
+
+        setTimeout(() => {    <div class="skeleton skeleton-card"></div>
+
+            loadingSkeletons.classList.add('d-none');    <div class="skeleton skeleton-card"></div>
+
+        }, 1000);</div>
+
+    }{% endblock %}
+
+}
+
+{% block extra_js %}
+
+// Enhanced card hover effects<script>
+
+document.querySelectorAll('.pool-card').forEach(card => {document.addEventListener('DOMContentLoaded', function() {
+
+    card.addEventListener('mouseenter', function() {    // Auto-submit do formulário de filtros ao alterar valores
+
+        this.style.transform = 'translateY(-8px) scale(1.02)';    const form = document.getElementById('filtersForm');
+
+    });    if (form) {
+
+            const inputs = form.querySelectorAll('input, select');
+
+    card.addEventListener('mouseleave', function() {        inputs.forEach(input => {
+
+        this.style.transform = 'translateY(0) scale(1)';            input.addEventListener('change', function() {
+
+    });                // Debounce para input de texto
+
+});                if (this.type === 'text') {
+
+                    clearTimeout(this.searchTimeout);
+
+// Close mobile sidebar when clicking outside                    this.searchTimeout = setTimeout(() => {
+
+document.addEventListener('click', function(event) {                        form.submit();
+
+    const sidebar = document.getElementById('filtersSidebar');                    }, 500);
+
+    const mobileBtn = document.querySelector('.mobile-filters-btn');                } else {
+
+                        form.submit();
+
+    if (window.innerWidth <= 768 &&                 }
+
+        sidebar.classList.contains('show') &&             });
+
+        !sidebar.contains(event.target) &&         });
+
+        !mobileBtn.contains(event.target)) {    }
+
+        toggleMobileFilters();    
+
+    }    // Smooth scroll para ancoras
+
+});    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+
+        anchor.addEventListener('click', function (e) {
+
+// Handle window resize            e.preventDefault();
+
+window.addEventListener('resize', function() {            const target = document.querySelector(this.getAttribute('href'));
+
+    if (window.innerWidth > 768) {            if (target) {
+
+        const sidebar = document.getElementById('filtersSidebar');                target.scrollIntoView({
+
+        const overlay = document.getElementById('mobileOverlay');                    behavior: 'smooth',
+
+                            block: 'start'
+
+        sidebar.classList.remove('show');                });
+
+        overlay.classList.remove('show');            }
+
+        document.body.style.overflow = '';        });
+
+    }    });
+
+});    
+
+</script>    // Loading skeleton ao fazer busca
+
+{% endblock %}    function showLoading() {
+        const poolsList = document.querySelector('.pools-list');
+        const skeletonTemplate = document.getElementById('skeletonTemplate');
+        if (poolsList && skeletonTemplate) {
+            poolsList.innerHTML = skeletonTemplate.innerHTML;
+        }
+    }
+    
+    // Animações de entrada para os cards
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Aplicar animação aos cards
+    document.querySelectorAll('.pool-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = `all 0.6s ease ${index * 0.1}s`;
+        observer.observe(card);
+    });
+});
+</script>
 {% endblock %}
