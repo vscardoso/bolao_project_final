@@ -34,7 +34,7 @@
                 
                 <div class="col-md-6">
                     <div class="profile-info">
-                        <h1>{{ user.get_full_name|default:user.username }}</h1>
+                        <h1 class="page-title text-white">{{ user.get_full_name|default:user.username }}</h1>
                         <p>
                             {% if user.profile.bio %}
                                 {{ user.profile.bio }}

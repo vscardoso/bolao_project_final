@@ -1,0 +1,94 @@
+/* =============================================================================
+   CSS VARIABLES - DESIGN TOKENS (FASE 2)
+   Sistema centralizado de variáveis para todo o projeto
+   ============================================================================= */
+
+:root {
+    /* =========================================================================
+       SPACING TOKENS - Auth Pages
+       ========================================================================= */
+
+    --auth-card-padding: 3rem;
+    --auth-card-margin: 2rem auto;
+    --auth-section-padding: 4rem 0;
+    --auth-input-gap: 1.5rem;
+    --auth-button-gap: 1rem;
+    --auth-section-gap: 4rem;
+
+    /* =========================================================================
+       SPACING TOKENS - Components
+       ========================================================================= */
+
+    --card-padding: 1.5rem;
+    --card-gap: 1.5rem;
+    --section-padding: 4rem 0;
+    --section-gap: 3rem;
+
+    /* =========================================================================
+       SPACING TOKENS - Forms
+       ========================================================================= */
+
+    --form-group-gap: 1.5rem;
+    --form-label-margin: 0.5rem;
+    --form-input-padding: 0.75rem 1rem;
+    --form-help-margin: 0.5rem;
+
+    /* =========================================================================
+       SPACING TOKENS - Navigation
+       ========================================================================= */
+
+    --nav-padding: 1rem 0;
+    --nav-item-padding: 0.75rem 1rem;
+    --nav-dropdown-padding: 0.75rem 1.5rem;
+
+    /* =========================================================================
+       SPACING TOKENS - Layout
+       ========================================================================= */
+
+    --header-padding: 3rem 0;
+    --footer-padding: 3rem 0;
+    --container-padding: 1rem;
+
+    /* =========================================================================
+       Z-INDEX LAYERS
+       ========================================================================= */
+
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+}
+
+/* =============================================================================
+   RESPONSIVE SPACING (Tablet)
+   ============================================================================= */
+
+@media (max-width: 768px) {
+    :root {
+        --auth-card-padding: 2rem;
+        --auth-section-padding: 2rem 0;
+        --auth-section-gap: 2rem;
+
+        --section-padding: 2rem 0;
+        --section-gap: 2rem;
+
+        --header-padding: 2rem 0;
+        --footer-padding: 2rem 0;
+    }
+}
+
+/* =============================================================================
+   RESPONSIVE SPACING (Mobile)
+   ============================================================================= */
+
+@media (max-width: 576px) {
+    :root {
+        --auth-card-padding: 1.5rem;
+        --card-padding: 1rem;
+        --form-group-gap: 1rem;
+        --container-padding: 0.75rem;
+    }
+}
