@@ -1,14 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block title %}Login | Bolão Online{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth-forms.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <div class="login-card">
+            <div class="card-unified card-unified--narrow">
                 <!-- Logo e cabeçalho -->
                 <div class="text-center mb-4">
                     <img src="{% static 'img/logo.png' %}" alt="Bolão Online" class="login-logo mb-4">
@@ -88,7 +91,7 @@
                     <p>Não tem uma conta? <a href="{% url 'register' %}" class="register-link">Registre-se</a></p>
                 </div>
             </div>
-            
+
             <!-- Bloco de dicas -->
             <div class="login-tips mt-4">
                 <div class="card border-0 shadow-sm">
