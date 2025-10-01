@@ -1,0 +1,9 @@
+COPIE E COLE NO POWERSHELL COMO ADMINISTRADOR:
+
+cd "C:\Users\Victor\Desktop\bolao_project"
+.\SETUP_MYSQL_COMPLETO.bat
+
+OU ALTERNATIVAMENTE:
+
+cd "C:\Users\Victor\Desktop\bolao_project"
+powershell -ExecutionPolicy Bypass -File SETUP_MYSQL_AUTO.ps1

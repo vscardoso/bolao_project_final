@@ -4,75 +4,65 @@
 {% block title %}Bolão Online - A Melhor Forma de Apostar com Amigos{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="py-5 bg-primary bg-gradient text-white">
+<!-- Hero Section com gradiente e animações -->
+<section class="hero-section">
     <div class="container">
-    <div class="container">
-        <div class="row align-items-center min-vh-50">
-            <div class="col-lg-6 mb-5 mb-lg-0">
-                <h1 class="display-4 fw-bold mb-3">Transforme seus palpites em diversão e prêmios!</h1>
-                <p class="lead mb-4">O jeito mais fácil de organizar bolões com amigos, colegas de trabalho e família. Crie, participe, aposte e ganhe!</p>
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6 hero-content" data-aos="fade-right">
+                <h1 class="display-4 fw-bold mb-4">
+                    Transforme seus 
+                    <span class="gradient-text">palpites</span> 
+                    em diversão e prêmios!
+                </h1>
+                <p class="lead mb-5">
+                    O jeito mais fácil e seguro de organizar bolões com amigos, 
+                    colegas de trabalho e família. Crie, participe, aposte e ganhe!
+                </p>
                 
                 {% if user.is_authenticated %}
                 <div class="d-flex gap-3 flex-column flex-md-row">
                     <a href="{% url 'users:dashboard' %}" class="btn btn-light btn-lg">
-                        <i class="fas fa-tachometer-alt me-2"></i> Meu Dashboard
+                        <i class="fas fa-tachometer-alt me-2"></i>Meu Dashboard
                     </a>
                     <a href="{% url 'pools:list' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-plus-circle me-2"></i> Ver Bolões
+                        <i class="fas fa-plus-circle me-2"></i>Ver Bolões
                     </a>
                 </div>
                 {% else %}
-                <div class="d-grid gap-3 d-md-flex">
-                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4">
-                        <i class="fas fa-user-plus me-2"></i> Comece agora
+                <div class="d-flex gap-3 flex-column flex-md-row">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5">
+                        <i class="fas fa-user-plus me-2"></i>Comece Agora Grátis
                     </a>
                     <a href="#como-funciona" class="btn btn-outline-light btn-lg px-4">
-                        <i class="fas fa-info-circle me-2"></i> Como funciona
+                        <i class="fas fa-info-circle me-2"></i>Como Funciona
                     </a>
                 </div>
                 {% endif %}
-            </div>
-            <div class="col-lg-6 text-center">
-                <i class="fas fa-trophy" style="font-size: 12rem; opacity: 0.1;"></i>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Estatísticas -->
-<section class="py-5">
-    <div class="container">
-        <div class="row text-center g-4">
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h3 class="display-6 fw-bold text-primary">250+</h3>
-                        <p class="text-muted mb-0">Bolões Criados</p>
+                
+                <div class="mt-4 d-flex align-items-center gap-4 text-white-50">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <small>100% Gratuito</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <small>Seguro e Confiável</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-users me-2"></i>
+                        <small>+5.000 Usuários</small>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h3 class="display-6 fw-bold text-primary">5.000+</h3>
-                        <p class="text-muted mb-0">Usuários</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h3 class="display-6 fw-bold text-primary">R$ 50k+</h3>
-                        <p class="text-muted mb-0">Em Prêmios</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h3 class="display-6 fw-bold text-primary">99%</h3>
-                        <p class="text-muted mb-0">Satisfação</p>
+            
+            <div class="col-lg-6 text-center" data-aos="fade-left" data-aos-delay="200">
+                <div class="position-relative">
+                    <div class="bg-white bg-opacity-10 rounded-3 p-5 glass-effect">
+                        <i class="fas fa-trophy animate-pulse" style="font-size: 8rem; color: rgba(255,255,255,0.9);"></i>
+                        <div class="mt-3">
+                            <h3 class="h5 text-white">Ganhe Prêmios Incríveis</h3>
+                            <p class="text-white-50 mb-0">Apostas justas e transparentes</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,45 +70,97 @@
     </div>
 </section>
 
-<!-- Como Funciona -->
-<section id="como-funciona" class="py-5 bg-light">
+<!-- Estatísticas com animações -->
+<section class="section section-white">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">Como Funciona</h2>
-            <p class="lead text-muted">Três passos simples para começar a se divertir</p>
+        <div class="row g-4" data-aos="fade-up">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">250+</div>
+                    <div class="stat-label">Bolões Criados</div>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card">
+                    <div class="stat-number">5.000+</div>
+                    <div class="stat-label">Usuários Ativos</div>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card">
+                    <div class="stat-number">R$ 50k+</div>
+                    <div class="stat-label">Em Prêmios Distribuídos</div>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-card">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Satisfação dos Usuários</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Como Funciona com design moderno -->
+<section id="como-funciona" class="section section-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold gradient-text mb-3">Como Funciona</h2>
+            <p class="lead text-muted">Três passos simples para começar a se divertir e ganhar</p>
         </div>
         
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                            <i class="fas fa-users fa-2x"></i>
+        <div class="row g-5">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card h-100 text-center position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: var(--gradient-primary);"></div>
+                    <div class="card-body p-4">
+                        <div class="rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" 
+                             style="width: 100px; height: 100px; background: var(--gradient-primary);">
+                            <i class="fas fa-users fa-2x text-white"></i>
                         </div>
+                        <span class="badge bg-primary mb-3">Passo 1</span>
                         <h3 class="h4 mb-3">Crie seu Bolão</h3>
-                        <p class="text-muted">Defina as regras, o valor das apostas e convide seus amigos em apenas alguns cliques.</p>
+                        <p class="text-muted">
+                            Defina as regras, o valor das apostas e convide seus amigos 
+                            em apenas alguns cliques. Sistema intuitivo e fácil.
+                        </p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                            <i class="fas fa-trophy fa-2x"></i>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card h-100 text-center position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: var(--gradient-primary);"></div>
+                    <div class="card-body p-4">
+                        <div class="rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" 
+                             style="width: 100px; height: 100px; background: var(--gradient-primary);">
+                            <i class="fas fa-futbol fa-2x text-white"></i>
                         </div>
+                        <span class="badge bg-primary mb-3">Passo 2</span>
                         <h3 class="h4 mb-3">Faça suas Apostas</h3>
-                        <p class="text-muted">Aposte nos resultados dos jogos e acompanhe em tempo real para ver se acertou.</p>
+                        <p class="text-muted">
+                            Aposte nos resultados dos jogos e acompanhe em tempo real 
+                            para ver se acertou. Interface moderna e responsiva.
+                        </p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                            <i class="fas fa-money-bill-wave fa-2x"></i>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card h-100 text-center position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: var(--gradient-primary);"></div>
+                    <div class="card-body p-4">
+                        <div class="rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center" 
+                             style="width: 100px; height: 100px; background: var(--gradient-primary);">
+                            <i class="fas fa-crown fa-2x text-white"></i>
                         </div>
+                        <span class="badge bg-primary mb-3">Passo 3</span>
                         <h3 class="h4 mb-3">Ganhe Prêmios</h3>
-                        <p class="text-muted">Acompanhe sua posição no ranking e receba seus prêmios de forma transparente.</p>
+                        <p class="text-muted">
+                            Acompanhe sua posição no ranking e receba seus prêmios 
+                            de forma transparente e segura. Diversão garantida!
+                        </p>
                     </div>
                 </div>
             </div>
@@ -126,58 +168,75 @@
     </div>
 </section>
 
-<!-- Bolões em Destaque -->
-<section class="py-5">
+<!-- Bolões em Destaque redesenhado -->
+<section class="section section-white">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">Bolões em Destaque</h2>
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold gradient-text mb-3">Bolões em Destaque</h2>
             <p class="text-muted">Participe dos bolões mais populares da plataforma</p>
         </div>
         
         <div class="row g-4">
             {% for pool in featured_pools %}
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100|stringformat:'d' }}">
+                <div class="card h-100 position-relative overflow-hidden">
+                    <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: var(--gradient-primary);"></div>
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title mb-0">{{ pool.name }}</h5>
-                            <span class="badge bg-primary">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title mb-0 fw-bold">{{ pool.name }}</h5>
+                            <span class="badge" style="background: var(--gradient-primary);">
                                 {{ pool.get_visibility_display }}
                             </span>
                         </div>
-                        <p class="text-muted small mb-3">
+                        
+                        <p class="text-muted mb-4">
                             {{ pool.description|truncatechars:100 }}
                         </p>
-                        <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
-                            <div>
-                                <i class="fas fa-trophy me-1"></i> 
-                                {% if pool.competition %}{{ pool.competition.name }}{% else %}Competição{% endif %}
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center text-muted small">
+                                    <i class="fas fa-trophy me-2 text-primary"></i>
+                                    <span>{% if pool.competition %}{{ pool.competition.name }}{% else %}Competição{% endif %}</span>
+                                </div>
                             </div>
-                            <div>
-                                <i class="fas fa-users me-1"></i> {{ pool.participants.count }} participantes
+                            <div class="col-6">
+                                <div class="d-flex align-items-center text-muted small">
+                                    <i class="fas fa-users me-2 text-primary"></i>
+                                    <span>{{ pool.participants.count }} participantes</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-white border-top-0 d-grid">
+                    
+                    <div class="card-footer bg-transparent border-0 p-3">
                         {% if user.is_authenticated %}
-                        <a href="{% url 'pools:join' pool.slug %}" class="btn btn-primary">
-                            <i class="fas fa-plus-circle me-1"></i> Participar
+                        <a href="{% url 'pools:join' pool.slug %}" class="btn btn-primary w-100">
+                            <i class="fas fa-plus-circle me-2"></i>Participar Agora
                         </a>
                         {% else %}
-                        <a href="{% url 'register' %}" class="btn btn-primary">
-                            <i class="fas fa-user-plus me-2"></i> Cadastre-se para participar
+                        <a href="{% url 'register' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-user-plus me-2"></i>Cadastre-se para Participar
                         </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="col-12">
+            <div class="col-12" data-aos="fade-up">
                 <div class="text-center py-5">
-                    <p class="lead">Nenhum bolão em destaque no momento.</p>
+                    <div class="mb-4">
+                        <i class="fas fa-trophy text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Nenhum bolão em destaque no momento</h3>
+                    <p class="lead text-muted mb-4">Seja o primeiro a criar um bolão incrível!</p>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'pools:create' %}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle me-2"></i> Criar seu primeiro bolão
+                    <a href="{% url 'pools:create' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i>Criar Meu Primeiro Bolão
+                    </a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Cadastrar e Criar Bolão
                     </a>
                     {% endif %}
                 </div>
@@ -185,24 +244,100 @@
             {% endfor %}
         </div>
         
-        <div class="text-center mt-4">
-            <a href="{% url 'pools:list' %}" class="btn btn-lg btn-outline-primary">
-                <i class="fas fa-search me-2"></i> Ver todos os bolões
+        {% if featured_pools %}
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'pools:list' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-search me-2"></i>Ver Todos os Bolões
             </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features destacadas -->
+<section class="section section-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold gradient-text mb-3">Por que escolher o Bolão Online?</h2>
+            <p class="text-muted">Recursos exclusivos que fazem toda a diferença</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-center">
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: rgba(102, 126, 234, 0.1);">
+                        <i class="fas fa-shield-alt fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">100% Seguro</h5>
+                    <p class="text-muted small">Sistema criptografado e dados protegidos</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-center">
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: rgba(102, 126, 234, 0.1);">
+                        <i class="fas fa-mobile-alt fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Mobile First</h5>
+                    <p class="text-muted small">Perfeito em qualquer dispositivo</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-center">
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: rgba(102, 126, 234, 0.1);">
+                        <i class="fas fa-clock fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Tempo Real</h5>
+                    <p class="text-muted small">Atualizações instantâneas dos resultados</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="text-center">
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px; background: rgba(102, 126, 234, 0.1);">
+                        <i class="fas fa-comments fa-2x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Suporte 24/7</h5>
+                    <p class="text-muted small">Estamos sempre aqui para ajudar</p>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Call to Action -->
+<!-- Call to Action final -->
 {% if not user.is_authenticated %}
-<section class="py-5 bg-primary bg-gradient text-white">
-    <div class="container text-center">
-        <h2 class="display-4 fw-bold mb-4">Pronto para começar?</h2>
-        <p class="lead mb-5">Junte-se a milhares de apostadores e comece a competir com seus amigos hoje mesmo!</p>
-        <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3">
-            <i class="fas fa-user-plus me-2"></i> Criar minha conta gratuita
-        </a>
-        <p class="mt-3 opacity-75">É grátis para sempre. Sem taxas escondidas.</p>
+<section class="hero-section">
+    <div class="container text-center" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="display-4 fw-bold mb-4">Pronto para começar a diversão?</h2>
+                <p class="lead mb-5 opacity-90">
+                    Junte-se a milhares de apostadores e comece a competir com seus amigos hoje mesmo! 
+                    É grátis, seguro e muito divertido.
+                </p>
+                
+                <div class="d-flex gap-3 justify-content-center flex-column flex-md-row">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3">
+                        <i class="fas fa-user-plus me-2"></i>Criar Conta Gratuita
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-5 py-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Já Tenho Conta
+                    </a>
+                </div>
+                
+                <div class="mt-4 d-flex justify-content-center gap-4 text-white-50 flex-wrap">
+                    <small><i class="fas fa-check me-1"></i>Sem taxa de inscrição</small>
+                    <small><i class="fas fa-check me-1"></i>Sem limites de bolões</small>
+                    <small><i class="fas fa-check me-1"></i>Suporte gratuito</small>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 {% endif %}

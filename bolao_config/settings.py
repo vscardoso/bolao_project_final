@@ -1,12 +1,12 @@
 """
 Django settings for bolao_config project.
-Versão segura usando variáveis de ambiente.
-Atualizado em 29/09/2025 - Consolidação completa.
+Versão com máxima segurança usando python-decouple.
+Atualizado em 30/09/2025 - Segurança máxima implementada.
 """
 
 from pathlib import Path
 import os
-from decouple import config, Csv
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +21,8 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
+# Hosts permitidos
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 
 # Application definition
@@ -81,19 +82,25 @@ WSGI_APPLICATION = 'bolao_config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Configuração do banco de dados
+DB_ENGINE = config('DB_ENGINE', default='django.db.backends.mysql')
+
 DATABASES = {
     'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.mysql'),
+        'ENGINE': DB_ENGINE,
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-        }
     }
 }
+
+# Adicionar opções específicas do MySQL se necessário
+if 'mysql' in DB_ENGINE:
+    DATABASES['default']['OPTIONS'] = {
+        'charset': 'utf8mb4',
+    }
 
 
 # Password validation
@@ -207,6 +214,6 @@ if not DEBUG:
 # ========================================
 
 STATIC_URL = config('STATIC_URL', default='/static/')
-STATIC_ROOT = config('STATIC_ROOT', default=BASE_DIR / 'staticfiles')
+STATIC_ROOT = config('STATIC_ROOT', default=str(BASE_DIR / 'staticfiles'))
 MEDIA_URL = config('MEDIA_URL', default='/media/')
-MEDIA_ROOT = config('MEDIA_ROOT', default=BASE_DIR / 'media')
+MEDIA_ROOT = config('MEDIA_ROOT', default=str(BASE_DIR / 'media'))
