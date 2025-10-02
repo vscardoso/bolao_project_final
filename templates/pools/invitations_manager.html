@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if pool %}Convites - {{ pool.name }}{% else %}Meus Convites{% endif %}{% endblock %}
+
+{% block content %}
+<a href="#invitations-main" class="skip-link">Pular para conteúdo principal</a>
+
+<main id="invitations-main" role="main" class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Breadcrumb -->
+            <nav aria-label="Navegação por caminho">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                    {% if pool %}
+                        <li class="breadcrumb-item"><a href="{% url 'pools:detail' pool.slug %}">{{ pool.name }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Convites</li>
+                    {% else %}
+                        <li class="breadcrumb-item active" aria-current="page">Meus Convites</li>
+                    {% endif %}
+                </ol>
+            </nav>
+            
+            <!-- Header -->
+            <header class="invitations-header mb-4">
+                <h1 class="h2">
+                    {% if pool %}
+                        Convites para {{ pool.name }}
+                    {% else %}
+                        Meus Convites Enviados
+                    {% endif %}
+                </h1>
+            </header>
+            
+            <!-- Tab Navigation -->
+            <nav class="invitations-tabs" role="tablist" aria-label="Gerenciamento de convites">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" 
+                                id="list-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#list-panel" 
+                                type="button" 
+                                role="tab" 
+                                aria-controls="list-panel" 
+                                aria-selected="true">
+                            <i class="fas fa-list me-2" aria-hidden="true"></i>
+                            {% if pool %}Convites do Bolão{% else %}Todos os Convites{% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" 
+                                id="send-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#send-panel" 
+                                type="button" 
+                                role="tab" 
+                                aria-controls="send-panel" 
+                                aria-selected="false">
+                            <i class="fas fa-paper-plane me-2" aria-hidden="true"></i>
+                            Enviar Convite
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Tab Content -->
+            <div class="tab-content invitations-content">
+                <!-- Lista de Convites -->
+                <article id="list-panel" 
+                         class="tab-pane fade show active" 
+                         role="tabpanel" 
+                         aria-labelledby="list-tab">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h2 class="h5 mb-0">
+                                {% if pool %}Convites Enviados{% else %}Todos os Convites{% endif %}
+                            </h2>
+                            {% if not pool %}
+                                <a href="{% url 'pools:my_created' %}" class="btn btn-light btn-sm">
+                                    <i class="fas fa-trophy me-2" aria-hidden="true"></i>Meus Bolões
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            {% if invitations %}
+                                <!-- Batch Actions -->
+                                <div class="batch-actions mb-3 d-none" id="batchActions">
+                                    <div class="alert alert-info d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <strong id="selectedCount">0</strong> convite(s) selecionado(s)
+                                        </span>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-danger" 
+                                                id="cancelSelectedBtn"
+                                                aria-label="Cancelar convites selecionados">
+                                            <i class="fas fa-times me-1" aria-hidden="true"></i>
+                                            Cancelar Selecionados
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Invitations Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-hover invitations-table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" class="select-col">
+                                                    <input type="checkbox" 
+                                                           id="selectAll" 
+                                                           aria-label="Selecionar todos os convites pendentes">
+                                                </th>
+                                                <th scope="col">Email Convidado</th>
+                                                {% if not pool %}
+                                                    <th scope="col">Bolão</th>
+                                                {% endif %}
+                                                <th scope="col">Status</th>
+                                                <th scope="col">Enviado em</th>
+                                                <th scope="col">Atualizado em</th>
+                                                <th scope="col">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for invitation in invitations %}
+                                            <tr>
+                                                <td>
+                                                    {% if invitation.status == 'pending' %}
+                                                        <input type="checkbox" 
+                                                               class="invitation-select" 
+                                                               data-invitation-id="{{ invitation.id }}"
+                                                               aria-label="Selecionar convite para {{ invitation.recipient_email }}">
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ invitation.recipient_email }}</td>
+                                                {% if not pool %}
+                                                    <td>
+                                                        <a href="{% url 'pools:detail' invitation.pool.slug %}">
+                                                            {{ invitation.pool.name }}
+                                                        </a>
+                                                    </td>
+                                                {% endif %}
+                                                <td>
+                                                    {% if invitation.status == 'pending' %}
+                                                        <span class="badge bg-warning text-dark">Pendente</span>
+                                                    {% elif invitation.status == 'accepted' %}
+                                                        <span class="badge bg-success">Aceito</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Recusado</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <time datetime="{{ invitation.created_at|date:'Y-m-d\TH:i' }}">
+                                                        {{ invitation.created_at|date:"d/m/Y H:i" }}
+                                                    </time>
+                                                </td>
+                                                <td>
+                                                    <time datetime="{{ invitation.updated_at|date:'Y-m-d\TH:i' }}">
+                                                        {{ invitation.updated_at|date:"d/m/Y H:i" }}
+                                                    </time>
+                                                </td>
+                                                <td>
+                                                    {% if invitation.status == 'pending' %}
+                                                        <button class="btn btn-sm btn-outline-primary copy-link" 
+                                                                data-link="{{ request.scheme }}://{{ request.get_host }}{% url 'pools:accept_invitation' invitation.code %}"
+                                                                aria-label="Copiar link do convite para {{ invitation.recipient_email }}">
+                                                            <i class="fas fa-link" aria-hidden="true"></i> 
+                                                            <span class="d-none d-md-inline">Copiar Link</span>
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <!-- Empty State -->
+                                <div class="text-center py-5 empty-state">
+                                    <i class="fas fa-envelope fa-3x text-muted mb-3" aria-hidden="true"></i>
+                                    <p class="lead">
+                                        {% if pool %}
+                                            Nenhum convite enviado ainda para este bolão.
+                                        {% else %}
+                                            Você ainda não enviou nenhum convite.
+                                        {% endif %}
+                                    </p>
+                                    {% if pool %}
+                                        <button type="button" 
+                                                class="btn btn-primary btn-lg" 
+                                                onclick="document.getElementById('send-tab').click()">
+                                            <i class="fas fa-plus me-2" aria-hidden="true"></i>Enviar Novo Convite
+                                        </button>
+                                    {% else %}
+                                        <p class="text-muted mb-3">
+                                            Para convidar amigos, acesse um bolão que você criou.
+                                        </p>
+                                        <a href="{% url 'pools:my_created' %}" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-trophy me-2" aria-hidden="true"></i>Ver Meus Bolões
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+                
+                <!-- Enviar Convite -->
+                <article id="send-panel" 
+                         class="tab-pane fade" 
+                         role="tabpanel" 
+                         aria-labelledby="send-tab">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h2 class="h5 mb-0">
+                                {% if pool %}
+                                    Convidar para {{ pool.name }}
+                                {% else %}
+                                    Enviar Novo Convite
+                                {% endif %}
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            {% if pool %}
+                                <p class="card-text mb-4">
+                                    Envie um convite para que amigos possam participar do seu bolão!
+                                </p>
+                                
+                                <form method="post" action="{% url 'pools:send_invitation' pool.slug %}">
+                                    {% csrf_token %}
+                                    {{ form|crispy }}
+                                    
+                                    <div class="d-grid gap-2 mt-4">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-paper-plane me-2" aria-hidden="true"></i>Enviar Convite
+                                        </button>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
+                                    Para enviar convites, você precisa acessar um bolão específico que você criou.
+                                </div>
+                                <a href="{% url 'pools:my_created' %}" class="btn btn-primary">
+                                    <i class="fas fa-trophy me-2" aria-hidden="true"></i>Ver Meus Bolões
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Copy Link Functionality
+    const copyButtons = document.querySelectorAll('.copy-link');
+    
+    copyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const link = this.dataset.link;
+            navigator.clipboard.writeText(link).then(() => {
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i> <span class="d-none d-md-inline">Copiado!</span>';
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar link:', err);
+                alert('Não foi possível copiar o link. Tente novamente.');
+            });
+        });
+    });
+    
+    // Batch Selection
+    const selectAll = document.getElementById('selectAll');
+    const invitationSelects = document.querySelectorAll('.invitation-select');
+    const batchActions = document.getElementById('batchActions');
+    const selectedCount = document.getElementById('selectedCount');
+    const cancelSelectedBtn = document.getElementById('cancelSelectedBtn');
+    
+    if (selectAll && invitationSelects.length > 0) {
+        // Select All
+        selectAll.addEventListener('change', function() {
+            invitationSelects.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBatchActions();
+        });
+        
+        // Individual Selection
+        invitationSelects.forEach(checkbox => {
+            checkbox.addEventListener('change', updateBatchActions);
+        });
+        
+        // Update Batch Actions Visibility
+        function updateBatchActions() {
+            const checkedCount = document.querySelectorAll('.invitation-select:checked').length;
+            selectedCount.textContent = checkedCount;
+            
+            if (checkedCount > 0) {
+                batchActions.classList.remove('d-none');
+            } else {
+                batchActions.classList.add('d-none');
+            }
+            
+            // Update Select All state
+            if (selectAll) {
+                selectAll.checked = checkedCount === invitationSelects.length;
+                selectAll.indeterminate = checkedCount > 0 && checkedCount < invitationSelects.length;
+            }
+        }
+        
+        // Cancel Selected Invitations
+        if (cancelSelectedBtn) {
+            cancelSelectedBtn.addEventListener('click', function() {
+                const selectedIds = Array.from(document.querySelectorAll('.invitation-select:checked'))
+                    .map(cb => cb.dataset.invitationId);
+                
+                if (selectedIds.length === 0) return;
+                
+                const confirmMsg = `Tem certeza que deseja cancelar ${selectedIds.length} convite(s)?`;
+                if (confirm(confirmMsg)) {
+                    // TODO: Implement batch cancel endpoint
+                    console.log('Cancelar convites:', selectedIds);
+                    alert('Funcionalidade de cancelamento em lote será implementada no backend.');
+                }
+            });
+        }
+    }
+    
+    // Show send tab if URL has hash
+    if (window.location.hash === '#send') {
+        const sendTab = document.getElementById('send-tab');
+        if (sendTab) {
+            const tab = new bootstrap.Tab(sendTab);
+            tab.show();
+        }
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

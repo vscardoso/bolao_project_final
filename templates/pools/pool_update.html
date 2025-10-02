@@ -4,27 +4,42 @@
 
 {% block title %}Editar {{ pool.name }} | Bolão Online{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pools.css' %}">
+{% endblock %}
+
 {% block pool_content %}
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
-        <h1 class="h3 mb-0">Editar Bolão</h1>
+<!-- Skip Link para Acessibilidade -->
+<a href="#update-form-main" class="skip-link">Ir para o formulário principal</a>
+
+<main id="update-form-main" role="main">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-edit me-2" aria-hidden="true"></i>Editar Bolão
+            </h1>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" class="form" aria-label="Formulário de edição do bolão">
+                {% csrf_token %}
+                
+                {{ form|crispy }}
+                
+                <div class="d-flex justify-content-between mt-4 flex-wrap gap-2">
+                    <a href="{% url 'pools:detail' slug=object.slug %}" 
+                       class="btn btn-secondary btn-lg" 
+                       aria-label="Cancelar e voltar aos detalhes do bolão">
+                        <i class="fas fa-arrow-left me-2" aria-hidden="true"></i> Voltar
+                    </a>
+                    <button type="submit" 
+                            class="btn btn-primary btn-lg" 
+                            aria-label="Salvar alterações do bolão">
+                        <i class="fas fa-save me-2" aria-hidden="true"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-    
-    <div class="card-body">
-        <form method="post" class="form">
-            {% csrf_token %}
-            
-            {{ form|crispy }}
-            
-            <div class="d-flex justify-content-between mt-4">
-                <a href="{% url 'pools:detail' slug=object.slug %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i> Voltar
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i> Salvar Alterações
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+</main>
 {% endblock %}

@@ -2,10 +2,15 @@
 # ARQUIVOS DE AMBIENTE E CREDENCIAIS
 # ========================================
 .env
-.env.*
+.env.local
+.env.*.local
 .environment
 *.env
+!.env.example
+!.env.production.example
 .vscode/settings.json
+settings_local.py
+*_local.py
 
 # ========================================
 # PYTHON

@@ -3,49 +3,58 @@
 
 {% block title %}Meu Dashboard - Bolão{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pools.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Bem-vindo, {{ user.username }}! 👋</h1>
+<!-- Skip Link para Acessibilidade -->
+<a href="#dashboard-main" class="skip-link">Ir para o conteúdo do dashboard</a>
+
+<main id="dashboard-main" role="main" class="container py-4">
+    <header class="mb-4">
+        <h1>Bem-vindo, {{ user.username }}! 👋</h1>
+    </header>
     
     <!-- Estatísticas Gerais -->
-    <div class="row mb-4">
+    <section class="row mb-4" role="region" aria-label="Estatísticas gerais">
         <div class="col-md-3">
-            <div class="card text-center h-100">
+            <article class="card text-center h-100 dashboard-stat-card" aria-label="Total de apostas feitas">
                 <div class="card-body">
-                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
-                    <h3 class="text-primary">{{ total_bets }}</h3>
+                    <i class="fas fa-chart-line fa-2x text-primary mb-2" aria-hidden="true"></i>
+                    <h2 class="h3 text-primary">{{ total_bets }}</h2>
                     <p class="text-muted mb-0">Apostas Feitas</p>
                 </div>
-            </div>
+            </article>
         </div>
         <div class="col-md-3">
-            <div class="card text-center h-100">
+            <article class="card text-center h-100 dashboard-stat-card" aria-label="Total de pontos acumulados">
                 <div class="card-body">
-                    <i class="fas fa-trophy fa-2x text-success mb-2"></i>
-                    <h3 class="text-success">{{ total_points }}</h3>
+                    <i class="fas fa-trophy fa-2x text-success mb-2" aria-hidden="true"></i>
+                    <h2 class="h3 text-success">{{ total_points }}</h2>
                     <p class="text-muted mb-0">Pontos Totais</p>
                 </div>
-            </div>
+            </article>
         </div>
         <div class="col-md-3">
-            <div class="card text-center h-100">
+            <article class="card text-center h-100 dashboard-stat-card" aria-label="Média de pontos por aposta">
                 <div class="card-body">
-                    <i class="fas fa-bullseye fa-2x text-info mb-2"></i>
-                    <h3 class="text-info">{{ avg_points }}</h3>
+                    <i class="fas fa-bullseye fa-2x text-info mb-2" aria-hidden="true"></i>
+                    <h2 class="h3 text-info">{{ avg_points }}</h2>
                     <p class="text-muted mb-0">Média por Aposta</p>
                 </div>
-            </div>
+            </article>
         </div>
         <div class="col-md-3">
-            <div class="card text-center h-100">
+            <article class="card text-center h-100 dashboard-stat-card" aria-label="Taxa de acerto">
                 <div class="card-body">
-                    <i class="fas fa-percentage fa-2x text-warning mb-2"></i>
-                    <h3 class="text-warning">{{ hit_rate }}%</h3>
+                    <i class="fas fa-percentage fa-2x text-warning mb-2" aria-hidden="true"></i>
+                    <h2 class="h3 text-warning">{{ hit_rate }}%</h2>
                     <p class="text-muted mb-0">Taxa de Acerto</p>
                 </div>
-            </div>
+            </article>
         </div>
-    </div>
+    </section>
     
     <!-- Próximas Apostas -->
     {% if upcoming_matches %}
@@ -67,8 +76,10 @@
                         <i class="fas fa-users me-1"></i>{{ match.pool.name }}
                     </small>
                 </div>
-                <a href="{% url 'pools:bet_match' match.pool.slug match.id %}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-hand-point-up me-1"></i>Apostar Agora
+                <a href="{% url 'pools:bet_match' match.pool.slug match.id %}" 
+                   class="btn btn-primary btn-lg"
+                   aria-label="Apostar agora no jogo {{ match.home_team }} vs {{ match.away_team }}">
+                    <i class="fas fa-hand-point-up me-1" aria-hidden="true"></i>Apostar Agora
                 </a>
             </div>
             {% endfor %}
@@ -192,38 +203,5 @@
         </div>
     </div>
     {% endif %}
-</div>
-
-<!-- CSS personalizado -->
-<style>
-.border-start {
-    border-left: 4px solid !important;
-}
-
-.card {
-    transition: transform 0.2s ease-in-out;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.progress {
-    background-color: #e9ecef;
-}
-
-.badge {
-    font-size: 0.8rem;
-}
-
-.fa-crown {
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-    from { text-shadow: 0 0 5px #ffc107; }
-    to { text-shadow: 0 0 10px #ffc107, 0 0 15px #ffc107; }
-}
-</style>
+</main>
 {% endblock %}

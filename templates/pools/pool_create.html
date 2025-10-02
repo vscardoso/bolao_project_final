@@ -3,509 +3,63 @@
 
 {% block title %}Criar Bolão - Passo {{ current_step }} de {{ total_steps }}{% endblock %}
 
-{% block extra_head %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pools.css' %}">
 <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-<style>
-:root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    --warning-gradient: linear-gradient(135deg, #fcb045 0%, #fd1d1d 100%);
-    --info-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-}
-
-/* Form Wizard Layout */
-.form-wizard {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-/* Step Indicator */
-.step-indicator {
-    background: var(--primary-gradient);
-    color: white;
-    padding: 2rem 0;
-    position: relative;
-}
-
-.step-indicator::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
-}
-
-.steps-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    z-index: 2;
-}
-
-.step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin: 0 2rem;
-    position: relative;
-}
-
-.step-number {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-}
-
-.step.active .step-number {
-    background: white;
-    color: #667eea;
-    border-color: white;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-}
-
-.step.completed .step-number {
-    background: #28a745;
-    border-color: #28a745;
-    color: white;
-}
-
-.step.completed .step-number::after {
-    content: '✓';
-    font-size: 1.2rem;
-}
-
-.step-title {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-}
-
-.step-description {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.step-line {
-    position: absolute;
-    top: 30px;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.3);
-    z-index: 1;
-}
-
-.step-line.completed {
-    background: #28a745;
-}
-
-/* Sticky Sidebar */
-.sticky-sidebar {
-    position: sticky;
-    top: 2rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 15px;
-    padding: 2rem;
-    margin-left: 2rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    max-height: calc(100vh - 4rem);
-    overflow-y: auto;
-}
-
-.preview-section {
-    margin-bottom: 2rem;
-}
-
-.preview-section:last-child {
-    margin-bottom: 0;
-}
-
-.preview-section h6 {
-    color: #495057;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.preview-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.preview-item:last-child {
-    border-bottom: none;
-}
-
-.preview-label {
-    font-weight: 500;
-    color: #6c757d;
-}
-
-.preview-value {
-    color: #495057;
-    font-weight: 600;
-}
-
-.preview-empty {
-    color: #adb5bd;
-    font-style: italic;
-}
-
-/* Form Container */
-.form-container {
-    padding: 3rem;
-}
-
-.form-step {
-    display: none;
-}
-
-.form-step.active {
-    display: block;
-    animation: slideInRight 0.5s ease;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* Custom File Upload */
-.input-file-custom {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-}
-
-.input-file-custom input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
-
-.file-upload-wrapper {
-    border: 2px dashed #dee2e6;
-    border-radius: 10px;
-    padding: 2rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.file-upload-wrapper:hover {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.05);
-}
-
-.file-upload-wrapper.drag-over {
-    border-color: #28a745;
-    background: rgba(40, 167, 69, 0.1);
-}
-
-.upload-icon {
-    font-size: 3rem;
-    color: #6c757d;
-    margin-bottom: 1rem;
-}
-
-.upload-text {
-    color: #495057;
-    font-weight: 500;
-}
-
-.upload-hint {
-    color: #6c757d;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-}
-
-.uploaded-file {
-    background: #e8f5e9;
-    border: 1px solid #c8e6c9;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1rem;
-    display: none;
-}
-
-.uploaded-file.show {
-    display: block;
-}
-
-/* Button Navigation */
-.btn-navigation {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e9ecef;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.btn-nav {
-    padding: 0.75rem 2rem;
-    border-radius: 25px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: none;
-    min-width: 120px;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-nav::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.btn-nav:hover::before {
-    left: 100%;
-}
-
-.btn-prev {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-prev:hover {
-    background: #5a6268;
-    transform: translateX(-5px);
-}
-
-.btn-next {
-    background: var(--primary-gradient);
-    color: white;
-}
-
-.btn-next:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.btn-submit {
-    background: var(--success-gradient);
-    color: white;
-}
-
-.btn-submit:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-}
-
-/* Form Controls Enhanced */
-.form-control, .form-select {
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-    padding: 0.75rem 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
-    transform: scale(1.02);
-}
-
-.form-label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 0.75rem;
-}
-
-.form-text {
-    color: #6c757d;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-}
-
-/* Radio Buttons */
-.form-check-input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    margin-right: 0.75rem;
-}
-
-.form-check-label {
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.form-check {
-    padding: 1rem;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-check:hover {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.05);
-}
-
-.form-check input:checked + label {
-    color: #667eea;
-}
-
-/* Success Animation */
-.success-animation {
-    text-align: center;
-    animation: bounceIn 0.6s ease;
-}
-
-@keyframes bounceIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.05);
-    }
-    70% {
-        transform: scale(0.9);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.success-icon {
-    font-size: 4rem;
-    color: #28a745;
-    margin-bottom: 1rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .sticky-sidebar {
-        position: static;
-        margin-left: 0;
-        margin-top: 2rem;
-    }
-    
-    .form-container {
-        padding: 2rem 1rem;
-    }
-    
-    .steps-container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .step {
-        margin: 0;
-    }
-    
-    .step-line {
-        display: none;
-    }
-    
-    .btn-navigation {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .btn-nav {
-        width: 100%;
-    }
-}
-
-/* Loading States */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.spinner-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-}
-
-/* Validation Styles */
-.is-invalid {
-    border-color: #dc3545 !important;
-}
-
-.is-valid {
-    border-color: #28a745 !important;
-}
-
-.invalid-feedback {
-    display: block !important;
-    color: #dc3545;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-}
-</style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<!-- Skip to main content -->
+<a href="#pool-create-main" class="skip-link">Pular para formulário de criação</a>
+
+<main id="pool-create-main" class="container-fluid py-4" role="main" aria-labelledby="wizard-heading">
+    <div class="visually-hidden">
+        <h1 id="wizard-heading">Criação de Bolão - Passo {{ current_step }} de {{ total_steps }}</h1>
+    </div>
+    
     <div class="row">
         <!-- Main Form Area -->
         <div class="col-lg-8">
-            <div class="form-wizard">
+            <article class="form-wizard" aria-labelledby="wizard-title">
                 <!-- Step Indicator -->
-                <div class="step-indicator">
-                    <div class="steps-container">
-                        <div class="step {% if current_step == 1 %}active{% elif current_step > 1 %}completed{% endif %}">
-                            <div class="step-number">{% if current_step > 1 %}✓{% else %}1{% endif %}</div>
+                <header class="step-indicator" role="region" aria-label="Indicador de progresso do wizard">
+                    <nav class="steps-container" aria-label="Etapas do formulário">
+                        <div class="step {% if current_step == 1 %}active{% elif current_step > 1 %}completed{% endif %}" 
+                             {% if current_step == 1 %}aria-current="step"{% endif %}>
+                            <div class="step-number" aria-label="{% if current_step > 1 %}Etapa 1 completa{% else %}Etapa 1 de 3{% endif %}">
+                                {% if current_step > 1 %}✓{% else %}1{% endif %}
+                            </div>
                             <div class="step-title">Informações Básicas</div>
                             <div class="step-description">Nome, descrição e competição</div>
                         </div>
                         
-                        <div class="step-line {% if current_step > 1 %}completed{% endif %}" style="left: 20%; width: 25%;"></div>
+                        <div class="step-line {% if current_step > 1 %}completed{% endif %}" 
+                             style="left: 20%; width: 25%;" 
+                             aria-hidden="true"></div>
                         
-                        <div class="step {% if current_step == 2 %}active{% elif current_step > 2 %}completed{% endif %}">
-                            <div class="step-number">{% if current_step > 2 %}✓{% else %}2{% endif %}</div>
+                        <div class="step {% if current_step == 2 %}active{% elif current_step > 2 %}completed{% endif %}"
+                             {% if current_step == 2 %}aria-current="step"{% endif %}>
+                            <div class="step-number" aria-label="{% if current_step > 2 %}Etapa 2 completa{% elif current_step == 2 %}Etapa 2 de 3{% else %}Etapa 2 de 3: não iniciada{% endif %}">
+                                {% if current_step > 2 %}✓{% else %}2{% endif %}
+                            </div>
                             <div class="step-title">Configurações</div>
                             <div class="step-description">Regras e pontuação</div>
                         </div>
                         
-                        <div class="step-line {% if current_step > 2 %}completed{% endif %}" style="left: 55%; width: 25%;"></div>
+                        <div class="step-line {% if current_step > 2 %}completed{% endif %}" 
+                             style="left: 55%; width: 25%;" 
+                             aria-hidden="true"></div>
                         
-                        <div class="step {% if current_step == 3 %}active{% endif %}">
-                            <div class="step-number">3</div>
+                        <div class="step {% if current_step == 3 %}active{% endif %}"
+                             {% if current_step == 3 %}aria-current="step"{% endif %}>
+                            <div class="step-number" aria-label="{% if current_step == 3 %}Etapa 3 de 3{% else %}Etapa 3 de 3: não iniciada{% endif %}">
+                                3
+                            </div>
                             <div class="step-title">Convites</div>
                             <div class="step-description">Convidar participantes</div>
                         </div>
-                    </div>
-                </div>
+                    </nav>
+                </header>
 
                 <!-- Form Container -->
                 <div class="form-container">
@@ -748,22 +302,22 @@
                         <!-- Navigation Buttons -->
                         <div class="btn-navigation">
                             {% if current_step > 1 %}
-                                <a href="?step={{ current_step|add:"-1" }}" class="btn btn-nav btn-prev">
-                                    <i class="fas fa-arrow-left me-2"></i>Anterior
+                                <a href="?step={{ current_step|add:"-1" }}" class="btn btn-secondary btn-lg" aria-label="Voltar para passo anterior">
+                                    <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>Anterior
                                 </a>
                             {% else %}
-                                <a href="{% url 'pools:list' %}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times me-2"></i>Cancelar
+                                <a href="{% url 'pools:list' %}" class="btn btn-outline-secondary btn-lg" aria-label="Cancelar criação de bolão">
+                                    <i class="fas fa-times me-2" aria-hidden="true"></i>Cancelar
                                 </a>
                             {% endif %}
                             
                             {% if current_step < total_steps %}
-                                <button type="submit" class="btn btn-nav btn-next">
-                                    Próximo<i class="fas fa-arrow-right ms-2"></i>
+                                <button type="submit" class="btn btn-primary btn-lg" aria-label="Avançar para próximo passo">
+                                    Próximo<i class="fas fa-arrow-right ms-2" aria-hidden="true"></i>
                                 </button>
                             {% else %}
-                                <button type="submit" class="btn btn-nav btn-submit">
-                                    <i class="fas fa-check me-2"></i>Criar Bolão
+                                <button type="submit" class="btn btn-success btn-lg" aria-label="Criar bolão">
+                                    <i class="fas fa-check me-2" aria-hidden="true"></i>Criar Bolão
                                 </button>
                             {% endif %}
                         </div>
@@ -862,7 +416,7 @@
             </div>
         </div>
     </div>
-</div>
+</main>
 
 <script>
 // Real-time preview updates

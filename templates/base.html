@@ -94,6 +94,7 @@
     <link rel="stylesheet" href="{% static 'css/core/variables.css' %}">
     <link rel="stylesheet" href="{% static 'css/base-consolidated.css' %}">
     <link rel="stylesheet" href="{% static 'css/core/typography.css' %}">
+    <link rel="stylesheet" href="{% static 'css/core/utilities.css' %}">
     <link rel="stylesheet" href="{% static 'css/responsive-fixes.css' %}">
 
     <!-- CSS inline removido para melhor performance (era 492 linhas duplicadas) -->
@@ -101,14 +102,23 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Skip to main content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+    
     <!-- Navbar moderna -->
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-trophy me-2"></i>Bolão Online
+                <i class="fas fa-trophy me-2" aria-hidden="true"></i>Bolão Online
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" 
+                    aria-expanded="false" 
+                    aria-label="Menu de navegação">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
@@ -174,7 +184,7 @@
     {% endif %}
 
     <!-- Main Content -->
-    <main>
+    <main id="main-content">
         {% block content %}{% endblock %}
     </main>
 
@@ -184,7 +194,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="d-flex align-items-center mb-3 mb-md-0">
-                        <i class="fas fa-trophy text-primary me-3" style="font-size: 2rem;"></i>
+                        <i class="fas fa-trophy text-primary me-3 icon-lg" aria-hidden="true"></i>
                         <div>
                             <h5 class="mb-1 gradient-text">Bolão Online</h5>
                             <p class="text-muted mb-0">Crie bolões e dispute com seus amigos.</p>

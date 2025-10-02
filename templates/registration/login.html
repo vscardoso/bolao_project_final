@@ -134,24 +134,35 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Mostrar/ocultar senha
-    const togglePassword = document.querySelector('.toggle-password');
-    if (togglePassword) {
-        togglePassword.addEventListener('click', function() {
-            const target = this.getAttribute('data-target');
-            const input = document.getElementById(target);
+    // Mostrar/ocultar senha com suporte a acessibilidade (ARIA)
+    const toggleButtons = document.querySelectorAll('.password-toggle-btn');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
             
             if (input.type === 'password') {
+                // Mostrar senha
                 input.type = 'text';
-                this.classList.remove('fa-eye');
-                this.classList.add('fa-eye-slash');
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.setAttribute('aria-label', 'Ocultar senha');
+                this.setAttribute('aria-pressed', 'true');
             } else {
+                // Ocultar senha
                 input.type = 'password';
-                this.classList.remove('fa-eye-slash');
-                this.classList.add('fa-eye');
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.setAttribute('aria-label', 'Mostrar senha');
+                this.setAttribute('aria-pressed', 'false');
             }
         });
-    }
+        
+        // Inicializar estado ARIA
+        button.setAttribute('aria-pressed', 'false');
+    });
     
     // Iniciar o carrossel de dicas
     const carouselElement = document.getElementById('carouselTips');

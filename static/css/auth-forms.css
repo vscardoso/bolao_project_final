@@ -65,16 +65,6 @@
     animation: fadeInUp 0.6s ease;
 }
 
-/* Card de registro (2 colunas) - DEPRECATED */
-.register-card {
-    background: var(--bg-white);
-    border-radius: var(--radius-2xl);
-    box-shadow: var(--shadow-xl);
-    margin: 2rem auto;
-    overflow: hidden;
-    animation: fadeInUp 0.6s ease;
-}
-
 /* Card de registro simplificado (versão nova) */
 .register-card-simple {
     background: var(--bg-white);
@@ -151,144 +141,6 @@
 
 .password-toggle-btn:hover {
     color: var(--primary);
-}
-
-/* Painel de benefícios (lado esquerdo do registro) */
-.benefits-panel {
-    background: var(--gradient-primary);
-    color: white;
-    padding: 3rem 2rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.benefits-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
-    opacity: 0.5;
-}
-
-.benefits-panel > * {
-    position: relative;
-    z-index: 2;
-}
-
-.benefits-logo {
-    max-width: 120px;
-    filter: brightness(0) invert(1);
-    margin-bottom: 1.5rem;
-}
-
-.benefits-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    line-height: 1.3;
-}
-
-.benefits-subtitle {
-    font-size: 1rem;
-    opacity: 0.9;
-    margin-bottom: 2rem;
-}
-
-/* Lista de benefícios */
-.benefits-list {
-    margin: 2rem 0;
-}
-
-.benefit-item {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-lg);
-    backdrop-filter: blur(10px);
-    transition: var(--transition-base);
-}
-
-.benefit-item:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateX(5px);
-}
-
-.benefit-icon {
-    font-size: 2rem;
-    color: rgba(255, 255, 255, 0.9);
-    flex-shrink: 0;
-}
-
-.benefit-text h4 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.benefit-text p {
-    font-size: 0.9rem;
-    opacity: 0.85;
-    margin: 0;
-}
-
-/* Testemunho */
-.testimonial {
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-lg);
-    border-left: 4px solid rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(10px);
-}
-
-.testimonial-content p {
-    font-style: italic;
-    font-size: 0.95rem;
-    opacity: 0.95;
-    margin-bottom: 1rem;
-}
-
-.testimonial-author {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.testimonial-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-full);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-}
-
-.testimonial-avatar-placeholder {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-full);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    flex-shrink: 0;
-}
-
-.testimonial-name {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin: 0;
-}
-
-.testimonial-title {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    margin: 0;
 }
 
 /* Painel de formulário (lado direito do registro) */
@@ -661,7 +513,7 @@
     padding: 1rem 1.25rem;
     margin-bottom: 1.5rem;
     border-left: 4px solid;
-    animation: slideInDown 0.3s ease;
+    animation: fadeInUp 0.3s ease;
 }
 
 .alert-success {
@@ -714,17 +566,6 @@
     }
 }
 
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 @keyframes pulse {
     0%, 100% {
         transform: scale(1);
@@ -747,10 +588,6 @@
         padding: 2rem;
     }
 
-    .register-card .benefits-panel {
-        display: none;
-    }
-
     .register-form-panel {
         padding: 2rem 1.5rem;
     }
@@ -763,7 +600,6 @@
     }
 
     .login-card,
-    .register-card,
     .email-sent-card {
         margin: 1rem;
         border-radius: var(--radius-xl);
@@ -771,10 +607,6 @@
 
     .login-card {
         padding: 1.5rem;
-    }
-
-    .benefits-title {
-        font-size: 1.5rem;
     }
 
     .login-logo {
@@ -785,7 +617,6 @@
 /* Mobile (até 576px) */
 @media (max-width: 576px) {
     .login-card,
-    .register-card,
     .register-card-simple,
     .email-sent-card {
         padding: 1.5rem;

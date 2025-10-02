@@ -4,18 +4,13 @@
 
 {% block title %}Fazer Apostas - {{ pool.name }}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pools-betting.css' %}">
+{% endblock %}
+
 {% block extra_head %}
 <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-<style>
-:root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    --warning-gradient: linear-gradient(135deg, #fcb045 0%, #fd1d1d 100%);
-    --info-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --step-active: #667eea;
-    --step-completed: #28a745;
-    --step-inactive: #6c757d;
-}
+{% endblock %}
 
 /* Stepper Progress */
 .stepper-container {
@@ -490,11 +485,11 @@
     transform: translate(-50%, -50%);
     z-index: 10;
 }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container-fluid">
+<!-- Skip Link para Acessibilidade -->
+<a href="#bet-form-main" class="skip-link">Ir para o formulário de apostas</a>
+
+<main id="bet-form-main" role="main" class="container-fluid">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">

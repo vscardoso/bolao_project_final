@@ -3,12 +3,184 @@
 
 {% block title %}Bolão Criado com Sucesso!{% endblock %}
 
-{% block extra_head %}
-<style>
-:root {
-    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+{% block content %}
+<a href="#success-main" class="skip-link">Pular para conteúdo principal</a>
+
+<main id="success-main" role="main" class="success-container">
+    <article class="success-card success-animation">
+        <!-- Confetti Animation -->
+        <div class="confetti" aria-hidden="true">
+            {% for i in "123456789012345" %}
+            <div class="confetti-piece" style="left: {{ forloop.counter|add:'5' }}%;"></div>
+            {% endfor %}
+        </div>
+        
+        <div class="success-icon" aria-hidden="true">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <h1 class="success-title">Parabéns!</h1>
+        <p class="success-subtitle">Seu bolão foi criado com sucesso e já está disponível para os participantes!</p>
+        
+        <!-- Pool Summary -->
+        <section class="pool-summary fade-in" style="animation-delay: 0.3s;">
+            <h2 class="visually-hidden">Informações do Bolão</h2>
+            <div class="pool-info">
+                <span class="info-label">
+                    <i class="fas fa-trophy me-2" aria-hidden="true"></i>Nome do Bolão:
+                </span>
+                <span class="info-value">{{ pool.name }}</span>
+            </div>
+            
+            <div class="pool-info">
+                <span class="info-label">
+                    <i class="fas fa-futbol me-2" aria-hidden="true"></i>Competição:
+                </span>
+                <span class="info-value">{{ pool.competition.name }}</span>
+            </div>
+            
+            <div class="pool-info">
+                <span class="info-label">
+                    <i class="fas fa-users me-2" aria-hidden="true"></i>Participantes:
+                </span>
+                <span class="info-value">
+                    {% if pool.max_participants %}
+                        Máximo {{ pool.max_participants }}
+                    {% else %}
+                        Ilimitados
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="pool-info">
+                <span class="info-label">
+                    <i class="fas fa-dollar-sign me-2" aria-hidden="true"></i>Taxa de Entrada:
+                </span>
+                <span class="info-value">
+                    {% if pool.entry_fee %}
+                        R$ {{ pool.entry_fee }}
+                    {% else %}
+                        Gratuito
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="pool-info">
+                <span class="info-label">
+                    <i class="fas fa-eye me-2" aria-hidden="true"></i>Visibilidade:
+                </span>
+                <span class="info-value">
+                    {% if pool.is_public %}
+                        <span class="badge bg-success">Público</span>
+                    {% else %}
+                        <span class="badge bg-warning">Privado</span>
+                    {% endif %}
+                </span>
+            </div>
+        </section>
+        
+        <!-- Share Section -->
+        <section class="share-section fade-in" style="animation-delay: 0.6s;" aria-labelledby="share-heading">
+            <h2 id="share-heading" class="share-title">
+                <i class="fas fa-share-alt me-2" aria-hidden="true"></i>Compartilhe seu bolão:
+            </h2>
+            
+            <div class="share-link" id="pool-link" role="textbox" aria-readonly="true" aria-label="Link do bolão">
+                {{ request.build_absolute_uri }}{% url 'pools:detail' pool.slug %}
+            </div>
+            
+            <nav class="share-buttons" aria-label="Opções de compartilhamento">
+                <button class="btn btn-share btn-copy" 
+                        onclick="copyLink()"
+                        aria-label="Copiar link para área de transferência">
+                    <i class="fas fa-copy me-1" aria-hidden="true"></i>Copiar Link
+                </button>
+                
+                <a href="https://wa.me/?text=Participe do meu bolão: {{ pool.name }}! {{ request.build_absolute_uri }}{% url 'pools:detail' pool.slug %}" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="btn btn-share btn-whatsapp"
+                   aria-label="Compartilhar via WhatsApp">
+                    <i class="fab fa-whatsapp me-1" aria-hidden="true"></i>WhatsApp
+                </a>
+                
+                <a href="mailto:?subject=Convite para bolão: {{ pool.name }}&body=Você foi convidado para participar do bolão '{{ pool.name }}'. Acesse: {{ request.build_absolute_uri }}{% url 'pools:detail' pool.slug %}" 
+                   class="btn btn-share btn-email"
+                   aria-label="Compartilhar via Email">
+                    <i class="fas fa-envelope me-1" aria-hidden="true"></i>Email
+                </a>
+            </nav>
+        </section>
+        
+        <!-- Action Buttons -->
+        <nav class="action-buttons fade-in" style="animation-delay: 0.9s;" aria-label="Ações rápidas">
+            <a href="{% url 'pools:detail' pool.slug %}" class="btn btn-action btn-primary-action btn-lg">
+                <i class="fas fa-eye me-2" aria-hidden="true"></i>Ver Bolão
+            </a>
+            
+            <a href="{% url 'pools:list' %}" class="btn btn-action btn-secondary-action btn-lg">
+                <i class="fas fa-list me-2" aria-hidden="true"></i>Meus Bolões
+            </a>
+            
+            <a href="{% url 'pools:create_wizard' %}" class="btn btn-action btn-success-action btn-lg">
+                <i class="fas fa-plus me-2" aria-hidden="true"></i>Criar Outro
+            </a>
+        </nav>
+        
+        {% if invites_sent %}
+        <div class="alert alert-success mt-3 fade-in" role="status" style="animation-delay: 1.2s;">
+            <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
+            <strong>{{ invites_sent }} convite{{ invites_sent|pluralize }} enviado{{ invites_sent|pluralize }}!</strong>
+            Os participantes receberão um email com o link de acesso.
+        </div>
+        {% endif %}
+    </article>
+</main>
+
+<!-- Copy Notification -->
+<div id="copy-notification" class="notification" role="alert" aria-live="polite" aria-atomic="true">
+    <i class="fas fa-check me-2" aria-hidden="true"></i>Link copiado para a área de transferência!
+</div>
+
+<script>
+// Copy link function
+function copyLink() {
+    const linkText = document.getElementById('pool-link').textContent.trim();
+    navigator.clipboard.writeText(linkText).then(function() {
+        showNotification();
+    }).catch(function(err) {
+        console.error('Erro ao copiar link:', err);
+        alert('Não foi possível copiar o link. Tente selecioná-lo manualmente.');
+    });
 }
+
+function showNotification() {
+    const notification = document.getElementById('copy-notification');
+    notification.classList.add('show');
+    
+    setTimeout(function() {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// Auto-hide confetti after animation
+setTimeout(function() {
+    const confetti = document.querySelector('.confetti');
+    if (confetti) {
+        confetti.style.display = 'none';
+    }
+}, 3000);
+
+// Add entrance animations to elements
+document.addEventListener('DOMContentLoaded', function() {
+    const fadeElements = document.querySelectorAll('.fade-in');
+    fadeElements.forEach((element, index) => {
+        const delay = parseFloat(element.style.animationDelay) || (index * 0.3);
+        element.style.animationDelay = delay + 's';
+    });
+});
+</script>
+{% endblock %}
 
 .success-container {
     min-height: 80vh;

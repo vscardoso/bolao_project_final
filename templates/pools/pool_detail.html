@@ -5,616 +5,137 @@
 {% block title %}{{ pool.name }} | Bolão Online{% endblock %}
 
 {% block extra_css %}
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --info-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        --gold: #FFD700;
-        --silver: #C0C0C0;
-        --bronze: #CD7F32;
-    }
-    
-    /* Header com Cover Image */
-    .pool-header {
-        position: relative;
-        height: 300px;
-        background: var(--primary-gradient);
-        border-radius: 20px 20px 0 0;
-        overflow: hidden;
-        color: white;
-    }
-    
-    .pool-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(45deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
-        z-index: 1;
-    }
-    
-    .pool-header-content {
-        position: relative;
-        z-index: 2;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 2rem;
-    }
-    
-    .pool-logo {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-        backdrop-filter: blur(10px);
-    }
-    
-    .pool-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .pool-subtitle {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 1.5rem;
-    }
-    
-    .pool-stats-header {
-        display: flex;
-        gap: 2rem;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .pool-stat-item {
-        text-align: center;
-    }
-    
-    .pool-stat-number {
-        font-size: 1.8rem;
-        font-weight: 700;
-        display: block;
-    }
-    
-    .pool-stat-label {
-        font-size: 0.9rem;
-        opacity: 0.8;
-    }
-    
-    /* Navigation Tabs */
-    .nav-tabs {
-        border-bottom: 3px solid #e9ecef;
-        margin-bottom: 2rem;
-        background: white;
-        border-radius: 15px 15px 0 0;
-        overflow: hidden;
-    }
-    
-    .nav-tabs .nav-link {
-        border: none;
-        padding: 1rem 1.5rem;
-        color: #6c757d;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-    
-    .nav-tabs .nav-link:hover {
-        color: #667eea;
-        background: #f8f9fa;
-    }
-    
-    .nav-tabs .nav-link.active {
-        color: #667eea;
-        background: transparent;
-        border-bottom: 3px solid #667eea;
-    }
-    
-    .nav-tabs .nav-link i {
-        margin-right: 0.5rem;
-    }
-    
-    /* Tab Content */
-    .tab-content {
-        background: white;
-        border-radius: 0 0 15px 15px;
-        padding: 2rem;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-    }
-    
-    /* Ranking Table */
-    .ranking-table {
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-    }
-    
-    .ranking-table .table {
-        margin-bottom: 0;
-    }
-    
-    .ranking-table .table thead {
-        background: var(--primary-gradient);
-        color: white;
-    }
-    
-    .ranking-table .table thead th {
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-    }
-    
-    .ranking-table .table tbody tr {
-        transition: all 0.3s ease;
-    }
-    
-    .ranking-table .table tbody tr:hover {
-        background: #f8f9fa;
-        transform: scale(1.01);
-    }
-    
-    .ranking-table .table tbody td {
-        padding: 1rem;
-        vertical-align: middle;
-        border-color: #f1f3f4;
-    }
-    
-    .position-badge {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        color: white;
-    }
-    
-    .position-badge.gold {
-        background: linear-gradient(135deg, #FFD700, #FFA500);
-    }
-    
-    .position-badge.silver {
-        background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
-    }
-    
-    .position-badge.bronze {
-        background: linear-gradient(135deg, #CD7F32, #B8860B);
-    }
-    
-    .position-badge.other {
-        background: linear-gradient(135deg, #6c757d, #495057);
-    }
-    
-    .user-avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background: var(--primary-gradient);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        margin-right: 1rem;
-    }
-    
-    .user-info h6 {
-        margin: 0;
-        font-weight: 600;
-    }
-    
-    .user-info small {
-        color: #6c757d;
-    }
-    
-    /* Timeline de Partidas */
-    .timeline-custom {
-        position: relative;
-    }
-    
-    .timeline-custom::before {
-        content: '';
-        position: absolute;
-        left: 30px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e9ecef;
-    }
-    
-    .timeline-item {
-        position: relative;
-        padding: 1.5rem 0 1.5rem 4rem;
-        margin-bottom: 1rem;
-    }
-    
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: 24px;
-        top: 2rem;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #667eea;
-        border: 3px solid white;
-        box-shadow: 0 0 0 3px #e9ecef;
-    }
-    
-    .timeline-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        border-left: 4px solid #667eea;
-    }
-    
-    .timeline-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    
-    .match-teams {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .match-info {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .match-info-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #6c757d;
-        font-size: 0.9rem;
-    }
-    
-    /* Progress Bars */
-    .progress-custom {
-        height: 8px;
-        border-radius: 10px;
-        background: #e9ecef;
-        overflow: hidden;
-        margin-bottom: 0.5rem;
-    }
-    
-    .progress-custom .progress-bar {
-        background: var(--primary-gradient);
-        transition: width 1s ease-in-out;
-    }
-    
-    /* Floating Action Button */
-    .floating-bet-btn {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: var(--primary-gradient);
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        z-index: 1000;
-        transition: all 0.3s ease;
-    }
-    
-    .floating-bet-btn:hover {
-        transform: scale(1.1);
-        color: white;
-        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
-    }
-    
-    /* Modal Customization */
-    .modal-header {
-        background: var(--primary-gradient);
-        color: white;
-        border-radius: 15px 15px 0 0;
-    }
-    
-    .modal-content {
-        border-radius: 15px;
-        border: none;
-        overflow: hidden;
-    }
-    
-    .bet-form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .bet-input {
-        width: 80px;
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: 600;
-        border-radius: 8px;
-        border: 2px solid #e9ecef;
-    }
-    
-    .bet-input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .vs-separator {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #667eea;
-        margin: 0 1rem;
-    }
-    
-    /* Loading States */
-    .loading-spinner {
-        display: none;
-        width: 2rem;
-        height: 2rem;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .skeleton {
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
-        border-radius: 8px;
-    }
-    
-    @keyframes loading {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .pool-header {
-            height: 250px;
-        }
-        
-        .pool-title {
-            font-size: 2rem;
-        }
-        
-        .pool-stats-header {
-            gap: 1rem;
-        }
-        
-        .pool-stat-number {
-            font-size: 1.4rem;
-        }
-        
-        .nav-tabs .nav-link {
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-        }
-        
-        .tab-content {
-            padding: 1rem;
-        }
-        
-        .floating-bet-btn {
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            font-size: 1.2rem;
-        }
-        
-        .timeline-item {
-            padding-left: 3rem;
-        }
-        
-        .timeline-custom::before {
-            left: 20px;
-        }
-        
-        .timeline-item::before {
-            left: 14px;
-        }
-    }
-    
-    /* Status Badges */
-    .status-badge {
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-    
-    .status-badge.open {
-        background: #d4edda;
-        color: #155724;
-    }
-    
-    .status-badge.closed {
-        background: #fff3cd;
-        color: #856404;
-    }
-    
-    .status-badge.finished {
-        background: #d6d8db;
-        color: #383d41;
-    }
-    
-    /* Bet Status */
-    .bet-status {
-        padding: 0.3rem 0.8rem;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-    
-    .bet-status.pending {
-        background: #fff3cd;
-        color: #856404;
-    }
-    
-    .bet-status.confirmed {
-        background: #d4edda;
-        color: #155724;
-    }
-    
-    .bet-status.missed {
-        background: #f8d7da;
-        color: #721c24;
-    }
-</style>
+<link rel="stylesheet" href="{% static 'css/pools.css' %}">
 {% endblock %}
 {% block content %}
-<!-- Pool Header com Cover Image -->
-<div class="container-fluid mb-4">
-    <div class="pool-header">
-        <div class="pool-header-content">
-            <div class="pool-logo">
-                {% if pool.competition.logo %}
-                    <img src="{{ pool.competition.logo.url }}" alt="{{ pool.competition.name }}" style="width: 60px; height: 60px; object-fit: contain; border-radius: 50%;">
-                {% else %}
-                    <i class="fas fa-trophy fa-2x"></i>
-                {% endif %}
-            </div>
-            
-            <h1 class="pool-title">{{ pool.name }}</h1>
-            <p class="pool-subtitle">{{ pool.competition.name }}</p>
-            
-            <div class="pool-stats-header">
-                <div class="pool-stat-item">
-                    <span class="pool-stat-number">{{ participants_count }}</span>
-                    <span class="pool-stat-label">Participantes</span>
-                </div>
-                <div class="pool-stat-item">
-                    <span class="pool-stat-number">{{ total_points|default:0 }}</span>
-                    <span class="pool-stat-label">Pontos Totais</span>
-                </div>
-                <div class="pool-stat-item">
-                    <span class="pool-stat-number">{{ upcoming_matches|length }}</span>
-                    <span class="pool-stat-label">Próximas</span>
-                </div>
-                <div class="pool-stat-item">
-                    <span class="pool-stat-number">{{ pool_stats.progress_percentage|floatformat:0 }}%</span>
-                    <span class="pool-stat-label">Progresso</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Status e Ações no Header -->
-        <div class="position-absolute top-0 end-0 m-3">
-            <span class="status-badge {{ pool.status }}">
-                {% if pool.status == 'open' %}
-                    <i class="fas fa-unlock me-1"></i>Aberto
-                {% elif pool.status == 'closed' %}
-                    <i class="fas fa-lock me-1"></i>Fechado
-                {% else %}
-                    <i class="fas fa-flag-checkered me-1"></i>Finalizado
-                {% endif %}
-            </span>
-        </div>
-        
-        {% if is_owner %}
-        <div class="position-absolute top-0 start-0 m-3">
-            <div class="dropdown">
-                <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="poolActionsDropdown" data-bs-toggle="dropdown">
-                    <i class="fas fa-cog me-1"></i> Gerenciar
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'pools:update' pool.slug %}">
-                        <i class="fas fa-edit me-2"></i> Editar Bolão
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                        <i class="fas fa-user-plus me-2"></i> Convidar Participantes
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete()">
-                        <i class="fas fa-trash-alt me-2"></i> Excluir Bolão
-                    </a></li>
-                </ul>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
+<!-- Skip to main content -->
+<a href="#pool-detail-main" class="skip-link">Pular para conteúdo do bolão</a>
 
-<div class="container-fluid">
+<!-- Pool Header com Cover Image -->
+<header class="pool-detail-header" role="banner">
+    <div class="pool-detail-content">
+        <div class="pool-logo">
+            {% if pool.competition.logo %}
+                <img src="{{ pool.competition.logo.url }}" alt="Logo {{ pool.competition.name }}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: contain;">
+            {% else %}
+                <i class="fas fa-trophy fa-2x" aria-hidden="true"></i>
+            {% endif %}
+        </div>
+        
+        <h1 class="pool-detail-title">{{ pool.name }}</h1>
+        <p class="pool-detail-subtitle">{{ pool.competition.name }}</p>
+        
+        <div class="pool-stats-header" role="list" aria-label="Estatísticas do bolão">
+            <div class="pool-stat-item" role="listitem">
+                <span class="pool-stat-number">{{ participants_count }}</span>
+                <span class="pool-stat-label">Participantes</span>
+            </div>
+            <div class="pool-stat-item" role="listitem">
+                <span class="pool-stat-number">{{ total_points|default:0 }}</span>
+                <span class="pool-stat-label">Pontos Totais</span>
+            </div>
+            <div class="pool-stat-item" role="listitem">
+                <span class="pool-stat-number">{{ upcoming_matches|length }}</span>
+                <span class="pool-stat-label">Próximas</span>
+            </div>
+            <div class="pool-stat-item" role="listitem">
+                <span class="pool-stat-number">{{ pool_stats.progress_percentage|floatformat:0 }}%</span>
+                <span class="pool-stat-label">Progresso</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Badge -->
+    <div class="position-absolute top-0 end-0 m-3">
+        <span class="pool-status-badge status-{{ pool.status }}" role="status">
+            {% if pool.status == 'open' %}
+                <i class="fas fa-unlock me-1" aria-hidden="true"></i>Aberto
+            {% elif pool.status == 'closed' %}
+                <i class="fas fa-lock me-1" aria-hidden="true"></i>Fechado
+            {% else %}
+                <i class="fas fa-flag-checkered me-1" aria-hidden="true"></i>Finalizado
+            {% endif %}
+        </span>
+    </div>
+    
+    <!-- Owner Actions -->
+    {% if is_owner %}
+    <div class="position-absolute top-0 start-0 m-3">
+        <div class="dropdown">
+            <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="poolActionsDropdown" data-bs-toggle="dropdown" aria-label="Menu de gerenciamento do bolão" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-cog me-1" aria-hidden="true"></i> Gerenciar
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="poolActionsDropdown">
+                <li><a class="dropdown-item" href="{% url 'pools:update' pool.slug %}">
+                    <i class="fas fa-edit me-2" aria-hidden="true"></i> Editar Bolão
+                </a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                    <i class="fas fa-user-plus me-2" aria-hidden="true"></i> Convidar Participantes
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete()">
+                    <i class="fas fa-trash-alt me-2" aria-hidden="true"></i> Excluir Bolão
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</header>
+
+<!-- Main Content -->
+<main id="pool-detail-main" class="container-fluid">
     <!-- Navigation Tabs -->
-    <ul class="nav nav-tabs" id="poolTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="ranking-tab" data-bs-toggle="tab" data-bs-target="#ranking" type="button" role="tab">
-                <i class="fas fa-trophy"></i> Ranking
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="bets-tab" data-bs-toggle="tab" data-bs-target="#bets" type="button" role="tab">
-                <i class="fas fa-dice"></i> Minhas Apostas
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab">
-                <i class="fas fa-calendar-alt"></i> Próximas Partidas
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab">
-                <i class="fas fa-book"></i> Regras
-            </button>
-        </li>
-    </ul>
+    <nav>
+        <ul class="nav pool-tabs" id="poolTabs" role="tablist" aria-label="Navegação do bolão">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="ranking-tab" data-bs-toggle="tab" data-bs-target="#ranking" type="button" role="tab" aria-controls="ranking" aria-selected="true">
+                    <i class="fas fa-trophy" aria-hidden="true"></i> Ranking
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bets-tab" data-bs-toggle="tab" data-bs-target="#bets" type="button" role="tab" aria-controls="bets" aria-selected="false">
+                    <i class="fas fa-dice" aria-hidden="true"></i> Minhas Apostas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false">
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i> Próximas Partidas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab" aria-controls="rules" aria-selected="false">
+                    <i class="fas fa-book" aria-hidden="true"></i> Regras
+                </button>
+            </li>
+        </ul>
+    </nav>
 
     <!-- Tab Content -->
-    <div class="tab-content" id="poolTabsContent">
+    <div class="tab-content pool-tab-content" id="poolTabsContent">
         <!-- Ranking Tab -->
-        <div class="tab-pane fade show active" id="ranking" role="tabpanel">
-            <div class="ranking-table table-responsive">
-                <table class="table table-hover">
+        <div class="tab-pane fade show active" id="ranking" role="tabpanel" aria-labelledby="ranking-tab">
+            <div class="ranking-table-wrapper">
+                <table class="table ranking-table table-hover">
                     <thead>
                         <tr>
-                            <th style="width: 80px;">Posição</th>
-                            <th>Participante</th>
-                            <th style="width: 100px;" class="text-center">Pontos</th>
-                            <th style="width: 120px;" class="text-center">Aproveitamento</th>
-                            <th style="width: 100px;" class="text-center">Apostas</th>
+                            <th scope="col" style="width: 80px;">Posição</th>
+                            <th scope="col">Participante</th>
+                            <th scope="col" style="width: 100px;" class="text-center">Pontos</th>
+                            <th scope="col" style="width: 120px;" class="text-center">Aproveitamento</th>
+                            <th scope="col" style="width: 100px;" class="text-center">Apostas</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for ranking_item in ranking_data %}
-                        <tr {% if ranking_item.is_current_user %}class="table-primary"{% endif %}>
+                        <tr {% if ranking_item.is_current_user %}class="current-user" aria-current="true"{% endif %}>
                             <td>
                                 <div class="position-badge 
                                     {% if ranking_item.position == 1 %}gold
                                     {% elif ranking_item.position == 2 %}silver
                                     {% elif ranking_item.position == 3 %}bronze
-                                    {% else %}other{% endif %}">
+                                    {% else %}other{% endif %}" role="status" aria-label="Posição {{ ranking_item.position }}">
                                     {% if ranking_item.position <= 3 %}
-                                        <i class="fas fa-trophy"></i>
+                                        <i class="fas fa-trophy" aria-hidden="true"></i>
                                     {% else %}
                                         {{ ranking_item.position }}
                                     {% endif %}
@@ -622,16 +143,16 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="user-avatar">
+                                    <div class="user-avatar" aria-hidden="true">
                                         {{ ranking_item.participation.user.username|first|upper }}
                                     </div>
                                     <div class="user-info">
-                                        <h6>{{ ranking_item.participation.user.username }}</h6>
+                                        <h3 class="h6 mb-0">{{ ranking_item.participation.user.username }}</h3>
                                         <small>
                                             {% if ranking_item.participation.user == pool.owner %}
-                                                <i class="fas fa-crown text-warning"></i> Criador
+                                                <i class="fas fa-crown text-warning" aria-hidden="true"></i> Criador
                                             {% elif ranking_item.is_current_user %}
-                                                <i class="fas fa-user text-primary"></i> Você
+                                                <i class="fas fa-user text-primary" aria-hidden="true"></i> Você
                                             {% endif %}
                                         </small>
                                     </div>
@@ -641,7 +162,7 @@
                                 <strong class="fs-5">{{ ranking_item.participation.points|default:0 }}</strong>
                             </td>
                             <td class="text-center">
-                                <div class="progress-custom">
+                                <div class="progress-custom" role="progressbar" aria-valuenow="{{ ranking_item.participation.accuracy|default:0 }}" aria-valuemin="0" aria-valuemax="100">
                                     <div class="progress-bar" style="width: {{ ranking_item.participation.accuracy|default:0 }}%"></div>
                                 </div>
                                 <small>{{ ranking_item.participation.accuracy|default:0|floatformat:1 }}%</small>
@@ -652,8 +173,8 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center py-4">
-                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="fas fa-users fa-3x text-muted mb-3" aria-hidden="true"></i>
                                 <p class="text-muted">Nenhum participante ainda</p>
                             </td>
                         </tr>
@@ -1044,24 +565,24 @@
             </div>
         </div>
     </div>
-</div>
+</main>
 
 <!-- Floating Action Button -->
 {% if is_participant and upcoming_matches %}
-<button class="floating-bet-btn" onclick="showQuickBetModal()" data-bs-toggle="tooltip" data-bs-placement="left" title="Fazer Aposta Rápida">
-    <i class="fas fa-dice"></i>
+<button class="floating-bet-btn" onclick="showQuickBetModal()" data-bs-toggle="tooltip" data-bs-placement="left" title="Fazer Aposta Rápida" aria-label="Fazer aposta rápida">
+    <i class="fas fa-dice" aria-hidden="true"></i>
 </button>
 {% endif %}
 
 <!-- Modal de Aposta Rápida -->
-<div class="modal fade" id="quickBetModal" tabindex="-1" aria-labelledby="quickBetModalLabel" aria-hidden="true">
+<div class="modal fade pool-modal" id="quickBetModal" tabindex="-1" aria-labelledby="quickBetModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="quickBetModalLabel">
-                    <i class="fas fa-dice me-2"></i>Fazer Aposta
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h2 class="modal-title h5" id="quickBetModalLabel">
+                    <i class="fas fa-dice me-2" aria-hidden="true"></i>Fazer Aposta
+                </h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body" id="quickBetContent">
                 <!-- Conteúdo carregado dinamicamente -->
@@ -1078,22 +599,22 @@
 
 <!-- Modal de Convite -->
 {% if is_owner %}
-<div class="modal fade" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
+<div class="modal fade pool-modal" id="inviteModal" tabindex="-1" aria-labelledby="inviteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="inviteModalLabel">
-                    <i class="fas fa-user-plus me-2"></i>Convidar Participantes
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h2 class="modal-title h5" id="inviteModalLabel">
+                    <i class="fas fa-user-plus me-2" aria-hidden="true"></i>Convidar Participantes
+                </h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
                     <label for="inviteLink" class="form-label">Link de Convite</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="inviteLink" value="{{ request.build_absolute_uri }}" readonly>
-                        <button class="btn btn-outline-secondary" onclick="copyInviteLink()">
-                            <i class="fas fa-copy"></i>
+                        <input type="text" class="form-control" id="inviteLink" value="{{ request.build_absolute_uri }}" readonly aria-label="Link de convite do bolão">
+                        <button class="btn btn-outline-secondary" onclick="copyInviteLink()" aria-label="Copiar link de convite">
+                            <i class="fas fa-copy" aria-hidden="true"></i>
                         </button>
                     </div>
                     <small class="form-text text-muted">Compartilhe este link para que outros possam participar</small>
@@ -1103,16 +624,16 @@
                     <label class="form-label">Compartilhar via:</label>
                     <div class="d-grid gap-2">
                         <a href="https://wa.me/?text=Participe do meu bolão '{{ pool.name }}' - {{ request.build_absolute_uri|urlencode }}" 
-                           target="_blank" class="btn btn-success">
-                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                           target="_blank" rel="noopener noreferrer" class="btn btn-success" aria-label="Compartilhar via WhatsApp">
+                            <i class="fab fa-whatsapp me-2" aria-hidden="true"></i>WhatsApp
                         </a>
                         <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text=Participe do bolão {{ pool.name }}" 
-                           target="_blank" class="btn btn-info">
-                            <i class="fab fa-telegram me-2"></i>Telegram
+                           target="_blank" rel="noopener noreferrer" class="btn btn-info" aria-label="Compartilhar via Telegram">
+                            <i class="fab fa-telegram me-2" aria-hidden="true"></i>Telegram
                         </a>
                         <a href="mailto:?subject=Convite para o bolão {{ pool.name }}&body=Olá!%0A%0AConvido você a participar do meu bolão '{{ pool.name }}'.%0A%0AClique no link para participar: {{ request.build_absolute_uri }}" 
-                           class="btn btn-secondary">
-                            <i class="fas fa-envelope me-2"></i>Email
+                           class="btn btn-secondary" aria-label="Compartilhar via Email">
+                            <i class="fas fa-envelope me-2" aria-hidden="true"></i>Email
                         </a>
                     </div>
                 </div>

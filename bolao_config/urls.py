@@ -20,12 +20,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from core import views as core_views
+from core.healthcheck import health_check, readiness_check, liveness_check
 from users import views as user_views  # Ajuste para o seu app de usuários
 import debug_toolbar
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+
+    # Health Check Endpoints (para monitoring/load balancer)
+    path('health/', health_check, name='health_check'),
+    path('ready/', readiness_check, name='readiness_check'),
+    path('live/', liveness_check, name='liveness_check'),
+
     # URLs de autenticação padrão do Django
     path('accounts/', include('django.contrib.auth.urls')),
     
